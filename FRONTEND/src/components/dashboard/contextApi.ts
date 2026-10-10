@@ -60,3 +60,112 @@ export async function fetchContextAlerts(
     return null;
   }
 }
+
+// ── Best Time to Go Outside ────────────────────────────────────────────────
+
+export interface WeatherDay {
+  source: string;
+  url: string;
+  fetched_at: string;
+  text: string; // the source's own forecast wording
+  wind_min_kmph: number | null;
+  wind_max_kmph: number | null;
+  humidity_pct: number | null;
+  temp_c: number | null;
+  fog: boolean;
+  rain: boolean;
+}
+
+export interface WeatherNotice {
+  id: string;
+  kind: "crop-burning" | "traffic" | "notice";
+  title: string;
+  summary: string;
+  source: string;
+  url: string;
+  published_at: string | null;
+  fetched_at: string;
+}
+
+export interface WeatherSlot {
+  period: string;
+  hours: string;
+  ml_status: string; // the ML verdict we sent
+  status: string; // ML verdict, or one step down when the forecast triggers it
+  adjusted: boolean;
+  reasons: string[];
+}
+
+export interface SlotInput {
+  period: string;
+  hours: string;
+  status: string;
+}
+
+export interface WeatherWindows {
+  status: ContextStatus;
+  stale: boolean;
+  fetched_at: string | null;
+  age_seconds: number | null;
+  ttl_seconds: number;
+  weather: WeatherDay | null;
+  notices: WeatherNotice[];
+  slots: WeatherSlot[];
+  sources: ContextSource[];
+  message?: string;
+}
+
+/**
+ * Sends the ML windows to the backend, which attaches the cached official
+ * forecast and a reasoned (never silent) adjustment. `null` on any failure —
+ * the component then renders the ML windows exactly as before.
+ */
+export async function fetchWeatherWindows(
+  slots: SlotInput[],
+  force = false,
+  timeoutMs = 20000,
+): Promise<WeatherWindows | null> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`/api/context/weather-windows${force ? "?force=true" : ""}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slots }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = (await res.json()) as WeatherWindows;
+    if (!data || typeof data !== "object" || !Array.isArray(data.slots)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// ── shared display helpers ────────────────────────────────────────────────
+
+/** "1:32 PM" from an ISO timestamp, or null when unparseable. */
+export const formatClock = (iso?: string | null): string | null => {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+};
+
+/** "08 Oct" (UTC) from an ISO date/timestamp, or null. */
+export const formatDate = (iso: string): string | null => {
+  const date = new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" });
+};
+
+/** "just now" / "12m" / "3h 20m" — for "last updated X ago" markers. */
+export const formatAge = (seconds?: number | null): string => {
+  if (seconds === null || seconds === undefined) return "some time";
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+  const hours = Math.floor(seconds / 3600);
+  return `${hours}h ${Math.round((seconds % 3600) / 60)}m`;
+};

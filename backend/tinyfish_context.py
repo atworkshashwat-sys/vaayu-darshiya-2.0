@@ -7,7 +7,7 @@ Monitors also need a public webhook URL, which a localhost backend has not).
 
 Feature functions, one per section:
     get_alerts()              Active Alerts              TTL 20 min  [this file]
-    get_weather_windows()     Best Time to Go Outside    TTL 24 h    [Feature 2]
+    get_weather_windows()     Best Time to Go Outside    TTL 6 h     [Feature 2]
     get_delhi_case()          Delhi's Drastic Case       TTL 12 h    [Feature 3]
     get_station_crosscheck()  Model vs reported          TTL 6 h     [Feature 4]
 
@@ -15,8 +15,10 @@ Shared plumbing:
     _serve()          TTL cache + single-flight refresh + last-good fallback
                       (a failed refresh serves the previous payload flagged
                       `stale`, never an empty card)
-    start_scheduler() background daemon thread that refreshes every entry that
-                      has been served at least once, every REFRESH_SECONDS
+    start_scheduler() background daemon thread that refreshes served entries
+                      once their own TTL has elapsed (checked every
+                      REFRESH_SECONDS — a 6 h payload is not refetched on the
+                      20 min alerts cadence)
     sanitize()        untrusted web text → plain, length-capped string
 
 Ground rules honoured here:
@@ -122,6 +124,7 @@ _feature_locks_lock = threading.Lock()
 _scheduler_state = threading.Lock()
 _scheduler_started = False
 _refresher_running = set()        # features currently being refreshed
+_REGISTRY = {}                    # feature -> {"ttl": seconds, "refresh": callable}
 
 
 def _now_iso(epoch=None):
@@ -211,8 +214,16 @@ def _retry(fn, attempts=1):
         return _retry(fn, attempts - 1)
 
 
-def _serve(feature, ttl, refresher, force=False):
+def register_feature(feature, ttl, refresher):
+    """Declare a feature's TTL and refresher — the scheduler reads this too,
+    so a 6 h feature is never refetched on the 20 min alerts cadence."""
+    _REGISTRY[feature] = {"ttl": ttl, "refresh": refresher}
+
+
+def _serve(feature, force=False):
     """TTL cache → single-flight refresh → last good (stale) → unavailable."""
+    spec = _REGISTRY[feature]
+    ttl, refresher = spec["ttl"], spec["refresh"]
     entry = _get_entry(feature)
     if entry and not force and time.time() - entry["stored_at"] < ttl:
         return _envelope(feature, entry, ttl, stale=False)
@@ -267,17 +278,21 @@ def _unavailable(feature, error, ttl):
 
 # ── Background scheduler (stdlib thread — no new dependency) ───────────────
 def refresh_warm_features():
-    """Re-run every feature that has been served at least once, best effort."""
+    """Re-run every feature that has been served at least once AND whose TTL has
+    elapsed — a 6 h payload is never refetched on the 20 min alerts cadence."""
     for feature in warm_features():
-        refresher = _REFRESHERS.get(feature)
-        if refresher is None or feature in _refresher_running:
+        spec = _REGISTRY.get(feature)
+        if spec is None or feature in _refresher_running:
             continue
+        entry = _get_entry(feature)
+        if entry is None or time.time() - entry["stored_at"] < spec["ttl"]:
+            continue                                   # not due yet
         with _feature_lock(feature):
             entry = _get_entry(feature)
-            if entry is None:
+            if entry is None or time.time() - entry["stored_at"] < spec["ttl"]:
                 continue
             try:
-                data = _retry(refresher)
+                data = _retry(spec["refresh"])
                 _put_entry(feature, data)
             except tinyfish_service.TinyFishError:
                 pass  # keep the last good payload; it will be served as stale
@@ -537,11 +552,327 @@ def refresh_alerts():
 
 def get_alerts(force=False):
     """Active Alerts payload: official/press advisories with sources + TTL."""
-    payload = _serve("alerts", ALERTS_TTL, refresh_alerts, force=force)
+    payload = _serve("alerts", force=force)
     payload["feature"] = "alerts"
     return payload
 
 
-_REFRESHERS = {
-    "alerts": refresh_alerts,
+# ── Feature 2: Best Time to Go Outside ──────────────────────────────────────
+WEATHER_TTL = 6 * 3600            # IMD refreshes its city forecast twice a day
+MAX_NOTICES = 3                   # crop-burning / traffic notices per payload
+NOTICE_FRESH_DAYS = 90            # an "active" notice older than this is not active
+LOW_WIND_KMPH = 8                 # whole range ≤ this → poor dispersion
+LADDER = ("Safe", "Moderate", "Avoid Outdoor")   # one-step downgrade ladder
+
+WEATHER_SEARCH = {
+    "domain_type": "web",
+    "query": "Delhi weather forecast today wind speed humidity temperature fog rain",
+    "include_domains": "mausam.imd.gov.in,imd.gov.in,safar.tropmet.res.in,dpcc.delhigovt.nic.in",
 }
+WEATHER_PURPOSE = ("Find today's official Delhi weather forecast (wind speed, humidity, "
+                   "temperature, fog and rain) for the Vaayu Darshiya Best Time windows")
+
+# Crop-burning and traffic/ban notices: reputable press plus official bans.
+NOTICE_SEARCHES = [
+    {"domain_type": "news",
+     "query": "Delhi stubble burning crop residue traffic vehicle restrictions notice today"},
+    {"domain_type": "web",
+     "query": "Delhi stubble burning traffic restrictions ban notice",
+     "include_domains": "caqm.nic.in,cpcb.nic.in,dpcc.delhigovt.nic.in,delhi.gov.in,pib.gov.in"},
+]
+NOTICE_PURPOSE = ("Find active Delhi crop-burning and traffic/vehicle restriction notices "
+                  "for the Vaayu Darshiya Best Time windows")
+
+
+def parse_weather(text):
+    """Pull only the values the source actually states; unmatched stays None.
+
+    Fetched text is untrusted: sanitized first, then read with fixed patterns —
+    never executed and never treated as instructions. No value is ever guessed.
+
+    Every numeric pattern guards its left edge with ``(?<![\\d.])`` so a decimal
+    is never read as its tail: IMD's "9.3 km/h" must not become "3 km/h" and
+    "29.8 °C" must not become 8 °C.
+    """
+    blob = sanitize(text, limit=4000)
+    low = blob.lower()
+    out = {
+        "wind_min_kmph": None, "wind_max_kmph": None,
+        "humidity_pct": None, "temp_c": None,
+        "fog": False, "rain": False,
+    }
+
+    # Wind: a stated range first, then a single speed ("Calm 0 km/h" → 0).
+    match = (
+        re.search(
+            r"(?<![\d.])(\d{1,3}(?:\.\d{1,2})?)\s*(?:-|–|—|to)\s*"
+            r"(?<![\d.])(\d{1,3}(?:\.\d{1,2})?)\s*"
+            r"(?:kmph|km/h|kilometres per hour|km per hour)", low)
+        or re.search(
+            r"(?<![\d.])(\d{1,3}(?:\.\d{1,2})?)\s*"
+            r"(?:kmph|km/h|kilometres per hour|km per hour)", low))
+    if match:
+        numbers = [float(group) for group in match.groups() if group]
+        out["wind_min_kmph"] = round(min(numbers), 1)
+        out["wind_max_kmph"] = round(max(numbers), 1)
+
+    # Temperature: keyword-anchored prose, then a bare "30.8 °C" / "30.4oC".
+    match = (
+        re.search(
+            r"(?:temperature|temp\.?|maximum|max\.?|minimum|min\.?)\s*"
+            r"(?:of|is|:)?\s*(-?\d{1,3}(?:\.\d+)?)\s*"
+            r"(?:°\s*c|degrees?\s*c\b|c\b)", low)
+        or re.search(r"(?<![\d.])(-?\d{1,3}(?:\.\d+)?)\s*℃", low)
+        or re.search(r"(?<![\d.])(-?\d{1,3}(?:\.\d+)?)\s*(?:°|o|degrees?\s*)c\b", low))
+    if match and -20 <= float(match.group(1)) <= 55:
+        out["temp_c"] = round(float(match.group(1)), 1)
+
+    # Humidity: keyword-anchored, else the first percentage on a page that
+    # already yielded temperature *and* wind (i.e. a meteorological table such
+    # as IMD's "30.8 °C … 9.3 km/h … 67 %"). Never on an unrelated page.
+    match = re.search(r"(?:humidity|relative humidity|rh)[^0-9%]{0,30}"
+                      r"(\d{1,3}(?:\.\d+)?)\s*%", low)
+    if match is None and out["temp_c"] is not None and out["wind_max_kmph"] is not None:
+        match = re.search(r"(?<![\d.])(\d{1,3}(?:\.\d+)?)\s*%", low)
+    if match and 0 <= float(match.group(1)) <= 100:
+        out["humidity_pct"] = int(round(float(match.group(1))))
+
+    out["fog"] = bool(re.search(r"\bfog\b", low)) and not bool(
+        re.search(r"\b(?:no|nil|free of|without)\s+fog\b", low))
+    out["rain"] = bool(re.search(
+        r"\b(?:rain|rainfall|raining|thundershowers?|thunderstorms?|showers?|drizzle)\b",
+        low)) and not bool(re.search(r"\b(?:no|without|dry)\s+(?:rain|shower)\b", low))
+    return out
+
+
+def _num(value):
+    """Readable number for reason strings: 9.3 → "9.3", 5.0 → "5"."""
+    value = round(float(value), 1)
+    return str(int(value)) if value == int(value) else str(value)
+
+
+def wind_phrase(weather):
+    """Human-readable wind line, or None when the source stated none."""
+    if not weather:
+        return None
+    lo, hi = weather.get("wind_min_kmph"), weather.get("wind_max_kmph")
+    if lo is None and hi is None:
+        return None
+    if lo is not None and hi is not None and lo != hi:
+        return f"wind {_num(lo)}–{_num(hi)} km/h"
+    return f"wind {_num(hi if hi is not None else lo)} km/h"
+
+
+def notice_kind(title, summary):
+    blob = f"{title} {summary}".lower()
+    if any(word in blob for word in ("stubble", "crop residue", "crop burning", "paddy", "burning")):
+        return "crop-burning"
+    if any(word in blob for word in ("traffic", "vehicle", "truck", "congestion", "route", "ban on")):
+        return "traffic"
+    return "notice"
+
+
+def _is_home_url(url):
+    """Site landing page ("mausam.imd.gov.in/index_en.php") — not a forecast."""
+    from urllib.parse import urlparse
+    path = (urlparse(url).path or "/").lower().rstrip("/") or "/"
+    name = path.rsplit("/", 1)[-1]
+    return name.startswith("index") or path in ("/", "/home", "/home.html")
+
+
+def weather_candidate_score(result):
+    """Prefer a real Delhi forecast page over the site's homepage.
+
+    The homepage mixes navigation junk and *realized* observations with the
+    forecast; the city forecast page is the one that states today's values.
+    """
+    blob = f"{result.get('title', '')} {result.get('snippet', '')}".lower()
+    score = 0
+    if not _is_home_url(result.get("url", "")):
+        score += 2
+    if "forecast" in blob or "पूर्वानुमान" in blob:
+        score += 1
+    if "delhi" in blob or "ncr" in blob:
+        score += 1
+    return score
+
+
+def _weather_candidates(results):
+    """Allowed results, best first; ties keep the search engine's order."""
+    scored = []
+    for rank, result in enumerate(results if isinstance(results, (list, tuple)) else []):
+        if not isinstance(result, dict):
+            continue
+        url = result.get("url", "")
+        if not url or not is_allowed(url):
+            continue
+        scored.append((-weather_candidate_score(result), rank, result))
+    scored.sort(key=lambda item: (item[0], item[1]))
+    return [result for _, _, result in scored]
+
+
+def refresh_weather_windows():
+    """Official day forecast + active crop-burning/traffic notices.
+
+    Returns {"weather": {...}, "notices": [...], "sources": [...]} or raises
+    TinyFishError so the caller can fall back to the last good payload.
+    Weather is the payload's core: if no official forecast can be read, the
+    whole refresh fails (and the previous one is served as stale). Notices are
+    best-effort — their failure never discards a good forecast.
+    """
+    if not tinyfish_service.api_key():
+        raise tinyfish_service.TinyFishError("TINYFISH_API_KEY is not set")
+
+    fetched_at = _now_iso()
+    results = _retry(lambda: tinyfish_service.search(
+        WEATHER_SEARCH["query"],
+        domain_type=WEATHER_SEARCH["domain_type"],
+        page_size=5,
+        include_domains=WEATHER_SEARCH["include_domains"],
+        purpose=WEATHER_PURPOSE,
+    ))
+    candidates = _weather_candidates(results)
+    if not candidates:
+        raise tinyfish_service.TinyFishError("no official forecast result")
+
+    # Try the best two pages max: one homepage-shaped miss costs one fetch.
+    weather, sources, last_error = None, [], "forecast page could not be read"
+    for best in candidates[:2]:
+        page = None
+        try:
+            page = _retry(lambda url=best["url"]: tinyfish_service.fetch_text(url, limit=1500))
+        except tinyfish_service.TinyFishError as exc:
+            last_error = str(exc)
+        raw = (page or {}).get("text") or best.get("snippet") or ""
+        text = sanitize(raw, limit=320)
+        # Days the source has not published yet come back as "NA °C NA %"—
+        # they state nothing, so the display text stops before the first one.
+        cut = text.find("NA °C")
+        if 40 < cut:
+            text = text[:cut].rstrip(" ,;—-")
+        if not text or not is_useful(sanitize(best.get("title", ""), limit=160), text):
+            continue
+        final_url = (page or {}).get("url") or ""
+        weather_url = final_url if final_url and is_allowed(final_url) else best["url"]
+        source_name, _ = source_for(
+            best["url"], best.get("publisher", ""), best.get("site_name", ""))
+        weather = {
+            "source": source_name,
+            "url": weather_url,
+            "fetched_at": fetched_at,
+            "text": text,                    # the source's own words, verbatim
+            **parse_weather(raw),            # only values the source stated
+        }
+        sources = [{"name": source_name, "url": weather_url, "fetched_at": fetched_at}]
+        break
+    if weather is None:
+        raise tinyfish_service.TinyFishError(last_error)
+
+    # ── Notices (best effort) ────────────────────────────────────────────
+    notices, seen = [], set()
+    for spec in NOTICE_SEARCHES:
+        try:
+            found = _retry(lambda spec=spec: tinyfish_service.search(
+                spec["query"], domain_type=spec["domain_type"], page_size=6,
+                include_domains=spec.get("include_domains"), purpose=NOTICE_PURPOSE,
+            ))
+        except tinyfish_service.TinyFishError:
+            continue
+        for result in (found if isinstance(found, (list, tuple)) else []):
+            if not isinstance(result, dict):
+                continue
+            url = result.get("url", "")
+            if not url or url in seen or not is_allowed(url):
+                continue
+            seen.add(url)
+            notices.append(result)
+
+    for result in notices[:MAX_NOTICES]:
+        page = None
+        try:
+            page = _retry(lambda url=result["url"]: tinyfish_service.fetch_text(url, limit=900))
+        except tinyfish_service.TinyFishError:
+            page = None
+        final_url = (page or {}).get("url") or ""
+        notice_url = final_url if final_url and is_allowed(final_url) else result["url"]
+        title = sanitize(result.get("title", ""), limit=160)
+        summary = summarize((page or {}).get("text") or result.get("snippet") or "")
+        if not is_useful(title, summary):
+            continue
+        source_name, _ = source_for(
+            result["url"], result.get("publisher", ""), result.get("site_name", ""))
+        result["_built"] = {
+            "id": _alert_id(notice_url),
+            "kind": notice_kind(title, summary),
+            "title": title,
+            "summary": summary,                    # ≤ 200 chars
+            "source": source_name,
+            "url": notice_url,
+            "published_at": parse_published(
+                (page or {}).get("published_date"), result.get("date")),
+            "fetched_at": fetched_at,
+        }
+    built = [r.pop("_built") for r in notices[:MAX_NOTICES] if r.get("_built")]
+    # "Active" notices must actually be recent: anything older than
+    # NOTICE_FRESH_DAYS is background reading, not a live restriction.
+    # Undated items are kept (the UI shows no published date rather than one).
+    built = [item for item in built
+             if not item["published_at"] or _age_days(item["published_at"]) <= NOTICE_FRESH_DAYS]
+    notices = dedupe(built)[:MAX_NOTICES]
+    sources.extend(
+        {"name": n["source"], "url": n["url"], "fetched_at": n["fetched_at"]}
+        for n in notices
+    )
+    return {"weather": weather, "notices": notices, "sources": sources}
+
+
+def adjust_slots(slots, weather):
+    """Apply the fog / low-wind rule to the ML windows.
+
+    The model verdict always comes back beside the adjusted one: web context may
+    only move a window one step down the ladder, only when the official forecast
+    states fog or low wind, and always with the reason that was applied.
+    """
+    adjusted = []
+    for slot in (slots if isinstance(slots, list) else []):
+        if not isinstance(slot, dict):
+            continue
+        ml_status = str(slot.get("status") or "").strip()
+        if ml_status not in LADDER:
+            ml_status = "Safe"
+        status, reasons = ml_status, []
+
+        if weather and isinstance(weather, dict):
+            triggers = []
+            if weather.get("fog"):
+                triggers.append("Fog forecast: pollutants linger in still air")
+            wind_max = weather.get("wind_max_kmph")
+            if isinstance(wind_max, (int, float)) and wind_max <= LOW_WIND_KMPH:
+                triggers.append(f"Low wind: pollutants trapped ({wind_phrase(weather)})")
+            if triggers:
+                status = LADDER[min(len(LADDER) - 1, LADDER.index(ml_status) + 1)]
+                reasons = triggers if status != ml_status else []
+
+        adjusted.append({
+            "period": str(slot.get("period") or ""),
+            "hours": str(slot.get("hours") or ""),
+            "ml_status": ml_status,
+            "status": status,
+            "adjusted": status != ml_status,
+            "reasons": reasons,
+        })
+    return adjusted
+
+
+def get_weather_windows(slots, force=False):
+    """Best Time payload: cached forecast + notices + reasoned adjustments."""
+    payload = _serve("weather_windows", force=force)
+    payload["feature"] = "weather_windows"
+    payload.setdefault("weather", None)
+    payload.setdefault("notices", [])
+    payload["slots"] = adjust_slots(slots, payload.get("weather"))
+    return payload
+
+
+register_feature("alerts", ALERTS_TTL, refresh_alerts)
+register_feature("weather_windows", WEATHER_TTL, refresh_weather_windows)

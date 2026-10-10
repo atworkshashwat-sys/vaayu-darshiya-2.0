@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ExternalLink, Info, ShieldAlert } from "lucide-react";
 import { CityForecast, hchoLevel, peakHcho } from "./data";
-import { AlertsContext, fetchContextAlerts } from "./contextApi";
+import {
+  AlertsContext,
+  fetchContextAlerts,
+  formatAge,
+  formatClock,
+  formatDate,
+} from "./contextApi";
 import { Alert, mergeAlerts } from "./alertMerge";
 
 function generateAlerts(forecast: CityForecast): Alert[] {
@@ -152,32 +158,6 @@ function getSeverityStyles(severity: Alert["severity"]) {
       };
   }
 }
-
-const formatClock = (iso?: string | null) => {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-};
-
-const formatDate = (iso: string) => {
-  const date = new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    timeZone: "UTC",
-  });
-};
-
-/** "just now" / "12m" / "3h 20m" — for the stale marker. */
-const formatAge = (seconds?: number | null) => {
-  if (seconds === null || seconds === undefined) return "some time";
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-  const hours = Math.floor(seconds / 3600);
-  return `${hours}h ${Math.round((seconds % 3600) / 60)}m`;
-};
 
 interface AlertsProps {
   forecast: CityForecast;

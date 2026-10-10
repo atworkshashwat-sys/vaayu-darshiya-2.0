@@ -204,16 +204,17 @@ cd backend && uvicorn api:app --port 8000
 
 ## Live Dashboard Context (TinyFish)
 
-The Active Alerts section pulls live official context through the **same**
-TinyFish client (`backend/tinyfish_service.py`) — no second client, and only
-**Search + Fetch**: paid Web Automation runs and paid Monitors (which also need
-a public webhook URL) are deliberately not used.
+The **Active Alerts** and **Best Time to Go Outside** sections pull live
+official context through the **same** TinyFish client
+(`backend/tinyfish_service.py`) — no second client, and only **Search +
+Fetch**: paid Web Automation runs and paid Monitors (which also need a public
+webhook URL) are deliberately not used.
 
 | | |
 |---|---|
-| Endpoint | `GET /api/context/alerts` (isolated router: `backend/context_api.py`) |
+| Endpoints | `GET /api/context/alerts` · `POST /api/context/weather-windows` (isolated router: `backend/context_api.py`) |
 | Service | `backend/tinyfish_context.py` — one function per feature, TTL cache, background scheduler |
-| Frontend | `contextApi.ts` (fetch + types) → `alertMerge.ts` → `Alerts.tsx` |
+| Frontend | `contextApi.ts` (fetch + types) → `alertMerge.ts` → `Alerts.tsx` · `BestTime.tsx` |
 | Key | `TINYFISH_API_KEY` — **backend only**; read from `backend/.env` (gitignored) or the process environment |
 
 ```bash
@@ -226,20 +227,54 @@ TINYFISH_API_KEY=sk-tinyfish-...
 | Payload | TTL |
 |---|---|
 | `/api/context/alerts` | **20 min** (spec range 15–30 min) |
+| `/api/context/weather-windows` | **6 h** (IMD updates its city forecast twice a day) |
 
 - **Never fetched per page load.** The first request fills the cache; later
   requests are served from it until the TTL expires. A background thread
-  (stdlib, no new dependency) refreshes every payload that has been served at
-  least once every 20 minutes, so an unused feature costs zero quota.
+  (stdlib, no new dependency) refreshes only payloads that have been served at
+  least once **and whose own TTL has elapsed**, so an unused feature costs zero
+  quota and a 6 h payload is never refetched on the 20 min alerts cadence.
 - `?force=true` bypasses the TTL for a manual refresh (still single-flight, so
   concurrent clicks cost one round-trip).
 - **Timeouts + one retry** (6 s search / 8 s fetch). Auth and quota errors
   (401/402/403) and a missing key are never retried.
 - **Graceful degradation:** on failure the last good payload is served with
   `"stale": true`, `"fetched_at"` and `"age_seconds"` of the old result (the UI
-  shows *"Live advisories last updated X ago"*). If nothing was ever fetched the
-  response is `{"status": "unavailable", "items": []}` with HTTP 200 and the
-  model alerts render exactly as before — never a blank card or a stack trace.
+  shows *"last updated X ago"*). If nothing was ever fetched the response is
+  `{"status": "unavailable", ...}` with HTTP 200 and the model cards render
+  exactly as before — never a blank card or a stack trace.
+
+### Best Time: ML windows + reasoned adjustment
+
+`POST /api/context/weather-windows` body: `{"slots": [{period, hours, status}]}`.
+The ML verdicts are echoed back as `ml_status`; the returned `status` differs
+only when the official forecast triggers the rule, and then `reasons` says why:
+
+| Trigger (from the IMD/SAFAR day forecast) | Effect |
+|---|---|
+| fog stated in the forecast | downgrade **one level** (`Safe → Moderate`, `Moderate → Avoid Outdoor`) + reason |
+| wind range at or below `LOW_WIND_KMPH` (8 km/h) | same, reason *"Low wind: pollutants trapped (wind 5 km/h)"* |
+| rain | shown as context only — verdict unchanged |
+
+Only values the source actually states are used (`parse_weather` returns `null`
+for anything it cannot match — nothing is ever guessed), and the UI renders
+the ML numbers, the *"ML forecast"* label and the *"Live advisory"* block as
+separate items.
+
+Two quality gates came straight from observing the live source:
+
+- **The city forecast page, not the homepage.** Search results are scored
+  (`_weather_candidates`): landing pages (`index_en.php`, `/`) are penalised
+  and pages that actually say "forecast" + "Delhi" are preferred, so the
+  forecast table — *"30.8 °C … 9.3 km/h … 67 %"* — feeds the windows instead
+  of navigation junk and realized observations. At most two pages are fetched
+  per refresh.
+- **Numbers are read unit-anchored** with a left-edge guard, so `9.3 km/h` is
+  never parsed as `3 km/h` (which would have downgraded every window) and
+  `29.8 °C` never becomes `8 °C`.
+- **Notices must be active.** Anything older than `NOTICE_FRESH_DAYS` (90 days)
+  is dropped — an 11-month-old GRAP order is background reading, not a live
+  restriction.
 
 ### Sources
 
@@ -252,6 +287,12 @@ rendered with `source`, `url`, `published_at` and `fetched_at` as a
 OFFICIAL_SOURCES = { "caqm.nic.in": "CAQM", "cpcb.nic.in": "CPCB", ... }  # → "Official" badge
 REPUTED_SOURCES  = { "ndtv.com": "NDTV", ... }
 ```
+
+Searches are pinned to the right sites too: the Best Time weather search uses
+`include_domains=mausam.imd.gov.in,imd.gov.in,safar.tropmet.res.in,dpcc.delhigovt.nic.in`
+(`WEATHER_SEARCH` in `backend/tinyfish_context.py`), so only official
+meteorology can reach the time windows, while crop-burning / traffic notices
+come from reputable press plus the official-domain query in `NOTICE_SEARCHES`.
 
 **To add a source:** add its host + display name to the right dict. Matching is
 suffix-based, so `www.` and `airquality.` subdomains are covered:
@@ -269,8 +310,9 @@ output — live cards are labelled *Official* / *Live advisory*, model cards
 ### Tests
 
 ```bash
-cd backend && python -m unittest test_tinyfish_context   # 18 tests, TinyFish fully mocked
-cd FRONTEND && npx vitest run src/components/dashboard/Alerts.test.tsx
+cd backend && python -m unittest test_tinyfish_context   # 41 tests, TinyFish fully mocked
+cd FRONTEND && npx vitest run src/components/dashboard/Alerts.test.tsx \
+                              src/components/dashboard/BestTime.test.tsx
 ```
 
 ---
