@@ -202,6 +202,79 @@ cd backend && uvicorn api:app --port 8000
 
 ---
 
+## Live Dashboard Context (TinyFish)
+
+The Active Alerts section pulls live official context through the **same**
+TinyFish client (`backend/tinyfish_service.py`) — no second client, and only
+**Search + Fetch**: paid Web Automation runs and paid Monitors (which also need
+a public webhook URL) are deliberately not used.
+
+| | |
+|---|---|
+| Endpoint | `GET /api/context/alerts` (isolated router: `backend/context_api.py`) |
+| Service | `backend/tinyfish_context.py` — one function per feature, TTL cache, background scheduler |
+| Frontend | `contextApi.ts` (fetch + types) → `alertMerge.ts` → `Alerts.tsx` |
+| Key | `TINYFISH_API_KEY` — **backend only**; read from `backend/.env` (gitignored) or the process environment |
+
+```bash
+# backend/.env (gitignored — never committed)
+TINYFISH_API_KEY=sk-tinyfish-...
+```
+
+### TTLs and refresh
+
+| Payload | TTL |
+|---|---|
+| `/api/context/alerts` | **20 min** (spec range 15–30 min) |
+
+- **Never fetched per page load.** The first request fills the cache; later
+  requests are served from it until the TTL expires. A background thread
+  (stdlib, no new dependency) refreshes every payload that has been served at
+  least once every 20 minutes, so an unused feature costs zero quota.
+- `?force=true` bypasses the TTL for a manual refresh (still single-flight, so
+  concurrent clicks cost one round-trip).
+- **Timeouts + one retry** (6 s search / 8 s fetch). Auth and quota errors
+  (401/402/403) and a missing key are never retried.
+- **Graceful degradation:** on failure the last good payload is served with
+  `"stale": true`, `"fetched_at"` and `"age_seconds"` of the old result (the UI
+  shows *"Live advisories last updated X ago"*). If nothing was ever fetched the
+  response is `{"status": "unavailable", "items": []}` with HTTP 200 and the
+  model alerts render exactly as before — never a blank card or a stack trace.
+
+### Sources
+
+Only allowlisted official or reputable domains are shown, and every item is
+rendered with `source`, `url`, `published_at` and `fetched_at` as a
+*"Source: CAQM · 12:30 PM"* label. The allowlists sit at the top of
+`backend/tinyfish_context.py`:
+
+```python
+OFFICIAL_SOURCES = { "caqm.nic.in": "CAQM", "cpcb.nic.in": "CPCB", ... }  # → "Official" badge
+REPUTED_SOURCES  = { "ndtv.com": "NDTV", ... }
+```
+
+**To add a source:** add its host + display name to the right dict. Matching is
+suffix-based, so `www.` and `airquality.` subdomains are covered:
+
+```python
+REPUTED_SOURCES = { ..., "scroll.in": "Scroll" }
+```
+
+Fetched text is treated as untrusted data: sanitized, length-capped (summaries
+≤ 200 chars), and never executed or interpreted as instructions. Severity
+(high/medium/low) is keyword-derived, deterministic and separate from any ML
+output — live cards are labelled *Official* / *Live advisory*, model cards
+*ML forecast*.
+
+### Tests
+
+```bash
+cd backend && python -m unittest test_tinyfish_context   # 18 tests, TinyFish fully mocked
+cd FRONTEND && npx vitest run src/components/dashboard/Alerts.test.tsx
+```
+
+---
+
 ## Model Performance
 
 - **Split (all targets, EXP_12):** 2018 – Dec 2023 (train, rows `< 2025-01-01`),

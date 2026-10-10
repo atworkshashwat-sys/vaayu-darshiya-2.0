@@ -35,6 +35,9 @@ import database
 # AI Insights live research (TinyFish) — isolated router, see ai_insights.py.
 from ai_insights import router as ai_insights_router
 
+# Live web context (TinyFish) for Alerts / Best Time / Delhi Case — context_api.py
+from context_api import router as context_router
+
 ROOT_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR     = os.path.join(ROOT_DIR, "models", "exp09v2_models")
 SCALER_DIR    = os.path.join(ROOT_DIR, "models", "scalers")
@@ -347,6 +350,9 @@ app.add_middleware(
 
 # AI Insights only — adds GET /api/ai-insights/research and nothing else.
 app.include_router(ai_insights_router)
+
+# Context routes — adds /api/context/* and nothing else.
+app.include_router(context_router)
 
 
 @app.get("/")

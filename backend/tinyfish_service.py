@@ -31,6 +31,8 @@ FETCH_TIMEOUT = 8.0
 # Excerpt of the top article, cleaned to plain-ish text for the panel.
 EXCERPT_CHARS = 480
 
+_ENV_LOADED = False
+
 
 class TinyFishError(Exception):
     """Transport / HTTP / payload problem talking to TinyFish.
@@ -40,8 +42,36 @@ class TinyFishError(Exception):
     """
 
 
+def _load_env_file():
+    """Read backend/.env (gitignored) once, never overriding real env vars.
+
+    Stdlib-only on purpose: the project carries no python-dotenv dependency and
+    this change must not add one. The key is only ever read, never logged.
+    """
+    global _ENV_LOADED
+    if _ENV_LOADED:
+        return
+    _ENV_LOADED = True
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                name, _, value = line.partition("=")
+                name = name.strip()
+                if name and name not in os.environ:
+                    os.environ[name] = value.strip().strip('"').strip("'")
+    except OSError:
+        pass  # unreadable .env must never break startup
+
+
 def api_key():
     """Backend-only key; None when unset so callers fail closed."""
+    _load_env_file()
     key = os.environ.get("TINYFISH_API_KEY", "").strip()
     return key or None
 
@@ -73,11 +103,15 @@ def _call(url, data=None, timeout=SEARCH_TIMEOUT):
     return payload
 
 
-def search(query, domain_type="news", page_size=5, timeout=SEARCH_TIMEOUT):
+def search(query, domain_type="news", page_size=5, timeout=SEARCH_TIMEOUT,
+           include_domains=None, purpose=None):
     """Ranked TinyFish Search results for `query`.
 
     Returns a list of {title, url, snippet, site_name, publisher, date}.
     Raises TinyFishError when the key is missing or the call fails.
+
+    include_domains  comma-separated domain allowlist (official sources)
+    purpose          overrides the default search-intent string
     """
     if not api_key():
         raise TinyFishError("TINYFISH_API_KEY is not set")
@@ -86,9 +120,13 @@ def search(query, domain_type="news", page_size=5, timeout=SEARCH_TIMEOUT):
         "domain_type": domain_type,
         "location": "IN",
         "language": "en",
-        "purpose": "Delhi NCR pollution news and official air quality advisories "
-                   "for the Vaayu Darshiya AI Insights panel",
+        "purpose": purpose or (
+            "Delhi NCR pollution news and official air quality advisories "
+            "for the Vaayu Darshiya AI Insights panel"
+        ),
     }
+    if include_domains:
+        params["include_domains"] = include_domains
     payload = _call(f"{SEARCH_ENDPOINT}?{urllib.parse.urlencode(params)}", timeout=timeout)
 
     items = []
@@ -126,7 +164,7 @@ def _clean_excerpt(text, limit=EXCERPT_CHARS):
     return joined[:limit].rsplit(" ", 1)[0] + " …"
 
 
-def fetch_text(url, timeout=FETCH_TIMEOUT):
+def fetch_text(url, timeout=FETCH_TIMEOUT, limit=EXCERPT_CHARS):
     """Clean extracted text for one URL via TinyFish Fetch.
 
     Returns {url, title, site_name, text} or raises TinyFishError. The caller
@@ -154,5 +192,7 @@ def fetch_text(url, timeout=FETCH_TIMEOUT):
         "url": final_url,
         "title": str(first.get("title") or ""),
         "site_name": _site_name(final_url),
-        "text": _clean_excerpt(str(first.get("text") or "")),
+        # Raw publication date as the source states it ("" when unstated).
+        "published_date": str(first.get("published_date") or ""),
+        "text": _clean_excerpt(str(first.get("text") or ""), limit),
     }

@@ -1,15 +1,10 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Info, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ExternalLink, Info, ShieldAlert } from "lucide-react";
 import { CityForecast, hchoLevel, peakHcho } from "./data";
-
-interface Alert {
-  id: string;
-  severity: "high" | "medium" | "low";
-  title: string;
-  message: string;
-  icon: typeof AlertTriangle;
-}
+import { AlertsContext, fetchContextAlerts } from "./contextApi";
+import { Alert, mergeAlerts } from "./alertMerge";
 
 function generateAlerts(forecast: CityForecast): Alert[] {
   const peakNo2 = Math.max(...forecast.no2);
@@ -158,12 +153,67 @@ function getSeverityStyles(severity: Alert["severity"]) {
   }
 }
 
+const formatClock = (iso?: string | null) => {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+};
+
+const formatDate = (iso: string) => {
+  const date = new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  });
+};
+
+/** "just now" / "12m" / "3h 20m" — for the stale marker. */
+const formatAge = (seconds?: number | null) => {
+  if (seconds === null || seconds === undefined) return "some time";
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
+  const hours = Math.floor(seconds / 3600);
+  return `${hours}h ${Math.round((seconds % 3600) / 60)}m`;
+};
+
 interface AlertsProps {
   forecast: CityForecast;
 }
 
 export function Alerts({ forecast }: AlertsProps) {
-  const ALERTS = generateAlerts(forecast);
+  const modelAlerts = generateAlerts(forecast);
+  const [live, setLive] = useState<AlertsContext | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchContextAlerts()
+      .then((data) => {
+        if (!cancelled) setLive(data);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const alerts = mergeAlerts(live?.items ?? [], modelAlerts);
+
+  const statusLine = loading
+    ? "Checking for official advisories…"
+    : live && live.status === "unavailable"
+      ? `${live.message ?? "Live advisories unavailable."} Model alerts shown below.`
+      : live && live.status === "stale"
+        ? `Live advisories last updated ${formatAge(live.age_seconds)} ago — refresh failed.`
+        : live && live.status === "ok"
+          ? `Live advisories retrieved at ${formatClock(live.fetched_at) ?? "unknown time"}.`
+          : "Live advisories unavailable — model alerts shown.";
+
   return (
     <section className="mx-4 mt-8 md:mx-8">
       <div className="mb-4 flex items-center gap-2">
@@ -173,17 +223,29 @@ export function Alerts({ forecast }: AlertsProps) {
         <div>
           <h2 className="font-display text-xl font-bold">Active Alerts</h2>
           <p className="text-xs text-muted-foreground">
-            Model-forecast NO₂, O₃ &amp; HCHO pollution advisories
+            Live official advisories + model-forecast NO₂, O₃ &amp; HCHO alerts
+          </p>
+          <p data-testid="alerts-live-status" className="text-[11px] text-muted-foreground/80">
+            {statusLine}
           </p>
         </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
-        {ALERTS.map((alert) => {
+        {alerts.map((alert) => {
           const styles = getSeverityStyles(alert.severity);
+          const originLabel =
+            alert.origin === "model"
+              ? "ML forecast"
+              : alert.official
+                ? "Official"
+                : "Live advisory";
+          const clock = alert.origin === "live" ? formatClock(alert.fetchedAt) : null;
+          const published = alert.publishedAt ? formatDate(alert.publishedAt) : null;
           return (
             <Card
               key={alert.id}
+              data-origin={alert.origin}
               className={`glass border-l-4 ${styles.border} transition-all hover:shadow-lg`}
             >
               <CardHeader className="flex flex-row items-start gap-3 pb-2">
@@ -191,12 +253,35 @@ export function Alerts({ forecast }: AlertsProps) {
                 <div className="flex-1">
                   <CardTitle className="text-sm">{alert.title}</CardTitle>
                 </div>
-                <Badge variant={styles.badge} className="text-[10px] uppercase">
-                  {alert.severity}
-                </Badge>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <Badge variant={styles.badge} className="text-[10px] uppercase">
+                    {alert.severity}
+                  </Badge>
+                  <Badge
+                    variant={alert.origin === "live" ? "default" : "outline"}
+                    className="text-[10px] uppercase"
+                  >
+                    {originLabel}
+                  </Badge>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed text-secondary">{alert.message}</p>
+                <p className="text-sm leading-relaxed text-secondary">{alert.body}</p>
+                {alert.origin === "live" && alert.url && (
+                  <a
+                    href={alert.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>
+                      Source: {alert.source}
+                      {clock ? ` · ${clock}` : ""}
+                      {published ? ` · published ${published}` : ""}
+                    </span>
+                  </a>
+                )}
               </CardContent>
             </Card>
           );
