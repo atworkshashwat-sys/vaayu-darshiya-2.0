@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BestTime } from "./BestTime";
+import { renderWithProvider } from "./renderWithProvider";
 import type { WeatherSlot } from "./contextApi";
 import type { CityForecast } from "./data";
 
@@ -73,7 +74,7 @@ describe("BestTime", () => {
   it("adds the live forecast beside the ML windows and explains the downgrade", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => okPayload }));
 
-    render(<BestTime forecast={forecast} />);
+    renderWithProvider(<BestTime forecast={forecast} />);
 
     // ML numbers untouched
     expect(screen.getAllByText("NO₂: 45").length).toBe(5);
@@ -106,7 +107,7 @@ describe("BestTime", () => {
   it("keeps the ML windows unchanged when the context fetch fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
 
-    render(<BestTime forecast={forecast} />);
+    renderWithProvider(<BestTime forecast={forecast} />);
 
     expect(
       await screen.findByText(/Live forecast unavailable — showing ML windows unchanged\./),
@@ -133,7 +134,7 @@ describe("BestTime", () => {
       }),
     );
 
-    render(<BestTime forecast={forecast} />);
+    renderWithProvider(<BestTime forecast={forecast} />);
 
     expect(await screen.findByText(/Forecast last updated 30m ago/)).toBeInTheDocument();
     // stale data is still shown, with its source
@@ -167,7 +168,7 @@ describe("BestTime", () => {
       }),
     );
 
-    render(<BestTime forecast={forecast} />);
+    renderWithProvider(<BestTime forecast={forecast} />);
 
     expect(
       await screen.findByText(/Live forecast unavailable — showing ML windows unchanged\./),

@@ -168,10 +168,22 @@ def connect():
         if _conn is not None:
             return _conn
         os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
-        _conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        # `isolation_level=None` puts SQLite in autocommit, so no implicit
+        # transaction can be left open by an abandoned cursor. This matters
+        # because the connection is shared across threads: a write left open
+        # by the scheduler would otherwise block every reader - including
+        # /api/status - for as long as it stayed open, with no error to
+        # explain the hang.
+        #
+        # `busy_timeout` turns any residual contention into a fast, reportable
+        # "database is locked" instead of an indefinite stall. A monitoring
+        # endpoint that hangs is worse than one that says it is busy.
+        _conn = sqlite3.connect(DB_PATH, check_same_thread=False,
+                                isolation_level=None, timeout=5.0)
         _conn.row_factory = sqlite3.Row
         _conn.execute("PRAGMA journal_mode=WAL")
         _conn.execute("PRAGMA synchronous=NORMAL")
+        _conn.execute("PRAGMA busy_timeout=5000")
         _conn.executescript(_SCHEMA)
         for statement in MIGRATIONS:
             try:

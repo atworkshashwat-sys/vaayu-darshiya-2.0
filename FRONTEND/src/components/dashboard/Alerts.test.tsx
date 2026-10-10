@@ -1,7 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AlertTriangle, Info, ShieldAlert } from "lucide-react";
 import { Alerts } from "./Alerts";
+import { renderWithProvider } from "./renderWithProvider";
 import { mergeAlerts, titleOverlaps } from "./alertMerge";
 import type { Alert } from "./alertMerge";
 import type { ContextAlert } from "./contextApi";
@@ -57,7 +58,7 @@ describe("Alerts", () => {
   it("shows official advisories above model alerts with source labels", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => okPayload }));
 
-    render(<Alerts forecast={forecast} />);
+    renderWithProvider(<Alerts forecast={forecast} />);
 
     // live cards render
     expect(
@@ -96,7 +97,7 @@ describe("Alerts", () => {
   it("keeps model alerts and shows a muted status when the context fetch fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
 
-    render(<Alerts forecast={forecast} />);
+    renderWithProvider(<Alerts forecast={forecast} />);
 
     expect(await screen.findByText("Morning Rush Hour Impact")).toBeInTheDocument();
     expect(
@@ -123,7 +124,7 @@ describe("Alerts", () => {
       }),
     );
 
-    render(<Alerts forecast={forecast} />);
+    renderWithProvider(<Alerts forecast={forecast} />);
 
     expect(
       await screen.findByText("CAQM imposes GRAP Stage 3 restrictions in Delhi NCR"),
@@ -151,7 +152,7 @@ describe("Alerts", () => {
       }),
     );
 
-    render(<Alerts forecast={forecast} />);
+    renderWithProvider(<Alerts forecast={forecast} />);
 
     expect(await screen.findByText(/TINYFISH_API_KEY is not set/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Source:/ })).not.toBeInTheDocument();
