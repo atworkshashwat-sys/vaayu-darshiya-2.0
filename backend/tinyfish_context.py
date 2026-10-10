@@ -334,13 +334,13 @@ def severity_of(title, summary):
 
 
 def _looks_like_nav(text):
-    """A run of site links rather than prose: `A * B * C * D`, `x ## y ## z`.
+    """A bullet run of site links rather than prose: `A * B * C * D`.
 
-    News pages often arrive as one enormous first "sentence" — no full stop for
-    hundreds of characters — so the short-line boilerplate test below never
-    fires on it. Without this, a table-of-contents line such as
-    "Edition IN * IN * US Weather Sign In ## TOI Today's ePaper * News * City
-    News" gets quoted verbatim as an alert summary.
+    A news home page delivers its whole table of contents as one enormous
+    first "sentence" — no full stop for hundreds of characters — so the
+    short-line boilerplate test below never fires on it. Without this, a line
+    such as "Edition IN * IN * US Weather Sign In ## TOI Today's ePaper *
+    News * City News" gets quoted verbatim as an alert summary.
     """
     return text.count(" * ") + text.count("##") >= 3
 

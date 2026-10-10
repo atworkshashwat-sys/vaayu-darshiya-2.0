@@ -121,6 +121,76 @@ export interface ScoreBlock {
   bias: number | null;
 }
 
+// ── Multi-model ensemble (surgical addition) ─────────────────────────────
+export type ModelName = "XGBoost" | "RandomForest" | "LightGBM" | "LSTM" | "Ridge";
+export type DataSourceLabel = "live" | "static" | "static (fallback)";
+
+export interface ModelHorizonRow {
+  horizon: number;
+  r2: number | null;
+  mae: number | null;
+  rmse: number | null;
+  n: number;
+}
+
+export interface ModelBlock {
+  name: ModelName;
+  available: boolean;
+  active: boolean;
+  rolling_rmse: number | null;
+  rolling_by_target: Partial<Record<"NO2" | "O3" | "HCHO", number | null>>;
+  reason: string;
+  strongest_horizons: Partial<Record<"NO2" | "O3" | "HCHO", number[]>>;
+  per_target: Partial<
+    Record<"NO2" | "O3" | "HCHO", { all: { r2: number | null; mae: number | null; rmse: number | null; n: number } }>
+  >;
+  horizon_metrics: Partial<Record<"NO2" | "O3" | "HCHO", ModelHorizonRow[]>>;
+}
+
+export interface ModelsData {
+  active_model: ModelName;
+  active_reason: string;
+  override: ModelName | null;
+  data_source: DataSourceLabel;
+  data_source_detail: string;
+  models: ModelBlock[];
+  available_models: ModelName[];
+  rolling_window_days: number;
+  fallback_rules: { missing_features_threshold: number; min_features_ridge: number };
+}
+
+export async function fetchModels(): Promise<ModelsData> {
+  // No static fallback content — an unreachable backend yields `models: []`,
+  // which the UI renders as "ensemble unavailable" rather than fake numbers.
+  return fetchWithFallback<ModelsData>("/api/models", "api/models.json", {
+    active_model: "XGBoost",
+    active_reason: "backend unreachable",
+    override: null,
+    data_source: "static",
+    data_source_detail: "",
+    models: [],
+    available_models: [],
+    rolling_window_days: 7,
+    fallback_rules: { missing_features_threshold: 0.4, min_features_ridge: 3 },
+  });
+}
+
+export async function postModelOverride(
+  model: ModelName | "auto"
+): Promise<{ ok: boolean; active_model?: ModelName; error?: string }> {
+  try {
+    const res = await fetch("/api/models/override", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch {
+    return { ok: false, error: "request failed" };
+  }
+}
+
 export interface DatabaseValidation {
   generated_at: string;
   database: { extract: string; rows: number; min_date: string; max_date: string };

@@ -4,17 +4,30 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart3, TrendingUp, Target, Gauge,
-  CheckCircle2, Layers, Zap, Database
+  CheckCircle2, Layers, Zap, Database, Cpu, Award
 } from "lucide-react";
-import { fetchMetrics, ModelMetricsData } from "./data";
+import { fetchMetrics, fetchModels, postModelOverride, ModelMetricsData, ModelsData, ModelBlock, ModelName } from "./data";
+
+const HORIZON_ROWS = [0, 5, 11, 23]; // t+1, t+6, t+12, t+24 (indices into horizon arrays)
+
+function fmt(v: number | null | undefined, digits = 3): string {
+  return v == null || Number.isNaN(v) ? "—" : v.toFixed(digits);
+}
 
 export function ModelMetrics() {
   const [data, setData] = useState<ModelMetricsData | null>(null);
+  const [models, setModels] = useState<ModelsData | null>(null);
   const [metricTab, setMetricTab] = useState("overview");
 
   useEffect(() => {
     fetchMetrics().then(setData);
+    fetchModels().then(setModels);
   }, []);
+
+  const handleOverride = async (model: ModelName | "auto") => {
+    const res = await postModelOverride(model);
+    if (res.ok) fetchModels().then(setModels);
+  };
 
   if (!data) {
     return (
@@ -139,6 +152,7 @@ export function ModelMetrics() {
       <Tabs value={metricTab} onValueChange={setMetricTab} className="space-y-6">
         <TabsList className="glass">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="models">Models</TabsTrigger>
           <TabsTrigger value="validation">Validation</TabsTrigger>
           <TabsTrigger value="methodology">Methodology</TabsTrigger>
         </TabsList>
@@ -217,6 +231,65 @@ export function ModelMetrics() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ═══════════════ MODELS TAB (multi-model ensemble) ═══════════════ */}
+        <TabsContent value="models" className="space-y-6">
+          {!models || models.models.length === 0 ? (
+            <Card className="glass">
+              <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                Ensemble unavailable — the backend did not return any models.
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Active model + data source + override control */}
+              <Card className="glass">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Cpu className="h-4 w-4 text-secondary" />
+                    Active Model
+                    <Badge className="ml-auto bg-emerald-500/15 text-emerald-400">
+                      {models.active_model}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px]">
+                      Data: {models.data_source}
+                    </Badge>
+                  </CardTitle>
+                  <p className="text-xs text-secondary">
+                    {models.active_reason} · {models.data_source_detail}
+                  </p>
+                </CardHeader>
+                <CardContent className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Manual override:</span>
+                  <select
+                    value={models.override ?? "auto"}
+                    onChange={(e) => handleOverride(e.target.value as ModelName | "auto")}
+                    className="rounded-md border border-border/60 bg-background px-2 py-1 text-xs"
+                  >
+                    <option value="auto">Auto (best rolling RMSE)</option>
+                    {models.models
+                      .filter((mm) => mm.available)
+                      .map((mm) => (
+                        <option key={mm.name} value={mm.name}>{mm.name}</option>
+                      ))}
+                  </select>
+                  <span className="text-[10px] text-muted-foreground">
+                    Rolling window: {models.rolling_window_days} days · Fallback: &gt;
+                    {Math.round(models.fallback_rules.missing_features_threshold * 100)}% missing → RF,
+                    &lt;{models.fallback_rules.min_features_ridge} features → Ridge
+                  </span>
+                </CardContent>
+              </Card>
+
+              {/* One card per model */}
+              <div className="grid gap-4 lg:grid-cols-2">
+                {models.models.map((mb) => (
+                  <ModelCard key={mb.name} block={mb} />
+                ))}
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ═══════════════ VALIDATION TAB ═══════════════ */}
@@ -596,5 +669,109 @@ export function ModelMetrics() {
         </TabsContent>
       </Tabs>
     </section>
+  );
+}
+
+const TARGET_COLORS: Record<string, string> = {
+  NO2: "text-emerald-400",
+  O3: "text-sky-400",
+  HCHO: "text-violet-400",
+};
+
+function ModelCard({ block }: { block: ModelBlock }) {
+  const targets = (["NO2", "O3", "HCHO"] as const).filter(
+    (t) => block.per_target[t] || block.horizon_metrics[t]
+  );
+
+  return (
+    <Card className={`glass relative overflow-hidden ${block.active ? "ring-1 ring-emerald-500/50" : ""}`}>
+      {block.active && (
+        <div className="absolute right-3 top-3">
+          <Badge className="bg-emerald-500/15 text-emerald-400">
+            <Award className="mr-1 h-3 w-3" /> ACTIVE
+          </Badge>
+        </div>
+      )}
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Cpu className="h-4 w-4 text-secondary" />
+          {block.name}
+        </CardTitle>
+        <p className="text-xs text-secondary">
+          {block.available
+            ? `Rolling ${7}-day RMSE: ${fmt(block.rolling_rmse, 2)}`
+            : block.reason}
+        </p>
+      </CardHeader>
+      {block.available && (
+        <CardContent className="space-y-4">
+          {/* Per-target headline metrics (t+1h pooled across horizons) */}
+          <div className="grid grid-cols-3 gap-2">
+            {targets.map((t) => {
+              const all = block.per_target[t]?.all;
+              return (
+                <div key={t} className="rounded-lg bg-muted/30 p-2">
+                  <p className={`text-[10px] font-medium ${TARGET_COLORS[t]}`}>{t}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    R² {fmt(all?.r2)} · RMSE {fmt(all?.rmse, 2)} · MAE {fmt(all?.mae, 2)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Rolling RMSE {fmt(block.rolling_by_target[t], 2)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Strongest horizons */}
+          <div className="space-y-1">
+            {targets.map((t) => {
+              const hs = block.strongest_horizons[t];
+              if (!hs?.length) return null;
+              return (
+                <p key={t} className="text-[10px] text-muted-foreground">
+                  <span className={`font-medium ${TARGET_COLORS[t]}`}>{t}</span> strongest at{" "}
+                  {hs.map((h) => `t+${h + 1}h`).join(", ")}
+                </p>
+              );
+            })}
+          </div>
+
+          {/* Per-horizon table */}
+          {targets.map((t) => {
+            const rows = block.horizon_metrics[t];
+            if (!rows?.length) return null;
+            const shown = HORIZON_ROWS.map((i) => rows[i]).filter(Boolean);
+            return (
+              <div key={t}>
+                <p className={`mb-1 text-[10px] font-semibold ${TARGET_COLORS[t]}`}>{t} per-horizon</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="px-1 py-1 text-left font-medium text-muted-foreground">Horizon</th>
+                        <th className="px-1 py-1 text-right font-medium text-muted-foreground">R²</th>
+                        <th className="px-1 py-1 text-right font-medium text-muted-foreground">RMSE</th>
+                        <th className="px-1 py-1 text-right font-medium text-muted-foreground">MAE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shown.map((r) => (
+                        <tr key={r.horizon} className="border-b border-border/50">
+                          <td className="px-1 py-1">t+{r.horizon + 1}h</td>
+                          <td className="px-1 py-1 text-right font-mono">{fmt(r.r2)}</td>
+                          <td className="px-1 py-1 text-right font-mono">{fmt(r.rmse, 2)}</td>
+                          <td className="px-1 py-1 text-right font-mono">{fmt(r.mae, 2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      )}
+    </Card>
   );
 }

@@ -44,9 +44,9 @@ console.log("  wrote 01-dashboard-live.png");
 // The status pill the SSE hook writes — proof the browser is on the stream.
 const bodyText = await page.evaluate(() => document.body.innerText);
 const signals = {
-  "SSE live pill": /Live updated/i.test(bodyText),
-  "alerts fetched (not still checking)": /Live advisories retrieved at/i.test(bodyText),
-  "best-time panel": /Best Time To Go Outside/i.test(bodyText),
+  "SSE live pill": /Live · updated/i.test(bodyText),
+  "live advisories rendered": /OFFICIAL/i.test(bodyText),
+  "best-time panel": /IMD forecast retrieved at/i.test(bodyText),
 };
 for (const [label, hit] of Object.entries(signals)) {
   console.log(`  ${hit ? "✓" : "✗"} ${label}`);
@@ -60,8 +60,15 @@ if (await caseTab.count()) {
   await page.screenshot({ path: path.join(outDir, "02-case-study-live.png"), fullPage: true });
   console.log("  wrote 02-case-study-live.png");
   const caseText = await page.evaluate(() => document.body.innerText);
-  console.log(`  ${/Live from official sources/i.test(caseText) ? "✓" : "✗"} case-study figures`);
-  console.log(`  ${/Latest Delhi air quality report/i.test(caseText) ? "✓" : "✗"} case-study report strip`);
+  // Figures are shown only when a source states them; a figure no source
+  // states is absent rather than estimated, so the check reports presence
+  // without failing the run when the sources are silent.
+  console.log(
+    `  ${/Live from official sources/i.test(caseText) ? "✓" : "·"} case-study figures (absent is valid)`,
+  );
+  console.log(
+    `  ${/Latest Delhi air quality report/i.test(caseText) ? "✓" : "✗"} case-study report strip`,
+  );
 }
 
 if (errors.length) {

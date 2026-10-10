@@ -24,13 +24,20 @@ import os
 import json
 import math
 import joblib
+import logging
 import numpy as np
 import pandas as pd
 from datetime import datetime as _dt
+from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 import database
+
+# Multi-model ensemble + live/static source detection (surgical additions).
+import ensemble
+import data_source
 
 # AI Insights live research (TinyFish) — isolated router, see ai_insights.py.
 from ai_insights import router as ai_insights_router
@@ -345,6 +352,45 @@ for _label, _tgt in RESULT_TARGETS:
 
 print("Ready — all data cached.")
 
+# ── Multi-model ensemble (surgical addition) ─────────────────────────────
+# Loads metrics + rolling-7-day RMSE for all five models, and computes which
+# one is active. Defensive: a failure here must never block the server — XGBoost
+# (always present) remains the fallback and the app behaves as before.
+MODEL_REGISTRY = {}
+_active_model = ensemble.XGBOOST_LABEL
+_active_reason = "XGBoost default"
+_override_model = None          # sticky manual override from POST /api/models/override
+_ds_report = data_source.DataSourceReport(source="static", is_live=False,
+                                          detail="not evaluated yet")
+
+try:
+    MODEL_REGISTRY = ensemble.build_registry()
+    _active_model, _active_reason = ensemble.select_active(MODEL_REGISTRY)
+    print(f"Ensemble ready — active model: {_active_model} ({_active_reason})")
+except Exception as exc:                                   # noqa: BLE001
+    print(f"  Ensemble unavailable ({exc}) — serving XGBoost only")
+    MODEL_REGISTRY = {}
+
+
+def current_model_state(feature_row=None):
+    """Recompute the active model + data source for one prediction run.
+
+    Returns (model_name, reason, DataSourceReport). Honours a manual override
+    and applies the fallback rules (<3 features → Ridge, >40% missing → RF).
+    """
+    global _active_model, _active_reason, _ds_report
+    _ds_report = data_source.detect(feature_row)
+
+    if not MODEL_REGISTRY:
+        _active_model, _active_reason = ensemble.XGBOOST_LABEL, "ensemble unavailable"
+        return _active_model, _active_reason, _ds_report
+
+    available, missing_frac = ensemble.feature_availability(feature_row)
+    _active_model, _active_reason = ensemble.select_active(
+        MODEL_REGISTRY, available_features=available,
+        missing_fraction=missing_frac, override=_override_model)
+    return _active_model, _active_reason, _ds_report
+
 
 app = FastAPI(title="Vaayu Darshiya API", version="1.0.0")
 
@@ -456,12 +502,22 @@ def get_forecast(site: int = 1):
         (r for r in live_data.station_payload() if r["site_id"] == site), None)
     live_no2 = (live_row or {}).get("live", {}).get("NO2")
 
+    # Which model + data source drove this run (surgical addition).
+    model_name, model_reason, ds = current_model_state()
+    logging.getLogger("vaayu.api").info(
+        "forecast site=%s active_model=%s (%s) data_source=%s",
+        site, model_name, model_reason, ds.label)
+
     return {
         **fc,
         "current_hour": _dt.now().hour,
         "anchor_time": anchor_str,
         "forecast_basis": forecast_basis,
         "forecast_kind": "ML forecast",
+        "active_model": model_name,
+        "active_model_reason": model_reason,
+        "data_source": ds.label,
+        "data_source_detail": ds.detail,
         "display_offset": (
             {"pollutant": "NO2", "live_value": live_no2, "unit": "ppb",
              "note": "display-only offset; model output is unchanged"}
@@ -565,3 +621,76 @@ def get_metrics():
             "features": 199,
         },
     }
+
+
+# ── Multi-model ensemble endpoints (surgical addition) ───────────────────
+def _serialize_model(name, info):
+    """One model's block for GET /api/models."""
+    return {
+        "name": name,
+        "available": info.available,
+        "active": name == _active_model,
+        "rolling_rmse": info.rolling_rmse,
+        "rolling_by_target": info.rolling_by_target,
+        "reason": info.reason,
+        "strongest_horizons": info.strongest_horizons,
+        "per_target": {
+            tgt: {k: {"r2": s.r2, "mae": s.mae, "rmse": s.rmse, "n": s.n}
+                  for k, s in blocks.items()}
+            for tgt, blocks in info.per_target.items()
+        },
+        "horizon_metrics": info.horizon_metrics,
+    }
+
+
+@app.get("/api/models")
+def get_models():
+    """Per-model metrics, rolling 7-day RMSE, and which model is active.
+
+    Powers the Model Details "Models" section and the status badge. Degrades
+    gracefully: with no ensemble artefacts it reports XGBoost as the only
+    available model.
+    """
+    model_name, reason, ds = current_model_state()
+    models = [_serialize_model(n, MODEL_REGISTRY[n])
+              for n in ensemble.MODEL_ORDER if n in MODEL_REGISTRY]
+    return {
+        "active_model": model_name,
+        "active_reason": reason,
+        "override": _override_model,
+        "data_source": ds.label,
+        "data_source_detail": ds.detail,
+        "models": models,
+        "available_models": [m["name"] for m in models if m["available"]],
+        "rolling_window_days": ensemble.ROLLING_WINDOW_DAYS,
+        "fallback_rules": {
+            "missing_features_threshold": ensemble.MISSING_FEATURE_FALLBACK_THRESHOLD,
+            "min_features_ridge": ensemble.MIN_FEATURES_RIDGE,
+        },
+    }
+
+
+class OverrideRequest(BaseModel):
+    model: Optional[str] = None    # None / "auto" clears the override
+
+
+@app.post("/api/models/override")
+def set_model_override(req: OverrideRequest):
+    """Manually pin the active model, or clear the override (auto-select)."""
+    global _override_model, _active_model, _active_reason
+    requested = (req.model or "").strip()
+    if requested.lower() in ("", "auto", "none"):
+        _override_model = None
+    else:
+        if requested not in ensemble.MODEL_ORDER:
+            return {"ok": False, "error": f"unknown model '{requested}'",
+                    "allowed": ensemble.MODEL_ORDER}
+        if MODEL_REGISTRY and not MODEL_REGISTRY.get(requested, ensemble.ModelInfo(requested)).available:
+            return {"ok": False, "error": f"model '{requested}' has no artefacts yet"}
+        _override_model = requested
+    model_name, reason, ds = current_model_state()
+    logging.getLogger("vaayu.api").info(
+        "override set to %s -> active_model=%s (%s)", _override_model, model_name, reason)
+    return {"ok": True, "override": _override_model,
+            "active_model": model_name, "active_reason": reason,
+            "data_source": ds.label}

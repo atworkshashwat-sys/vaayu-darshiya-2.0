@@ -983,12 +983,21 @@ def _visibility(text, rain):
 
 
 # ── Job D: Delhi case-study stats (refresh once) ───────────────────────────
-# Candidate pages per Fetch call. The batch ceiling is a *time* budget, not
-# just the documented 10-URL cap: nine live-fetched CPCB pages in one call came
-# back HTTP 504 with nothing at all, so each call carries one candidate per
-# figure. Three figures still cost three calls instead of the sixteen a fetch
-# per candidate used to.
-CASE_FETCH_BATCH = 3
+# Job D's page read. These are annual and daily figures, so a page fetched an
+# hour ago is the same page: a positive ttl lets TinyFish answer from its own
+# cache instead of re-crawling a CPCB origin that routinely takes minutes and
+# answers HTTP 504. The timeout is deliberately well under the batch default —
+# a figure the fetch cannot read in time falls back to its search snippet.
+CASE_FETCH_TTL = 3600
+CASE_FETCH_TIMEOUT = 90.0
+
+# Job D's free-text figure is labelled "Latest Delhi air quality report", so
+# it has to be about the air. A site menu that happens to end on a monitoring
+# station — "home Here map mask faq search contact diy Mother Dairy Plant,
+# Parparganj, Delhi" — is not a report, and storing it would render a site's
+# navigation as one. Nothing here invents a value; it only refuses one.
+CASE_AIR_TERMS = ("aqi", "pm2.5", "pm 2.5", "pm10", "air quality", "pollution",
+                  "smog", "particulate", "no2", "ozone")
 
 # `value` is text because a figure may be a number with a unit or a short
 # quoted sentence — and because a source that never states it leaves it absent
@@ -1008,16 +1017,37 @@ CASE_STATS = [
 ]
 
 
+def _case_value(stat, text, title=""):
+    """The figure `text` states for `stat`, or None — never a guess.
+
+    A figure the source does not state is absent from the panel rather than
+    estimated, which is the whole point of the two free-text gates below: page
+    chrome states nothing citable, and a strip that never mentions the air is
+    a site menu rather than a report.
+    """
+    if stat["pattern"]:
+        match = re.search(stat["pattern"], _normalise(text))
+        return match.group(1) if match else None
+    summary = tinyfish_context.summarize(text, limit=280)
+    if not summary or not tinyfish_context.is_useful(
+            tinyfish_context.sanitize(title, limit=160), summary):
+        return None
+    if not any(term in summary.lower() for term in CASE_AIR_TERMS):
+        return None
+    return summary
+
+
 def refresh_case_study(force=False):
     """Job D — the figures behind "Delhi's Drastic Case", each with a source
     and an "as of" date. Values the sources do not state are simply absent.
 
-    Candidates are read in small batches rather than one Fetch per page
-    (spec §5). Reading them one at a time cost up to 19 calls and — with each
-    Fetch allowed 90 s and several candidates timing out — over six minutes,
-    for three reference figures that refresh once a day. A single batch of all
-    nine instead came back HTTP 504 with nothing at all, so the pages travel
-    a figure at a time and one slow figure cannot fail the other two.
+    Each figure's best candidate is read in ONE small call (spec §5). Reading
+    every candidate one page at a time cost up to 19 calls and — with each
+    Fetch allowed 90 s against an origin that routinely takes minutes — over
+    six minutes for three reference figures that refresh once a day. A single
+    call also keeps one slow figure from delaying the other two, and a figure
+    the fetch cannot read in time simply falls back to its search snippet,
+    which is where a rejected fetch landed the figures that did get stored.
     """
     fetched_at = _iso()
     stored, sources = [], []
@@ -1049,32 +1079,29 @@ def refresh_case_study(force=False):
             seen.add(url)
             wanted.append((stat, result))
             per_stat += 1
-            if per_stat >= 3:              # 3 figures × 3 ≤ the 10-URL batch cap
+            if per_stat >= 3:   # the rest are reachable through their snippets
                 break
 
-    # 2. Round 1 reads the first candidate of every figure, round 2 the second
-    #    and so on — a figure is never starved behind another's long tail, and
-    #    each call stays small enough to be answered. Joined by URL, never by
-    #    position: the response lists only the URLs that succeeded, so a
-    #    positional zip would attribute one figure's page to another's link the
-    #    moment a single fetch failed. Nothing to read means no call at all —
-    #    even a zero-URL batch would be billed against the cap.
+    # 2. One call reads the best candidate of each figure — three URLs, never
+    #    a growing batch. Joined by URL, never by position: the response lists
+    #    only the URLs that succeeded, so a positional zip would attribute one
+    #    figure's page to another's link the moment a single fetch failed.
+    #    Nothing to read means no call at all — even a zero-URL batch would be
+    #    billed against the cap.
     by_stat = {}
     for pair in wanted:
         by_stat.setdefault(pair[0]["key"], []).append(pair)
     pages = {}
-    for index in range(3):
-        chunk = [pairs[index] for pairs in by_stat.values()
-                 if index < len(pairs)]
-        if not chunk:
-            break
+    best = [pairs[0] for pairs in by_stat.values()]
+    if best:
         try:
             batch = tinyfish_service.fetch_many(
-                [result["url"] for _stat, result in chunk], ttl=0,
+                [result["url"] for _stat, result in best],
+                ttl=CASE_FETCH_TTL, timeout=CASE_FETCH_TIMEOUT,
                 purpose=CASE_STATS[0]["label"])
         except tinyfish_service.TinyFishError:
-            continue                 # that round's snippets still stand
-        for page in batch.get("results") or []:
+            batch = {}                   # every figure falls back to its snippet
+        for page in (batch or {}).get("results") or []:
             if isinstance(page, dict) and page.get("url"):
                 pages.setdefault(str(page["url"]).strip(), page)
 
@@ -1085,8 +1112,8 @@ def refresh_case_study(force=False):
         if stat["key"] in done:
             continue
         url = result["url"]
-        text = result.get("snippet", "")
         page = pages.get(url)
+        page_text = ""
         if page:
             # Adopt the redirect only when it stays on an allowlisted source.
             # Fetch followed one CPCB page to its bare IP, and quoting that IP
@@ -1094,20 +1121,19 @@ def refresh_case_study(force=False):
             final = str(page.get("final_url") or "").strip()
             if final and tinyfish_context.is_allowed(final):
                 url = final
-            text = tinyfish_service.excerpt(page.get("text"), 4000) or text
-        if stat["pattern"]:
-            match = re.search(stat["pattern"], _normalise(text))
-            if not match:
-                continue
-            value = match.group(1)
-        else:
-            summary = tinyfish_context.summarize(text, limit=280)
-            title = tinyfish_context.sanitize(result.get("title", ""), limit=160)
-            # A summary made of page chrome states nothing citable, so the
-            # figure is dropped instead of being shown as an official report.
-            if not summary or not tinyfish_context.is_useful(title, summary):
-                continue
-            value = summary
+            page_text = tinyfish_service.excerpt(page.get("text"), 4000)
+        # The fetched page is the better source, but a page that opens with its
+        # site menu has nothing citable in it while its search snippet does —
+        # AQICN's Delhi page is a menu ending on a station name, yet its
+        # snippet is the reading itself. Page first, snippet second.
+        value = None
+        for text in (page_text, result.get("snippet", "")):
+            if text:
+                value = _case_value(stat, text, result.get("title", ""))
+                if value is not None:
+                    break
+        if value is None:
+            continue
         source_name, _ = tinyfish_context.source_for(url)
         stored.append({
             "stat_key": stat["key"], "label": stat["label"],

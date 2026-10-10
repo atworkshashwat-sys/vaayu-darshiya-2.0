@@ -795,6 +795,14 @@ class CaseStudyTests(unittest.TestCase):
         "published_date": "2026-10-09",
         "text": "The Commission was constituted to address air quality in NCR.",
     }
+    # What AQICN's city page actually opens with: a menu, then a station name.
+    MENU = {
+        "url": "https://aqicn.org/city/delhi/",
+        "title": "Delhi, India: Real-time Air Quality Index (AQI)",
+        "published_date": "2026-10-09",
+        "text": "home Here map mask faq search contact diy Mother Dairy Plant, "
+                "Parparganj, Delhi R.k.",
+    }
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -846,12 +854,12 @@ class CaseStudyTests(unittest.TestCase):
             searches=[[self.HOME], [self.HOME], [self.HOME]], pages=[self.HOME])
         batch.assert_not_called()
 
-    def test_a_call_never_carries_more_than_one_candidate_per_figure(self):
-        """Nine live-fetched CPCB pages in one call came back HTTP 504.
+    def test_a_second_candidate_is_never_fetched(self):
+        """One call, one URL per figure — not a batch that grows with results.
 
-        The batch ceiling is a time budget as much as a URL count, so round 1
-        asks for each figure's best candidate and only an unanswered figure
-        asks for a second round. One slow figure cannot fail the other two.
+        Nine live-fetched CPCB pages in a single call came back HTTP 504 with
+        nothing at all, and a figure whose best candidate says nothing is
+        answered by that candidate's search snippet rather than another crawl.
         """
         extra = {**self.ANNUAL,
                  "url": "https://cpcb.nic.in/reports/delhi-pm25-detail",
@@ -860,26 +868,91 @@ class CaseStudyTests(unittest.TestCase):
             searches=[[self.ANNUAL, extra], [self.WINTER], [self.CHROME]],
             pages=[self.ANNUAL, extra, self.WINTER, self.CHROME])
 
-        self.assertEqual(batch.call_count, 2)              # round 1, then 2
-        for call in batch.call_args_list:
-            self.assertLessEqual(len(call.args[0]),
-                                 live_data.CASE_FETCH_BATCH)
-        self.assertEqual(list(batch.call_args_list[0].args[0]),
+        self.assertEqual(batch.call_count, 1)
+        self.assertEqual(list(batch.call_args.args[0]),
                          [self.ANNUAL["url"], self.WINTER["url"],
                           self.CHROME["url"]])
-        self.assertEqual(list(batch.call_args_list[1].args[0]), [extra["url"]])
 
         # The first candidate already answered the figure, so its second was
-        # read but never needed — and a figure that round 1 settled is settled.
+        # never needed — and the figures are the first candidate's.
         self.assertEqual([s["stat_key"] for s in data["stats"]],
                          ["annual_pm25", "winter_aqi"])
         self.assertEqual(data["stats"][0]["value"], "118")
+
+    def test_job_d_reads_from_cache_with_a_short_timeout(self):
+        """These are annual and daily figures: an hour-old page is the same page.
+
+        A positive TTL lets TinyFish answer from its own cache instead of
+        re-crawling an origin that routinely takes minutes, and the timeout
+        stays well under the batch default so a stuck fetch cannot hold the
+        daily refresh open for six minutes.
+        """
+        _data, _search, batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [self.CHROME]],
+            pages=[self.ANNUAL, self.WINTER, self.CHROME])
+
+        self.assertEqual(batch.call_args.kwargs["ttl"], live_data.CASE_FETCH_TTL)
+        self.assertEqual(batch.call_args.kwargs["timeout"],
+                         live_data.CASE_FETCH_TIMEOUT)
+        self.assertLess(batch.call_args.kwargs["timeout"],
+                        tinyfish_service_stub().FETCH_BATCH_TIMEOUT)
 
     # ── quality of what gets stored ──────────────────────────────────────
     def test_a_site_homepage_is_never_used_as_a_figure(self):
         data, _search, _batch = self._refresh(
             searches=[[self.HOME], [self.HOME], [self.HOME]], pages=[self.HOME])
         self.assertEqual(data["stats"], [])
+
+    def test_the_free_text_figure_must_be_about_the_air(self):
+        """AQICN's city page opens with a menu that ends on a station name.
+
+        `is_useful` accepts it — it does state something, however little — so
+        job D additionally requires the strip to be about the air. Storing it
+        rendered a site's navigation as "the latest Delhi air quality report".
+        """
+        data, _search, _batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [self.MENU]],
+            pages=[self.ANNUAL, self.WINTER, self.MENU])
+
+        self.assertEqual([s["stat_key"] for s in data["stats"]],
+                         ["annual_pm25", "winter_aqi"])
+
+    def test_a_real_air_quality_line_is_kept(self):
+        """The same page's own reading passes every gate."""
+        strip = {**self.MENU,
+                 "text": "Real-time Air Quality Index (AQI). 159 Unhealthy. "
+                         "Updated on Saturday 19:00."}
+        data, _search, _batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [strip]],
+            pages=[self.ANNUAL, self.WINTER, strip])
+
+        stored = {s["stat_key"]: s for s in data["stats"]}
+        self.assertIn("news_strip", stored)
+        self.assertIn("Air Quality", stored["news_strip"]["value"])
+        self.assertEqual(stored["news_strip"]["source"], "WAQI")
+
+    def test_a_menu_page_falls_back_to_its_search_snippet(self):
+        """AQICN's Delhi page opens with a menu; its snippet is the reading.
+
+        The fetched page is the better source, but there is nothing citable in
+        a navigation bar — so the figure comes from the snippet and is still
+        cited at the page that was actually read.
+        """
+        reading = ("Real-time Air Quality Index (AQI) 159 Unhealthy for Delhi. "
+                   "Updated on Saturday 19:00.")
+        result = {**self.MENU, "snippet": reading}
+
+        data, _search, _batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [result]],
+            pages=[self.ANNUAL, self.WINTER, self.MENU])
+
+        stored = {s["stat_key"]: s for s in data["stats"]}
+        self.assertIn("news_strip", stored)
+        self.assertEqual(
+            stored["news_strip"]["value"],
+            "Real-time Air Quality Index (AQI) 159 Unhealthy for Delhi.")
+        self.assertEqual(stored["news_strip"]["url"], self.MENU["url"])
+        self.assertEqual(stored["news_strip"]["source"], "WAQI")
 
     def test_a_summary_made_of_page_chrome_is_rejected_and_purged(self):
         # An earlier refresh stored a "report" that is really a widget bar.

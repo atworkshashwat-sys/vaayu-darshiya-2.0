@@ -7,6 +7,7 @@ import {
   Alerts, ModelMetrics, BestTime, HchoPanel, Footer, DataExport, CaseStudy, TIMES, FORECAST, formatTime,
 } from "./dashboard/index";
 import { Navbar } from "./dashboard/Navbar";
+import { ModelStatusBadge } from "./dashboard/ModelStatusBadge";
 import { fetchForecast, fetchStations, fetchTime, fetchWeeklyTrend, fetchLiveStatus, CityForecast, StationData, WeeklyTrend } from "./dashboard/data";
 import { useLiveStream } from "./dashboard/useLiveStream";
 
@@ -235,6 +236,7 @@ export default function Dashboard() {
                 {closedMessage}
               </span>
             )}
+            <ModelStatusBadge />
             <span className="text-xs text-muted-foreground">
               Showing: <span className="font-mono font-semibold text-foreground">{formatTime(timeIdx, currentMinute)}</span>
             </span>

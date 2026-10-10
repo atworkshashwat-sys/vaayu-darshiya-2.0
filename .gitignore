@@ -91,6 +91,9 @@ models/_backup_*/
 data/*.sqlite
 data/*.sqlite-shm
 data/*.sqlite-wal
+backend/*.sqlite
+backend/*.sqlite-shm
+backend/*.sqlite-wal
 *.log
 
 # === One-off investigation scripts ===
