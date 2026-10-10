@@ -525,11 +525,15 @@ def _request(build, call_type, timeout=SEARCH_TIMEOUT):
                 _record(call_type, label, ok=False, error=exc)
                 time.sleep(1.0 if exc.status == 429 else 0.4)
                 try:
-                    payload = build(key)
+                    payload = build(key)          # the single retry
                 except TinyFishError as retry_exc:
                     _record(call_type, label, ok=False, error=retry_exc)
                     raise
-            elif exc.is_key_error:
+                # The retry worked — this key is fine, use the result.
+                _mark_preferred(label)
+                _record(call_type, label, ok=True)
+                return payload, label
+            if exc.is_key_error:
                 # Auth / insufficient balance → the next key may be able to pay.
                 rotated = offset + 1 < len(chain)
                 _record(call_type, label, ok=False, error=exc, rotated=rotated)
@@ -537,13 +541,12 @@ def _request(build, call_type, timeout=SEARCH_TIMEOUT):
                     log.warning("tinyfish key failover %s → %s (%s)",
                                 label, chain[offset + 1][0], exc)
                 continue
-            else:
-                _record(call_type, label, ok=False, error=exc)
-                raise
-        else:
-            _mark_preferred(label)
-            _record(call_type, label, ok=True)
-            return payload, label
+            _record(call_type, label, ok=False, error=exc)
+            raise
+
+        _mark_preferred(label)
+        _record(call_type, label, ok=True)
+        return payload, label
 
     # Every key in the chain was rejected for auth/balance reasons.
     raise last_error if last_error else TinyFishError("all TinyFish keys failed")

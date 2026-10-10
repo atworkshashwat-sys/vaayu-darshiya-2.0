@@ -42,7 +42,9 @@ vaayu_station_data.csv
 vaayu_final_v3.csv
 
 # === Generated from vaayu_final_v3.csv by backend/database.py ===
-data/vaayu_extract_7sites.csv
+# The extract itself IS tracked (23 MB, under GitHub's 100 MB file limit) so a
+# fresh clone can start the backend without the untracked 2.94 GB source above.
+# Only the in-progress .tmp writes stay out.
 data/vaayu_extract_7sites.csv.tmp
 data/vaayu_extract_7sites.csv.*.tmp
 
