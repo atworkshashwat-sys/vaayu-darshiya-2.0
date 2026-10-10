@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ExternalLink, Info, ShieldAlert } from "lucide-react";
@@ -165,22 +165,17 @@ interface AlertsProps {
 
 export function Alerts({ forecast }: AlertsProps) {
   const modelAlerts = generateAlerts(forecast);
-  const [live, setLive] = useState<AlertsContext | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchContextAlerts()
-      .then((data) => {
-        if (!cancelled) setLive(data);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Keyed ["alerts"] so the SSE broadcast has somewhere to land: when the
+  // scheduler finishes job B it invalidates this key and the panel re-reads
+  // the same endpoint it fetched on mount. As a bare useState there was no
+  // handle, so the stream's event reached a component that never looked at it.
+  const { data: live = null, isLoading: loading } = useQuery<AlertsContext | null>({
+    queryKey: ["alerts"],
+    queryFn: () => fetchContextAlerts(),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   const alerts = mergeAlerts(live?.items ?? [], modelAlerts);
 

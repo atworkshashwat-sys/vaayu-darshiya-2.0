@@ -7,7 +7,8 @@ import {
   Alerts, ModelMetrics, BestTime, HchoPanel, Footer, DataExport, CaseStudy, TIMES, FORECAST, formatTime,
 } from "./dashboard/index";
 import { Navbar } from "./dashboard/Navbar";
-import { fetchForecast, fetchStations, fetchTime, fetchWeeklyTrend, CityForecast, StationData, WeeklyTrend } from "./dashboard/data";
+import { fetchForecast, fetchStations, fetchTime, fetchWeeklyTrend, fetchLiveStatus, CityForecast, StationData, WeeklyTrend } from "./dashboard/data";
+import { useLiveStream } from "./dashboard/useLiveStream";
 
 export interface StationInfo {
   name: string;
@@ -21,9 +22,24 @@ function formatDate(dateStr: string): string {
 }
 
 function formatShortDate(dateStr: string): string {
+  // Date-only string: pin to local midnight so the day cannot shift by one
+  // when the visitor's timezone is behind UTC.
   const d = new Date(dateStr + "T00:00:00");
   if (Number.isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** "19:24" — the backend stamps every reading in IST, so render in IST
+ *  rather than the visitor's timezone or the time would disagree with
+ *  the "observed at" text shown on the station cards. */
+function formatIst(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Kolkata",
+  });
 }
 
 export default function Dashboard() {
@@ -57,6 +73,17 @@ export default function Dashboard() {
     queryFn: () => fetchWeeklyTrend(selectedSite),
     staleTime: 60_000,
   });
+
+  const { data: liveStatus } = useQuery({
+    queryKey: ["liveStatus"],
+    queryFn: fetchLiveStatus,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  // One SSE connection for the whole dashboard: each validated refresh is
+  // written straight into the query cache, so cards move without a reload.
+  const live = useLiveStream();
 
   useEffect(() => {
     if (timeData) {
@@ -109,6 +136,58 @@ export default function Dashboard() {
     ? { aqi: resolvedForecast.aqi[timeIdx], no2: resolvedForecast.no2[timeIdx], o3: resolvedForecast.o3[timeIdx] }
     : FORECAST[TIMES[timeIdx]];
 
+  // Live-layer state (spec §6). The dot must reflect the real stream, and an
+  // expired 24 h window says so explicitly — a green dot next to data that
+  // stopped arriving is exactly what "never present a stale number as live"
+  // is meant to prevent.
+  //
+  // Only a backend that actually answered with `expired: true` closes the
+  // banner: an unreachable server is not the same as a finished window, and
+  // claiming the latter would be a statement we cannot back.
+  const windowClosed = Boolean(liveStatus?.expired);
+  const streamLabel =
+    live.status === "live"
+      ? "Live"
+      : live.status === "polling"
+        ? "Polling"
+        : live.status === "connecting"
+          ? "Connecting…"
+          : "Offline";
+  const streamDot =
+    live.status === "live"
+      ? "bg-emerald-500 animate-pulse"
+      : live.status === "polling"
+        ? "bg-amber-500"
+        : live.status === "connecting"
+          ? "bg-slate-400 animate-pulse"
+          : "bg-slate-500";
+  const closedMessage = windowClosed ? liveStatus?.message ?? "Live context ended" : null;
+
+  // Data freshness, derived from the readings actually received. Station 3
+  // reports "offline" permanently (it stopped in 2023), so it is excluded from
+  // the count — otherwise every refresh would look stale.
+  const liveCount = apiStations.filter((s) => s.status === "live").length;
+  const staleCount = apiStations.filter((s) => s.status === "stale").length;
+  const newestObserved = apiStations
+    .map((s) => s.observedAt)
+    .filter(Boolean)
+    .sort()
+    .pop();
+  const freshness: "live" | "stale" | "none" = windowClosed
+    ? "none"
+    : liveCount > 0
+      ? "live"
+      : staleCount > 0
+        ? "stale"
+        : "none";
+  const freshnessLabel = windowClosed
+    ? "Live context ended"
+    : freshness === "live"
+      ? `Live · updated ${newestObserved ? formatIst(newestObserved) : ""}`
+      : freshness === "stale"
+        ? "Stale · showing last reading"
+        : "No live readings yet";
+
   return (
     <main className="min-h-screen">
       <div className="grid-bg" />
@@ -127,17 +206,39 @@ export default function Dashboard() {
       <div className="mx-4 mt-4 md:mx-8">
         <div className="glass flex items-center justify-between rounded-xl px-4 py-2.5">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <div
+              className={`h-2 w-2 rounded-full ${windowClosed ? "bg-slate-500" : streamDot}`}
+              title={closedMessage ?? `SSE ${streamLabel}`}
+            />
             <span className="text-sm font-medium">{formatDate(matchedDate)}</span>
-            {modelRunDate && modelRunDate !== matchedDate && (
-              <span className="rounded-full border border-border/60 bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                Model run · {formatShortDate(modelRunDate)}
+            {/* Spec §8: the header reports the age of the DATA, not the state
+                of the socket. A healthy connection carrying a stale reading
+                must not be allowed to say "Live". */}
+            {!windowClosed && (
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                  freshness === "live"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
+                    : freshness === "stale"
+                      ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
+                      : "border-border/60 bg-muted/50 text-muted-foreground"
+                }`}
+                title={`SSE ${streamLabel}`}
+              >
+                {freshnessLabel}
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">
-            Showing: <span className="font-mono font-semibold text-foreground">{formatTime(timeIdx, currentMinute)}</span>
-          </span>
+          <div className="flex items-center gap-3">
+            {closedMessage && (
+              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                {closedMessage}
+              </span>
+            )}
+            <span className="text-xs text-muted-foreground">
+              Showing: <span className="font-mono font-semibold text-foreground">{formatTime(timeIdx, currentMinute)}</span>
+            </span>
+          </div>
         </div>
       </div>
 

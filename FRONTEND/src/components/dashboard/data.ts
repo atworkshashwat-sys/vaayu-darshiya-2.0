@@ -86,6 +86,31 @@ export interface StationData {
   /** Issue time of the model run behind `no2` / `o3`. */
   modelRunAt?: string;
   site_id?: number;
+  // ── Live layer (spec §3) ────────────────────────────────────────────────
+  // Present only when the store has a current web reading for this site.
+  // `no2` / `o3` above remain ML output: live values live under `live` so a
+  // web-sourced number can never be mistaken for a forecast.
+  live?: {
+    NO2?: number;
+    O3?: number;
+    PM25?: number;
+    AQI?: number;
+    HCHO?: number;
+  };
+  /** Units for each key in `live` (e.g. { NO2: "ppb", AQI: "index" }). */
+  liveUnits?: Record<string, string>;
+  /** "live" | "stale" | "offline" — recomputed from the reading's own age. */
+  status?: "live" | "stale" | "offline";
+  /** Source's own observation time, IST (field `observedAt` above). */
+  source?: string;
+  /** Whole minutes since `observedAt`. */
+  ageMinutes?: number;
+  /** How strongly sources disagreed; >0 means the value is not clean live. */
+  conflict?: number;
+  /** True when the station stopped reporting permanently (e.g. retired 2023). */
+  retired?: boolean;
+  /** Human note for a non-live status, e.g. "Offline — no live source". */
+  statusNote?: string;
 }
 
 export interface ScoreBlock {
@@ -300,6 +325,40 @@ export async function fetchTime(): Promise<TimeData> {
 
 export async function fetchStations(): Promise<StationData[]> {
   return fetchWithFallback<StationData[]>("/api/stations", "api/stations.json", []);
+}
+
+/** Per-source health from `/api/status` — drives the live/expired badge. */
+export interface LiveStatusData {
+  enabled: boolean;
+  active: boolean;
+  expired: boolean;
+  expires_at?: string;
+  remaining_seconds?: number | null;
+  /** "Live context ended - last updated HH: MM IST" once the window closes. */
+  message?: string | null;
+  scheduler_running?: boolean;
+  jobs?: Record<
+    string,
+    {
+      status?: string;
+      last_success_at?: string | null;
+      last_error?: string | null;
+      interval_seconds?: number;
+    }
+  >;
+  tinyfish?: { cap?: number; used?: number; remaining?: number; active_key?: string };
+  server_time?: string;
+}
+
+export async function fetchLiveStatus(): Promise<LiveStatusData> {
+  // No static fallback: an unreachable backend is reported as `active: false`
+  // rather than as a live window that does not exist.
+  return fetchWithFallback<LiveStatusData>("/api/status", "api/status.json", {
+    enabled: false,
+    active: false,
+    expired: false,
+    message: null,
+  });
 }
 
 export async function fetchWeeklyTrend(city: string): Promise<WeeklyTrend> {

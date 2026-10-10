@@ -56,6 +56,28 @@ def fresh():
     ctx._cache.clear()
 
 
+def fake_batch(page_for_url):
+    """Build a `fetch_many()` return value keyed by the URL it came from.
+
+    The real API echoes each requested URL and omits any that failed, so the
+    fake has to do the same: a bare list of page bodies would not exercise the
+    URL join that stops one site's page being attributed to another's link.
+    `page_for_url` returns `None` to simulate a URL the API dropped.
+    """
+    def fetch_many(urls, **kwargs):
+        results = []
+        for url in urls:
+            page = page_for_url(url)
+            if page is not None:
+                results.append({**page, "url": url})
+        return {"results": results, "errors": []}
+    return fetch_many
+
+
+def failing_batch(*args, **kwargs):
+    raise tinyfish_service.TinyFishError("timed out")
+
+
 class HelperTests(unittest.TestCase):
     def test_sanitize_strips_html_and_control_chars(self):
         out = ctx.sanitize("<script>alert(1)</script>Bad value\x00 here", limit=100)
@@ -137,11 +159,12 @@ class RefreshAlertsTests(unittest.TestCase):
         fresh()
 
     def test_success_builds_structured_items(self):
-        def fake_fetch(url, **kwargs):
+        def page_for(url):
             return {**FETCH_RESULT, "url": url, "site_name": ctx._host(url)}
 
         with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fake_fetch):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(page_for)):
             data = ctx.refresh_alerts()
 
         items = data["items"]
@@ -164,8 +187,8 @@ class RefreshAlertsTests(unittest.TestCase):
 
     def test_fetch_failure_falls_back_to_search_snippet(self):
         with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS), \
-                mock.patch.object(tinyfish_service, "fetch_text",
-                                  side_effect=tinyfish_service.TinyFishError("timed out")):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=failing_batch):
             data = ctx.refresh_alerts()
         self.assertTrue(data["items"])
         self.assertIn("Construction activities banned", data["items"][0]["summary"])
@@ -175,12 +198,15 @@ class RefreshAlertsTests(unittest.TestCase):
         self.assertTrue(published is None or re.fullmatch(r"\d{4}-\d{2}-\d{2}", published))
 
     def test_redirect_to_unlisted_host_keeps_original_link(self):
-        def fake_fetch(url, **kwargs):
-            # TinyFish followed a redirect off the allowlisted domain.
-            return {**FETCH_RESULT, "url": "https://evil.example.net/landing"}
+        def page_for(url):
+            # TinyFish followed a redirect off the allowlisted domain: the
+            # request URL is echoed unchanged and the landing page is separate.
+            return {**FETCH_RESULT, "url": url,
+                    "final_url": "https://evil.example.net/landing"}
 
         with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fake_fetch):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(page_for)):
             data = ctx.refresh_alerts()
 
         for item in data["items"]:
@@ -202,7 +228,8 @@ class RefreshAlertsTests(unittest.TestCase):
     def test_malformed_results_do_not_raise(self):
         malformed = [{"title": "no url at all"}, {"url": ""}, None, "string-entry"]
         with mock.patch.object(tinyfish_service, "search", return_value=malformed), \
-                mock.patch.object(tinyfish_service, "fetch_text", return_value={}):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  return_value={"results": [], "errors": []}):
             payload = ctx.get_alerts()
         self.assertEqual(payload["status"], "unavailable")
         self.assertEqual(payload["items"], [])
@@ -226,9 +253,11 @@ class RefreshAlertsTests(unittest.TestCase):
 
     def test_cache_prevents_repeated_tinyfish_calls(self):
         with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS) as search, \
-                mock.patch.object(tinyfish_service, "fetch_text", return_value=FETCH_RESULT) as fetch:
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(lambda _url: FETCH_RESULT)) as batch:
             ctx.get_alerts()
             calls_after_first = search.call_count
+            self.assertEqual(batch.call_count, 1)   # one batch, not one per URL
             ctx.get_alerts()
             self.assertEqual(search.call_count, calls_after_first)  # TTL hit
             ctx.get_alerts(force=True)
@@ -241,7 +270,8 @@ class RefreshAlertsTests(unittest.TestCase):
                                side_effect=[tinyfish_service.TinyFishError("timed out"),
                                             SEARCH_RESULTS, SEARCH_RESULTS,
                                             SEARCH_RESULTS]) as search, \
-                mock.patch.object(tinyfish_service, "fetch_text", return_value=FETCH_RESULT):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(lambda _url: FETCH_RESULT)):
             data = ctx.refresh_alerts()
         self.assertTrue(data["items"])
         self.assertGreaterEqual(search.call_count, 2)  # the retry actually happened
@@ -261,6 +291,25 @@ class RefreshAlertsTests(unittest.TestCase):
             with self.assertRaises(tinyfish_service.TinyFishError):
                 ctx.refresh_alerts()
 
+    def test_every_candidate_page_costs_exactly_one_batched_call(self):
+        """Budget guard (spec §5, §8): job B must fit inside the daily cap.
+
+        Fetching page by page made each refresh 3 searches + up to 5 fetches
+        *with a retry apiece* — ~13 calls every 45 minutes, which is roughly
+        400 on its own. One batch covers every candidate.
+        """
+        with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS), \
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(lambda _u: FETCH_RESULT)) as batch:
+            data = ctx.refresh_alerts()
+
+        self.assertTrue(data["items"])
+        self.assertEqual(batch.call_count, 1)
+        # Every candidate URL is handed to that single call.
+        requested = batch.call_args[0][0]
+        self.assertEqual(len(requested), len(set(requested)))
+        self.assertTrue(all(u.startswith("https://") for u in requested))
+
 
 class ContextEndpointTests(unittest.TestCase):
     def setUp(self):
@@ -274,7 +323,8 @@ class ContextEndpointTests(unittest.TestCase):
 
     def test_alerts_endpoint_returns_envelope(self):
         with mock.patch.object(tinyfish_service, "search", return_value=SEARCH_RESULTS), \
-                mock.patch.object(tinyfish_service, "fetch_text", return_value=FETCH_RESULT):
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(lambda _u: FETCH_RESULT)):
             res = self.client.get("/api/context/alerts")
 
         self.assertEqual(res.status_code, 200)

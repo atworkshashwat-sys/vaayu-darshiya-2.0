@@ -1,10 +1,11 @@
 """
 TinyFish client — the ONLY code path that talks to TinyFish.
 
-Every TinyFish HTTP request in this project (Search, Fetch, Monitor) goes
-through `search()`, `fetch_text()` or `monitors_*()` in this module. Nothing
-else opens a socket to a TinyFish host, so the budget gate, the key failover
-and the call log can never be bypassed.
+Every TinyFish HTTP request in this project (Search, Fetch, Automation,
+Monitor) goes through `search()`, `fetch_text()`, `automate()` or the
+`monitors_*()` functions in this module. Nothing else opens a socket to a
+TinyFish host, so the budget gate, the key failover and the call log can never
+be bypassed.
 
 Environment (backend only — never logged, never sent to the browser):
     TINYFISH_API_KEY_1 / _2 / _3   up to three keys; key_1 is used first
@@ -46,8 +47,14 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 # Tight timeouts: this runs inside request paths and must never hold a UI. A
 # single retry happens inside the wrapper, so the worst case is 2x these.
-SEARCH_TIMEOUT = 6.0
-FETCH_TIMEOUT = 12.0
+SEARCH_TIMEOUT = 30.0
+# TinyFish's own guidance: "Set your client-side timeout to at least 150
+# seconds" for batch requests (110 s per-URL backend budget, 120 s CDN ceiling).
+# The old 12 s cutoff was abandoning pages that were still loading fine — it is
+# what produced the run of `timed out` errors, and each one wasted both a call
+# and 12 s of a job.
+FETCH_TIMEOUT = 90.0
+FETCH_BATCH_TIMEOUT = 150.0        # batch: server may take up to 120 s CDN-wide
 MONITOR_TIMEOUT = 12.0
 
 # Excerpt of the top article, cleaned to plain-ish text for the panel.
@@ -78,6 +85,7 @@ if not log.handlers:
 log.propagate = False
 
 _ENV_LOADED = False
+_ENV_FILE = {}          # name -> value, parsed once from backend/.env
 
 
 class TinyFishError(Exception):
@@ -111,12 +119,19 @@ class TinyFishError(Exception):
 
 
 def _load_env_file():
-    """Read backend/.env (gitignored) once, never overriding real env vars.
+    """Parse backend/.env (gitignored) once into `_ENV_FILE`.
+
+    Values are kept in a module-level dict rather than injected into
+    `os.environ`. Mutating os.environ was fragile: a caller running inside
+    `mock.patch.dict(os.environ, …, clear=True)` would latch the loader while
+    the environment was transiently empty, and the restored environment would
+    then permanently lose the keys. Reading the file into our own dict is
+    stable, and real environment variables still take precedence.
 
     Stdlib-only on purpose: the project carries no python-dotenv dependency.
     Keys are only ever read, never logged.
     """
-    global _ENV_LOADED
+    global _ENV_LOADED, _ENV_FILE
     if _ENV_LOADED:
         return
     _ENV_LOADED = True
@@ -131,10 +146,27 @@ def _load_env_file():
                     continue
                 name, _, value = line.partition("=")
                 name = name.strip()
-                if name and name not in os.environ:
-                    os.environ[name] = value.strip().strip('"').strip("'")
+                if name:
+                    _ENV_FILE[name] = value.strip().strip('"').strip("'")
     except OSError:
         pass  # unreadable .env must never break startup
+
+
+def env(name, default=""):
+    """Real environment variable first, then backend/.env, then `default`.
+
+    An explicitly-set-but-empty variable is treated as unset, so a test can
+    blank a key by exporting "" without having to know about the .env file.
+    """
+    _load_env_file()
+    value = os.environ.get(name)
+    if value is not None and str(value).strip():
+        return str(value).strip()
+    if value is None:
+        file_value = _ENV_FILE.get(name)
+        if file_value and str(file_value).strip():
+            return str(file_value).strip()
+    return default
 
 
 def _truthy(value, default=False):
@@ -155,7 +187,7 @@ def expires_at():
     operator forgets to set TINYFISH_EXPIRES_AT.
     """
     _load_env_file()
-    raw = os.environ.get(EXPIRES_ENV, "").strip()
+    raw = env(EXPIRES_ENV)
     if raw:
         try:
             parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
@@ -171,7 +203,7 @@ def expires_at():
 
 def is_enabled():
     _load_env_file()
-    return _truthy(os.environ.get(ENABLED_ENV), default=True)
+    return _truthy(env(ENABLED_ENV), default=True)
 
 
 def is_expired(now=None):
@@ -190,7 +222,7 @@ def remaining_seconds(now=None):
 def daily_cap():
     _load_env_file()
     try:
-        cap = int(os.environ.get(CAP_ENV, DEFAULT_DAILY_CAP))
+        cap = int(env(CAP_ENV, str(DEFAULT_DAILY_CAP)))
     except (TypeError, ValueError):
         return DEFAULT_DAILY_CAP
     return cap if cap > 0 else DEFAULT_DAILY_CAP
@@ -211,12 +243,12 @@ def configured_keys():
     _load_env_file()
     found = []
     for index, name in enumerate(KEY_ENV_NAMES):
-        value = os.environ.get(name, "").strip()
+        value = env(name)
         if value:
             found.append((f"key_{index + 1}", value))
     if found:
         return found
-    legacy = os.environ.get(LEGACY_KEY_ENV, "").strip()
+    legacy = env(LEGACY_KEY_ENV)
     return [("key_1", legacy)] if legacy else []
 
 
@@ -259,12 +291,42 @@ _call_log = deque(maxlen=USAGE_LOG_LIMIT)
 _monitor_ids = []             # Monitor ids this process created (deleted at expiry)
 _monitor_ids_lock = threading.Lock()
 _usage_sink = None            # optional persistence hook (set by live_store)
+_usage_baseline = None        # optional durable total hook (set by live_store)
 
 
 def set_usage_sink(fn):
     """Register `fn(event_dict)` to persist each call (live_store uses this)."""
     global _usage_sink
     _usage_sink = fn
+
+
+def set_usage_baseline(fn):
+    """Register `fn() -> int`: today's calls from durable storage.
+
+    `_usage` is in-memory and starts empty with every process, so a restart
+    would otherwise reset the budget and hand out a second 400-call allowance
+    for the same day. `calls_used()` takes the larger of the two numbers: the
+    persisted total already includes this process's calls (each one is written
+    through the sink), so the baseline is a floor, never an addition.
+    """
+    global _usage_baseline
+    _usage_baseline = fn
+
+
+def _baseline_total():
+    if _usage_baseline is None:
+        return 0
+    try:
+        return max(0, int(_usage_baseline() or 0))
+    except Exception:                        # pragma: no cover - storage is best effort
+        return 0
+
+
+def usage_day():
+    """The TinyFish allowance window in force (YYYY-MM-DD, resets 00:00 UTC)."""
+    with _usage_lock:
+        _roll_day_locked()
+        return _usage_day
 
 
 def _roll_day_locked():
@@ -280,7 +342,7 @@ def _roll_day_locked():
 def _slot(label):
     _roll_day_locked()
     return _usage.setdefault(label, {
-        "search": 0, "fetch": 0, "monitor": 0, "total": 0,
+        "search": 0, "fetch": 0, "monitor": 0, "automation": 0, "total": 0,
         "errors": 0, "failovers": 0,
         "last_success_at": None, "last_error_at": None, "last_error": None,
     })
@@ -289,7 +351,9 @@ def _slot(label):
 def calls_used():
     with _usage_lock:
         _roll_day_locked()
-        return sum(slot["total"] for slot in _usage.values())
+        total = sum(slot["total"] for slot in _usage.values())
+        # Never let a restart understate the day's spend (see set_usage_baseline).
+        return max(total, _baseline_total())
 
 
 def budget_remaining():
@@ -318,6 +382,9 @@ def _record(call_type, label, ok, error=None, rotated=False):
             "at": now_iso, "type": call_type, "key": label,
             "success": ok, "error": str(error) if error else None,
             "rotated": rotated,
+            # The TinyFish reset day (00:00 UTC), so the persisted total can be
+            # counted against the right allowance window and not the IST date.
+            "day": _usage_day,
         }
         _call_log.append(entry)
         snapshot = dict(slot)
@@ -351,6 +418,7 @@ def usage_snapshot():
                 "search": slot.get("search", 0),
                 "fetch": slot.get("fetch", 0),
                 "monitor": slot.get("monitor", 0),
+                "automation": slot.get("automation", 0),
                 "total": slot.get("total", 0),
                 "errors": slot.get("errors", 0),
                 "failovers": slot.get("failovers", 0),
@@ -358,7 +426,9 @@ def usage_snapshot():
                 "last_error_at": slot.get("last_error_at"),
                 "last_error": slot.get("last_error"),
             })
-        used = sum(s["total"] for s in _usage.values())
+        # The same floor as calls_used(): without it, /api/status would show a
+        # freshly restarted process as having spent nothing today.
+        used = max(sum(s["total"] for s in _usage.values()), _baseline_total())
         cap = daily_cap()
         log_tail = list(_call_log)[-50:]
         day = _usage_day
@@ -663,7 +733,7 @@ def fetch_text(url, timeout=FETCH_TIMEOUT, limit=EXCERPT_CHARS, ttl=None,
     }
 
 
-def fetch_many(urls, timeout=FETCH_TIMEOUT, ttl=None, purpose=None, format_="markdown"):
+def fetch_many(urls, timeout=FETCH_BATCH_TIMEOUT, ttl=None, purpose=None, format_="markdown"):
     """Fetch up to 10 URLs in ONE call (the Fetch API's batch limit).
 
     Returns {"results": [...], "errors": [...]}. One HTTP request = one call
@@ -683,6 +753,56 @@ def fetch_many(urls, timeout=FETCH_TIMEOUT, ttl=None, purpose=None, format_="mar
         "results": [r for r in (payload.get("results") or []) if isinstance(r, dict)],
         "errors": [e for e in (payload.get("errors") or []) if isinstance(e, dict)],
     }
+
+
+# ── Web Automation (Agent API) ──────────────────────────────────────────────
+# Reserved for pages that genuinely need JavaScript. CPCB's real-time station
+# dashboard is a client-rendered shell — its HTML carries no station names — so
+# Search/Fetch cannot read it and the spec's fallback applies: "use web
+# automation only if the page needs JavaScript". Every run is one call against
+# the same cap, gate and log as Search and Fetch.
+AUTOMATE_ENDPOINT = f"{AGENT_ENDPOINT}/v1/automation/run"
+# A browser run is slower than a fetch, and the HTTP timeout must outlast
+# `max_duration_seconds` or the request is cut off while the run is still live.
+AUTOMATE_TIMEOUT = 180.0
+
+
+def automate(url, goal, output_schema=None, timeout=AUTOMATE_TIMEOUT,
+             max_duration_seconds=120, browser_profile="lite", purpose=None):
+    """Run one goal-directed browser automation and return its `result`.
+
+    `output_schema` is a JSON Schema (object root) so the agent returns strict
+    JSON instead of prose — see the Agent API reference for the supported
+    keyword allowlist. The returned dict is untrusted like everything else
+    from the web: the caller validates every field before storing it.
+    """
+    body = {
+        "url": str(url),
+        "goal": str(goal)[:4000],
+        "browser_profile": browser_profile,
+        "agent_config": {"max_duration_seconds": int(max_duration_seconds)},
+    }
+    if output_schema is not None:
+        body["output_schema"] = output_schema
+    if purpose:
+        body["purpose"] = str(purpose)[:2000]
+
+    payload, _label = _request(
+        lambda key: _call(AUTOMATE_ENDPOINT,
+                          data=json.dumps(body).encode("utf-8"),
+                          timeout=timeout, key=key, call_type="automation"),
+        "automation", timeout=timeout)
+
+    status = str(payload.get("status") or "").upper()
+    if status and status != "COMPLETED":
+        error = payload.get("error")
+        detail = error.get("message") if isinstance(error, dict) else str(error or "")
+        raise TinyFishError(f"automation {status}{': ' + detail if detail else ''}")
+
+    result = payload.get("result")
+    if not isinstance(result, dict):
+        raise TinyFishError("automation returned no structured result")
+    return result
 
 
 # ── Monitors (optional early trigger for the alerts job) ────────────────────

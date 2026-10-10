@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sun, Sunrise, Moon, Clock, ExternalLink } from "lucide-react";
@@ -160,28 +161,20 @@ export function BestTime({ forecast }: BestTimeProps) {
   // the source of truth for the numbers; this only adds a forecast strip,
   // per-window weather values and (when the official forecast says fog or low
   // wind) a one-step downgrade with a visible reason.
-  const [live, setLive] = useState<WeatherWindows | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    fetchWeatherWindows(
-      TIME_SLOTS.map((s) => ({ period: s.period, hours: s.hours, status: s.status })),
-    )
-      .then((data) => {
-        if (!cancelled) setLive(data);
-      })
-      .catch(() => {
-        if (!cancelled) setLive(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [TIME_SLOTS]);
+  //
+  // Keyed ["weatherWindows", slots] because the POST body is part of the
+  // request, and because the SSE `weather` event needs a handle to invalidate:
+  // as a bare useState the broadcast reached nothing, so this strip kept the
+  // values from page load while the backend had already moved on.
+  // `retry: false` — one attempt, as before; a retry would be a second backend
+  // refresh, and the endpoint's own TTL is what decides when data is refetched.
+  const { data: live = null, isLoading: loading } = useQuery<WeatherWindows | null>({
+    queryKey: ["weatherWindows", TIME_SLOTS],
+    queryFn: () => fetchWeatherWindows(TIME_SLOTS),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
   const weather = live?.weather ?? null;
   const notices = live?.notices ?? [];

@@ -59,8 +59,12 @@ OFFICIAL_SOURCES = {
     "moef.gov.in": "MoEFCC",
     "who.int": "WHO",
     "openaq.org": "OpenAQ",
+    "cpcb.gov.in": "CPCB",
 }
 REPUTED_SOURCES = {
+    # WAQI / World Air Quality Index — the spec's §2 allowlist names WAQI
+    # explicitly as a permitted source for station readings.
+    "aqicn.org": "WAQI",
     "ndtv.com": "NDTV",
     "hindustantimes.com": "Hindustan Times",
     "timesofindia.indiatimes.com": "Times of India",
@@ -501,20 +505,42 @@ def refresh_alerts():
         raise tinyfish_service.TinyFishError("no results from allowlisted sources")
 
     fetched_at = _now_iso()
+    picked = candidates[:ALERT_FETCHES]
+
+    # ONE batched Fetch for every candidate page instead of one call each.
+    # Job B runs every 45 min (spec §5); five separate fetches plus a retry
+    # each was ~10 calls a cycle, which does not fit inside the daily cap.
+    #
+    # The response lists only the URLs that *succeeded*, so pages are joined by
+    # URL, never by array position — position would attribute the second page
+    # to the first URL the moment any single fetch failed.
+    pages = {}
+    try:
+        batch = tinyfish_service.fetch_many(
+            [r["url"] for r in picked], ttl=0,
+            purpose=ALERT_PURPOSE)
+        for page in batch.get("results") or []:
+            if not isinstance(page, dict):
+                continue
+            original = str(page.get("url") or "").strip()
+            final = str(page.get("final_url") or "").strip()
+            if original:
+                pages[original] = page
+            if final:
+                pages.setdefault(final, page)
+    except tinyfish_service.TinyFishError:
+        pages = {}      # snippets below still yield a citable summary
+
     items = []
-    for result in candidates[:ALERT_FETCHES]:
+    for result in picked:
         url = result["url"]
         source_name, official = source_for(
             url, result.get("publisher", ""), result.get("site_name", ""))
-        page = None
-        try:
-            page = _retry(lambda url=url: tinyfish_service.fetch_text(url, limit=900))
-        except tinyfish_service.TinyFishError:
-            page = None  # snippet below still yields a citable summary
+        page = pages.get(url)
 
         # Prefer the final URL, but never link to a host that is not itself on
         # the allowlist — a redirect must not smuggle another source past the UI.
-        final_url = page.get("url") if page else ""
+        final_url = (page or {}).get("final_url") or (page or {}).get("url") or ""
         canonical = final_url if final_url and is_allowed(final_url) else url
         raw_text = (page or {}).get("text") or result.get("snippet") or ""
         summary = summarize(raw_text)

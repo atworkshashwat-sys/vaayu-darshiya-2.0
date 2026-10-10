@@ -38,6 +38,13 @@ from ai_insights import router as ai_insights_router
 # Live web context (TinyFish) for Alerts / Best Time / Delhi Case — context_api.py
 from context_api import router as context_router
 
+# Live layer: SSE broadcast, /api/alerts, /api/weather, /api/status, admin usage.
+import live_data
+import live_jobs
+import live_stream
+import tinyfish_service
+from live_api import router as live_router
+
 ROOT_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR     = os.path.join(ROOT_DIR, "models", "exp09v2_models")
 SCALER_DIR    = os.path.join(ROOT_DIR, "models", "scalers")
@@ -354,6 +361,52 @@ app.include_router(ai_insights_router)
 # Context routes — adds /api/context/* and nothing else.
 app.include_router(context_router)
 
+# Live routes — /api/stream (SSE), /api/alerts, /api/weather, /api/status,
+# /api/admin/tinyfish-usage. Existing endpoints are untouched.
+app.include_router(live_router)
+
+
+@app.on_event("startup")
+async def _start_live_layer():
+    """Capture the event loop for SSE, then start the scheduler.
+
+    Boot must not block on TinyFish: until this hook returns, uvicorn has not
+    finished starting, so an awaited refresh would leave `/health`, `/api/*`
+    and the SSE socket all unreachable for as long as a browser run takes.
+    The scheduler performs the first refresh itself (job A immediately, the
+    rest staggered over the first ~75 s), which gives a first visitor data
+    just as quickly without holding the port closed. A failed refresh simply
+    leaves the store empty and every card reports its loading/unavailable
+    state instead of showing a stale number as live.
+    """
+    import asyncio
+    live_stream.set_event_loop(asyncio.get_event_loop())
+    live_store_register_sink()
+    live_jobs.start()
+
+
+@app.on_event("shutdown")
+async def _stop_live_layer():
+    live_jobs.stop(timeout=3.0)
+    if tinyfish_service.is_expired() or not tinyfish_service.is_enabled():
+        try:
+            tinyfish_service.delete_all_monitors()
+        except Exception:                          # noqa: BLE001
+            pass
+
+
+def live_store_register_sink():
+    """Persist every TinyFish call so the usage report survives a restart.
+
+    The same rows back the budget baseline: without it, a restarted process
+    would see `calls_used() == 0` and happily spend a second 400-call
+    allowance inside the same reset day.
+    """
+    import live_store
+    tinyfish_service.set_usage_sink(live_store.record_usage)
+    tinyfish_service.set_usage_baseline(
+        lambda: live_store.usage_total_for_day(tinyfish_service.usage_day()))
+
 
 @app.get("/")
 def health():
@@ -367,8 +420,17 @@ def health():
 
 @app.get("/health")
 def health_probe():
-    """Liveness probe — polled by local tooling and Render."""
-    return {"status": "ok"}
+    """Liveness probe — polled by local tooling and Render.
+
+    Extended with the last successful refresh per job (spec §6) so a stale
+    source is visible without logging into the box.
+    """
+    return {
+        "status": "ok",
+        "live_active": tinyfish_service.is_active(),
+        "last_refresh": live_jobs.health_payload(),
+        "server_time": live_jobs.now_ist().isoformat(timespec="seconds"),
+    }
 
 
 @app.get("/api/forecast")
@@ -378,7 +440,31 @@ def get_forecast(site: int = 1):
     fc = cached_forecasts[site]
     # The cached hour is the process start time; report the live one so a
     # long-running server still tells the UI which slot is "now".
-    return {**fc, "current_hour": _dt.now().hour}
+    anchor = _site_dates.get(site)
+    anchor_str = str(pd.Timestamp(anchor)) if anchor is not None else None
+
+    # Spec §6: never present an archived run as live. `forecast_basis` says
+    # exactly where the numbers came from, and `anchor_time` is when the model
+    # was issued. The arrays themselves are untouched — anchoring to the latest
+    # live reading would be a display offset only, and is reported as such.
+    forecast_basis = f"Archived forecast, run {anchor_str[:10]}" if anchor_str else "Archived forecast"
+
+    live_row = next(
+        (r for r in live_data.station_payload() if r["site_id"] == site), None)
+    live_no2 = (live_row or {}).get("live", {}).get("NO2")
+
+    return {
+        **fc,
+        "current_hour": _dt.now().hour,
+        "anchor_time": anchor_str,
+        "forecast_basis": forecast_basis,
+        "forecast_kind": "ML forecast",
+        "display_offset": (
+            {"pollutant": "NO2", "live_value": live_no2, "unit": "ppb",
+             "note": "display-only offset; model output is unchanged"}
+            if live_no2 is not None else None
+        ),
+    }
 
 
 @app.get("/api/time")
@@ -409,15 +495,35 @@ def get_stations():
     # at the request's hour rather than the hour the process happened to boot at.
     hour = _dt.now().hour
     out = []
+    # Live web readings, merged in beside the ML values — never over them
+    # (spec §3). Present only when the store has something; otherwise the
+    # response shape is unchanged and the UI shows its loading state.
+    live = {str(s["site_id"]): s for s in live_data.station_payload()}
     for st in cached_stations:
         fc = cached_forecasts.get(st["site_id"])
         if fc is None:
-            out.append(st)
-            continue
-        entry = {**st, "no2": fc["no2"][hour], "o3": fc["o3"][hour]}
-        if "hcho" in fc:
-            entry["hcho"] = fc["hcho"][hour]
+            entry = dict(st)
+        else:
+            entry = {**st, "no2": fc["no2"][hour], "o3": fc["o3"][hour]}
+            if "hcho" in fc:
+                entry["hcho"] = fc["hcho"][hour]
+        info = live.get(str(st["site_id"]))
+        if info:
+            # ML fields keep their names; live fields are namespaced so a
+            # web-sourced number can never be mistaken for a model output.
+            entry["live"] = info["live"]
+            entry["liveUnits"] = info["live_units"]
+            entry["status"] = info["status"]
+            entry["observedAt"] = info["observed_at"]
+            entry["source"] = info["source"]
+            entry["ageMinutes"] = info["age_minutes"]
+            entry["conflict"] = info["conflict"]
+            entry["retired"] = info["retired"]
+            if info["status"] == "offline":
+                entry["statusNote"] = "Offline — no live source"
         out.append(entry)
+
+    # A wrapper so the client can tell "no live data yet" from "live data off".
     return out
 
 

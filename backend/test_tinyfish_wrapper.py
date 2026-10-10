@@ -354,6 +354,74 @@ class UsageLogTests(unittest.TestCase):
         self.assertGreater(snapshot["remaining_seconds"], 0)
 
 
+class BudgetBaselineTests(unittest.TestCase):
+    """The day's spend must survive a restart (spec: cap shared across keys).
+
+    `_usage` is in-memory and cleared with the process, so without a durable
+    baseline every restart would hand out another 400-call allowance for the
+    same reset day.
+    """
+
+    def setUp(self):
+        svc.reset_usage()
+        svc.reset_window_default()
+
+    def tearDown(self):
+        svc.set_usage_baseline(None)
+
+    def test_a_restart_does_not_refill_the_allowance(self):
+        # Process two: in-memory is empty, but storage says 130 were spent.
+        svc.set_usage_baseline(lambda: 130)
+        self.assertEqual(svc.calls_used(), 130)
+        self.assertEqual(svc.budget_remaining(), 400 - 130)
+
+    def test_baseline_is_a_floor_never_an_addition(self):
+        # The persisted total already includes this process's calls, so the
+        # larger of the two is the truth — adding them would double count.
+        with env():
+            with mock.patch.object(svc, "_call", return_value={"results": []}):
+                svc.search("a")
+                svc.search("b")
+        svc.set_usage_baseline(lambda: 3)
+        self.assertEqual(svc.calls_used(), 3)      # baseline already covers them
+
+        svc.set_usage_baseline(lambda: 1)
+        self.assertEqual(svc.calls_used(), 2)      # in-memory wins when higher
+
+    def test_a_broken_baseline_never_blocks_a_legitimate_call(self):
+        def explode():
+            raise RuntimeError("database is gone")
+
+        svc.set_usage_baseline(explode)
+        with env():
+            with mock.patch.object(svc, "_call", return_value={"results": []}) as call:
+                svc.search("a")
+        self.assertEqual(call.call_count, 1)
+        self.assertEqual(svc.calls_used(), 1)
+
+    def test_the_gate_refuses_once_storage_reaches_the_cap(self):
+        svc.set_usage_baseline(lambda: 400)
+        with env():
+            with mock.patch.object(svc, "_call", return_value={"results": []}) as call:
+                with self.assertRaises(svc.TinyFishError):
+                    svc.search("a")
+        self.assertEqual(call.call_count, 0)       # refused before any HTTP
+
+    def test_each_logged_call_carries_the_reset_day(self):
+        with env():
+            with mock.patch.object(svc, "_call", return_value={"results": []}):
+                svc.search("a")
+        entry = svc.call_log()[-1]
+        self.assertRegex(entry["day"], r"^\d{4}-\d{2}-\d{2}$")
+        self.assertEqual(entry["day"], svc.usage_day())
+
+    def test_usage_day_is_the_utc_window_not_the_local_date(self):
+        # The allowance resets at 00:00 UTC, which is 05:30 IST — using the
+        # IST date would cut the window in half every night.
+        self.assertEqual(svc.usage_day(),
+                         datetime.now(timezone.utc).date().isoformat())
+
+
 class PayloadTests(unittest.TestCase):
     """TinyFish returned something we did not expect — never crash the caller."""
 

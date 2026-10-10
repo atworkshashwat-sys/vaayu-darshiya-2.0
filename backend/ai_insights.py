@@ -32,6 +32,49 @@ MAX_ITEMS = 5
 _cache = {}
 
 
+def live_context():
+    """Current live readings / weather / alerts, read straight from the store.
+
+    No network calls: jobs A-C already refresh on their own schedule, so this
+    is a pure local read and cannot spend the daily budget or stall the route.
+
+    `confidence` is lowered when the panel would otherwise be reasoning over a
+    conflicting or stale number, so the UI can say so instead of implying the
+    insight is fully backed (spec §8).
+    """
+    try:
+        import live_data
+        import live_store
+    except Exception:                                # noqa: BLE001
+        return None
+
+    readings = [
+        {"name": s["name"], "aqi": s["live"].get("AQI"), "status": s["status"],
+         "observed_at": s["observed_at"], "source": s["source"]}
+        for s in live_data.station_payload()
+    ]
+    weather = live_data.weather_payload()
+    alerts = live_data.alerts_payload(limit=8).get("items") or []
+
+    reasons = []
+    if any(r["status"] == "stale" for r in readings):
+        reasons.append("some station readings are stale")
+    if any(r.get("conflict") for r in live_data.station_payload()):
+        reasons.append("sources disagree on at least one reading")
+    if weather.get("status") == "stale":
+        reasons.append("weather is stale")
+
+    return {
+        "readings": readings,
+        "weather": weather,
+        "alerts": alerts,
+        "official_alerts": sum(1 for a in alerts if a.get("official")),
+        "confidence": "reduced" if reasons else "high",
+        "confidence_reasons": reasons,
+        "collected_at": _dt.now().isoformat(timespec="seconds"),
+    }
+
+
 def _cache_get(key):
     entry = _cache.get(key)
     if not entry:
@@ -63,6 +106,10 @@ def _base(city, query):
         "items": [],
         "excerpt": None,
         "message": None,
+        # Attached even when Search fails: a live reading from the store is
+        # still a true statement, and it is what lets the panel show a
+        # confidence badge rather than going blank.
+        "live": live_context(),
     }
 
 
