@@ -124,6 +124,26 @@ def _handle_expiry():
     return True
 
 
+def _ended_label(ended_at):
+    """\"HH:MM IST\" for the ended-at stamp the spec's message requires.
+
+    `_last_expiry_cleanup` is an ISO string, which is right for the API field
+    but wrong for the banner: the spec asks for \"Live context ended - last
+    updated HH:MM IST\", and an unparseable stamp is passed through unchanged
+    rather than being dropped - a missing time is worse than an odd-looking
+    one.
+    """
+    stamp = _last_expiry_cleanup
+    if stamp:
+        try:
+            moment = datetime.fromisoformat(stamp)
+        except ValueError:
+            return stamp
+    else:
+        moment = ended_at
+    return moment.strftime("%H:%M IST")
+
+
 def status_payload():
     """Per-source health for /api/status and the `status` SSE event."""
     states = live_store.job_states()
@@ -150,8 +170,7 @@ def status_payload():
         "ended_at": _last_expiry_cleanup,
         "message": (
             None if active else
-            f"Live context ended - last updated "
-            f"{_last_expiry_cleanup or ended_at.strftime('%H:%M IST')}"
+            f"Live context ended - last updated {_ended_label(ended_at)}"
         ),
         "scheduler_running": is_running(),
         "jobs": jobs,

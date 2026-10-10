@@ -95,3 +95,9 @@ data/*.sqlite-wal
 
 # === One-off investigation scripts ===
 scripts/probe_*.py
+scripts/diag_*.py
+
+# === Local run artifacts ===
+sse_client*.txt
+uv.pid
+.env.bak

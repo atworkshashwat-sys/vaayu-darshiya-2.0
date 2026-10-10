@@ -155,7 +155,17 @@ export function useLiveStream(enabled = true): LiveState {
             void queryClient.invalidateQueries({ queryKey: LIVE_QUERY_KEYS[type] });
             break;
           case "status":
-            write(LIVE_QUERY_KEYS.status, payload);
+            // The stream opens with a handshake frame of type "status"
+            // carrying {kind:"connected", max_clients}. Writing that would
+            // replace the REST payload this panel already holds, destroying
+            // `expired`/`message` - and the header would then say "No live
+            // readings yet" even after the window had ended. Only a frame
+            // that actually carries status fields is allowed to replace it;
+            // the handshake is acknowledged by the setState below instead.
+            if (payload && typeof payload === "object" &&
+                "expired" in (payload as object)) {
+              write(LIVE_QUERY_KEYS.status, payload);
+            }
             break;
           default:
             break;
