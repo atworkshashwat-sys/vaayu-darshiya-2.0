@@ -1,6 +1,9 @@
 # === Secrets ===
 .env
 .env.*
+# TinyFish API keys live only in backend/.env (TINYFISH_API_KEY_1/_2/_3).
+# They are never hard-coded, logged, exposed to the frontend or committed.
+backend/.env
 
 # === Python ===
 __pycache__/
