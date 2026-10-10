@@ -32,6 +32,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import database
 
+# AI Insights live research (TinyFish) — isolated router, see ai_insights.py.
+from ai_insights import router as ai_insights_router
+
 ROOT_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR     = os.path.join(ROOT_DIR, "models", "exp09v2_models")
 SCALER_DIR    = os.path.join(ROOT_DIR, "models", "scalers")
@@ -341,6 +344,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# AI Insights only — adds GET /api/ai-insights/research and nothing else.
+app.include_router(ai_insights_router)
 
 
 @app.get("/")

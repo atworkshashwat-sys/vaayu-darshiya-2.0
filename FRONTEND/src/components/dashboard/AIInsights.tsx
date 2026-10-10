@@ -1,7 +1,19 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Sparkles, Shield, AlertTriangle, Radio, FlaskConical } from "lucide-react";
+import {
+  Brain,
+  Sparkles,
+  Shield,
+  AlertTriangle,
+  Radio,
+  FlaskConical,
+  Globe,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import { CityForecast, hchoLevel, peakHcho } from "./data";
+import { fetchAiInsightsResearch, type AiInsightsResearch } from "./aiInsightsResearch";
 
 function getNo2Level(ppb: number): string {
   if (ppb <= 28) return "Safe";
@@ -140,8 +152,29 @@ function generateInsights(city: string, forecast: CityForecast): Insight[] {
   return insights;
 }
 
+type ResearchStatus = "loading" | "ok" | "unavailable";
+
 export function AIInsights({ city, forecast }: AIInsightsProps) {
   const insights = generateInsights(city, forecast);
+
+  // Live research (TinyFish) — additive only. The ML cards above are built
+  // from `forecast` and never wait on this, so a TinyFish outage changes
+  // nothing except the status line of this one block.
+  const [research, setResearch] = useState<AiInsightsResearch | null>(null);
+  const [researchStatus, setResearchStatus] = useState<ResearchStatus>("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setResearchStatus("loading");
+    fetchAiInsightsResearch(city).then((data) => {
+      if (cancelled) return;
+      setResearch(data);
+      setResearchStatus(data && data.status === "ok" ? "ok" : "unavailable");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [city]);
 
   return (
     <section id="insights" className="mx-4 mt-8 md:mx-8">
@@ -191,6 +224,101 @@ export function AIInsights({ city, forecast }: AIInsightsProps) {
           </Card>
         ))}
       </div>
+
+      {/* External research (TinyFish Search + Fetch) — added below the ML cards,
+          labelled as retrieved information so it is never read as a prediction. */}
+      <Card className="glass mt-4">
+        <CardHeader className="flex flex-row items-start gap-3 pb-2">
+          <div className="rounded-lg bg-primary/10 p-2">
+            <Globe className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1">
+            <CardTitle className="text-sm">Live research — Delhi NCR pollution news</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Retrieved from the open web via TinyFish · external sources, not model output
+            </p>
+          </div>
+          {researchStatus === "ok" && (
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Radio className="h-2.5 w-2.5" />
+              External source
+            </Badge>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {researchStatus === "loading" && (
+            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Searching TinyFish for recent Delhi NCR pollution news…
+            </p>
+          )}
+
+          {researchStatus === "unavailable" && (
+            <p className="text-xs text-muted-foreground">
+              {research?.message ?? "Live research unavailable right now."} The ML model insights
+              above are unaffected.
+            </p>
+          )}
+
+          {researchStatus === "ok" && research && (
+            <>
+              {research.items.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No recent articles found for this query.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {research.items.map((item) => (
+                    <li key={item.url}>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        {item.title}
+                        <ExternalLink className="ml-1 inline h-3 w-3" />
+                      </a>
+                      <p className="text-[11px] text-muted-foreground">
+                        {[item.publisher || item.site_name, item.date].filter(Boolean).join(" · ")}
+                      </p>
+                      {item.snippet && (
+                        <p className="mt-0.5 text-sm leading-relaxed text-secondary">
+                          {item.snippet}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {research.excerpt?.text && (
+                <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                  <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Excerpt · {research.excerpt.site_name || research.excerpt.title || "source"}
+                  </p>
+                  <p className="text-sm leading-relaxed text-secondary">
+                    “{research.excerpt.text}”
+                  </p>
+                  <a
+                    href={research.excerpt.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    Open source <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              )}
+
+              <p className="text-[11px] text-muted-foreground">
+                Retrieved {research.retrieved_at} · via {research.provider}
+                {research.cached ? " · cached" : ""} · links open the original articles.
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }

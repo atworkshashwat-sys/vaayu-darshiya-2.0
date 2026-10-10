@@ -178,6 +178,30 @@ VAAYU_DARSHIYA_MODEL_WORK/
 
 ---
 
+## AI Insights Live Research (TinyFish)
+
+The AI Insights panel can attach recent Delhi NCR pollution news, official
+advisories and credible environmental information retrieved live from the open
+web through the [TinyFish](https://docs.tinyfish.ai) **Search** and **Fetch**
+APIs. It is strictly additive and clearly separated from the model output:
+retrieved items are labelled *External source* with their own links, while the
+insight cards keep their "ML model" labels.
+
+| | |
+|---|---|
+| Endpoint | `GET /api/ai-insights/research?city=Delhi` (isolated router: `backend/ai_insights.py`) |
+| Service | `backend/tinyfish_service.py` (stdlib only — no new dependencies) |
+| Frontend | `AIInsights.tsx` + `aiInsightsResearch.ts` (AI Insights only) |
+| Key | `TINYFISH_API_KEY` — **backend only**, never sent to the browser |
+| Failure mode | route answers `{"status": "unavailable", ...}` and the ML insight cards behave exactly as before |
+
+```bash
+export TINYFISH_API_KEY="sk-tinyfish-..."   # PowerShell: $env:TINYFISH_API_KEY="..."
+cd backend && uvicorn api:app --port 8000
+```
+
+---
+
 ## Model Performance
 
 - **Split (all targets, EXP_12):** 2018 – Dec 2023 (train, rows `< 2025-01-01`),
