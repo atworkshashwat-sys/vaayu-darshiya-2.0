@@ -333,8 +333,25 @@ def severity_of(title, summary):
     return "low"
 
 
+def _looks_like_nav(text):
+    """A run of site links rather than prose: `A * B * C * D`, `x ## y ## z`.
+
+    News pages often arrive as one enormous first "sentence" — no full stop for
+    hundreds of characters — so the short-line boilerplate test below never
+    fires on it. Without this, a table-of-contents line such as
+    "Edition IN * IN * US Weather Sign In ## TOI Today's ePaper * News * City
+    News" gets quoted verbatim as an alert summary.
+    """
+    return text.count(" * ") + text.count("##") >= 3
+
+
 def summarize(text, limit=SUMMARY_CHARS):
-    """First useful sentence(s) of a fetched page, ≤ `limit` chars, verbatim."""
+    """First useful sentence(s) of a fetched page, ≤ `limit` chars, verbatim.
+
+    Returns "" rather than page chrome: `is_useful` then drops the item, which
+    is the honest outcome — a source that stated nothing citable in its own
+    words should not become a card.
+    """
     plain = sanitize(text, limit=1200)
     if not plain:
         return ""
@@ -345,6 +362,8 @@ def summarize(text, limit=SUMMARY_CHARS):
         low = sentence.lower()
         if len(words) < 4:
             continue                                    # too short to inform
+        if _looks_like_nav(sentence):
+            continue                                    # a menu, not a report
         if len(sentence) < 100 and any(m in low for m in _BOILERPLATE):
             continue                                    # pure boilerplate line
         candidate = f"{picked} {sentence}".strip()
@@ -354,7 +373,8 @@ def summarize(text, limit=SUMMARY_CHARS):
         if len(picked) >= 120:
             break
     if not picked:
-        picked = sentences[0] if sentences else plain
+        first = sentences[0] if sentences else plain
+        picked = "" if _looks_like_nav(first) else first
     return sanitize(picked, limit=limit)
 
 
@@ -737,6 +757,34 @@ def _weather_candidates(results):
     return [result for _, _, result in scored]
 
 
+def _batch_pages(urls, purpose, ttl=None):
+    """Fetch several pages in ONE call and join them by their requested URL.
+
+    `fetch_many` bills one call regardless of how many URLs it carries and
+    returns one entry per URL that *succeeded*, so the join is keyed by URL —
+    a positional `zip` would attribute page 2 to page 1 the moment a single
+    fetch failed. Never raises: a caller that gets `{}` falls back to the
+    search snippet, exactly as it did when a fetch failed.
+
+    Returns ({requested_url: page}, error_message_or_None).
+    """
+    wanted = [str(u) for u in urls if u][:10]
+    if not wanted:
+        return {}, None
+    try:
+        batch = tinyfish_service.fetch_many(wanted, ttl=ttl, purpose=purpose)
+    except tinyfish_service.TinyFishError as exc:
+        return {}, str(exc)
+    pages = {}
+    for page in batch.get("results") or []:
+        if not isinstance(page, dict):
+            continue
+        original = str(page.get("url") or "").strip()
+        if original:
+            pages.setdefault(original, page)
+    return pages, None
+
+
 def refresh_weather_windows():
     """Official day forecast + active crop-burning/traffic notices.
 
@@ -762,14 +810,21 @@ def refresh_weather_windows():
         raise tinyfish_service.TinyFishError("no official forecast result")
 
     # Try the best two pages max: one homepage-shaped miss costs one fetch.
-    weather, sources, last_error = None, [], "forecast page could not be read"
-    for best in candidates[:2]:
-        page = None
-        try:
-            page = _retry(lambda url=best["url"]: tinyfish_service.fetch_text(url, limit=1500))
-        except tinyfish_service.TinyFishError as exc:
-            last_error = str(exc)
-        raw = (page or {}).get("text") or best.get("snippet") or ""
+    # Both candidates now travel in ONE batched call: one fetch per candidate
+    # (each with a retry) did not fit inside the daily cap (spec §5), and a
+    # caller that reads neither page still falls back to the search snippet,
+    # exactly as it did when a fetch failed.
+    picked = candidates[:2]
+    pages, batch_error = _batch_pages([c["url"] for c in picked],
+                                      purpose=WEATHER_PURPOSE)
+    weather, sources = None, []
+    last_error = batch_error or "forecast page could not be read"
+    for best in picked:
+        page = pages.get(best["url"])
+        # Same shaping `fetch_text` would have applied, so the parser sees the
+        # text it always saw rather than the whole page.
+        raw = (tinyfish_service.excerpt(page.get("text"), 1500) if page else "") \
+            or best.get("snippet") or ""
         text = sanitize(raw, limit=320)
         # Days the source has not published yet come back as "NA °C NA %"—
         # they state nothing, so the display text stops before the first one.
@@ -778,7 +833,7 @@ def refresh_weather_windows():
             text = text[:cut].rstrip(" ,;—-")
         if not text or not is_useful(sanitize(best.get("title", ""), limit=160), text):
             continue
-        final_url = (page or {}).get("url") or ""
+        final_url = str((page or {}).get("final_url") or (page or {}).get("url") or "")
         weather_url = final_url if final_url and is_allowed(final_url) else best["url"]
         source_name, _ = source_for(
             best["url"], best.get("publisher", ""), best.get("site_name", ""))
@@ -813,16 +868,21 @@ def refresh_weather_windows():
             seen.add(url)
             notices.append(result)
 
-    for result in notices[:MAX_NOTICES]:
-        page = None
-        try:
-            page = _retry(lambda url=result["url"]: tinyfish_service.fetch_text(url, limit=900))
-        except tinyfish_service.TinyFishError:
-            page = None
-        final_url = (page or {}).get("url") or ""
+    # The notice pages travel together too — three separate fetches cost three
+    # of the day's calls for one Best Time panel (spec §5). A page that never
+    # arrives leaves `page` as None, so the snippet is summarised instead,
+    # which is what a failed per-page fetch produced before.
+    chosen = notices[:MAX_NOTICES]
+    notice_pages, _ = _batch_pages([r["url"] for r in chosen],
+                                   purpose=NOTICE_PURPOSE)
+    for result in chosen:
+        page = notice_pages.get(result["url"])
+        final_url = str((page or {}).get("final_url") or (page or {}).get("url") or "")
         notice_url = final_url if final_url and is_allowed(final_url) else result["url"]
         title = sanitize(result.get("title", ""), limit=160)
-        summary = summarize((page or {}).get("text") or result.get("snippet") or "")
+        summary = summarize(
+            (tinyfish_service.excerpt(page.get("text"), 900) if page else "")
+            or result.get("snippet") or "")
         if not is_useful(title, summary):
             continue
         source_name, _ = source_for(

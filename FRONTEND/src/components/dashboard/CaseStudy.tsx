@@ -1,7 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Activity, Users, TrendingUp, AlertTriangle, Building2 } from "lucide-react";
+import {
+  MapPin, Activity, Users, TrendingUp, AlertTriangle, Building2, ExternalLink,
+} from "lucide-react";
 import { StationData } from "./data";
+import { fetchCaseStudy, formatDate, type CaseStat, type CaseStudyData } from "./contextApi";
 
 interface Zone {
   name: string;
@@ -129,7 +133,29 @@ function getPollutantColor(val: number, threshold: number): string {
   return "text-green-600";
 }
 
+/** A figure exactly as its source states it: number plus unit, never invented. */
+function liveValue(stat: CaseStat): string {
+  const unit = stat.unit && stat.unit !== "index" ? ` ${stat.unit}` : "";
+  return `${stat.value}${unit}`;
+}
+
 export function CaseStudy({ stations }: { stations?: StationData[] }) {
+  // Job D's figures, each carrying the source and date it came from. The
+  // route only reads the store — the job itself runs once a day in the
+  // background — so loading this panel can never spend a TinyFish call.
+  // A figure the sources never stated is absent from the array, and only
+  // what arrives is drawn: no reserved slot, so no blank card.
+  const { data: liveCase } = useQuery<CaseStudyData | null>({
+    queryKey: ["caseStudy"],
+    queryFn: () => fetchCaseStudy(),
+    staleTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+  const liveStats = liveCase?.stats ?? [];
+  const figures = liveStats.filter((s) => s.stat_key !== "news_strip");
+  const report = liveStats.find((s) => s.stat_key === "news_strip");
+
   return (
     <section className="mx-4 mt-8 md:mx-8">
       {/* Header */}
@@ -169,6 +195,58 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
           ))}
         </div>
       </div>
+
+      {/* Job D's live figures. Kept apart from the overview above on purpose:
+          the overview and the narrative below it quote research figures
+          (99.7 µg/m³, "350+"), so overwriting those cards would contradict
+          the paragraph right beneath them. Everything here is labelled with
+          the source and the date that source gave. */}
+      {figures.length > 0 && (
+        <div className="mb-6">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Live from official sources
+          </h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {figures.map((stat) => (
+              <Card key={stat.stat_key} className="glass">
+                <CardContent className="flex items-start gap-3 p-4">
+                  <div className="rounded-lg bg-emerald-600/10 p-2">
+                    <Activity className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="text-lg font-bold">{liveValue(stat)}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      as of {formatDate(stat.as_of ?? stat.fetched_at) ?? "unknown date"}
+                    </p>
+                    <a
+                      href={stat.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-1 inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                    >
+                      {stat.source}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {report && (
+        <Card className="glass mb-6 border-l-4 border-l-emerald-600">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground">{report.label}</p>
+            <p className="mt-1 text-sm leading-relaxed text-secondary">{report.value}</p>
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              {report.source} · as of {formatDate(report.as_of ?? report.fetched_at) ?? "unknown date"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Narratives */}
       <Card className="glass mb-6 border-l-4 border-l-red-600">

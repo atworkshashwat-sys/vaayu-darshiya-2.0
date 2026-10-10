@@ -698,6 +698,17 @@ def _clean_excerpt(text, limit=EXCERPT_CHARS):
     return joined[:limit].rsplit(" ", 1)[0] + " …"
 
 
+def excerpt(text, limit=EXCERPT_CHARS):
+    """`_clean_excerpt` for callers that fetch a *batch* instead of one page.
+
+    `fetch_text()` shapes every page this way before returning it, so a
+    caller holding raw `fetch_many()` markdown has to apply the same shaping
+    itself — otherwise the parsers see different text than a single fetch
+    would have handed them.
+    """
+    return _clean_excerpt(str(text or ""), limit)
+
+
 def fetch_text(url, timeout=FETCH_TIMEOUT, limit=EXCERPT_CHARS, ttl=None,
                purpose=None, raw_limit=None):
     """Clean extracted text for one URL via TinyFish Fetch.

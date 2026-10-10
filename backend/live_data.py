@@ -983,6 +983,16 @@ def _visibility(text, rain):
 
 
 # ── Job D: Delhi case-study stats (refresh once) ───────────────────────────
+# Candidate pages per Fetch call. The batch ceiling is a *time* budget, not
+# just the documented 10-URL cap: nine live-fetched CPCB pages in one call came
+# back HTTP 504 with nothing at all, so each call carries one candidate per
+# figure. Three figures still cost three calls instead of the sixteen a fetch
+# per candidate used to.
+CASE_FETCH_BATCH = 3
+
+# `value` is text because a figure may be a number with a unit or a short
+# quoted sentence — and because a source that never states it leaves it absent
+# rather than zero.
 CASE_STATS = [
     {"key": "annual_pm25", "label": "Annual mean PM2.5",
      "query": "Delhi annual average PM2.5 CPCB annual report micrograms",
@@ -1000,49 +1010,116 @@ CASE_STATS = [
 
 def refresh_case_study(force=False):
     """Job D — the figures behind "Delhi's Drastic Case", each with a source
-    and an "as of" date. Values the sources do not state are simply absent."""
+    and an "as of" date. Values the sources do not state are simply absent.
+
+    Candidates are read in small batches rather than one Fetch per page
+    (spec §5). Reading them one at a time cost up to 19 calls and — with each
+    Fetch allowed 90 s and several candidates timing out — over six minutes,
+    for three reference figures that refresh once a day. A single batch of all
+    nine instead came back HTTP 504 with nothing at all, so the pages travel
+    a figure at a time and one slow figure cannot fail the other two.
+    """
     fetched_at = _iso()
     stored, sources = [], []
+
+    # 1. One search per figure: the query is what decides recall, so those
+    #    cannot be batched. Candidates are kept in figure order.
+    wanted = []
+    judged = set()
+    seen = set()
     for stat in CASE_STATS:
         try:
             results = tinyfish_service.search(
                 stat["query"], domain_type="web", page_size=4,
                 include_domains=LIVE_SOURCE_DOMAINS, purpose=CASE_STATS[0]["label"])
         except tinyfish_service.TinyFishError:
-            continue
-        for result in results:
-            url = result.get("url", "")
-            if not url or not tinyfish_context.is_allowed(url):
+            continue                     # never judged — its stored row stays
+        judged.add(stat["key"])          # searched, so a miss here is a real miss
+        per_stat = 0
+        for result in results if isinstance(results, (list, tuple)) else []:
+            if not isinstance(result, dict):
                 continue
-            text, title = result.get("snippet", ""), result.get("title", "")
-            try:
-                page = tinyfish_service.fetch_text(url, limit=4000, ttl=0)
-                text = page.get("text") or text
-                url = page.get("url") or url
-            except tinyfish_service.TinyFishError:
-                pass
-            if stat["pattern"]:
-                match = re.search(stat["pattern"], _normalise(text))
-                if not match:
-                    continue
-                value = match.group(1)
-            else:
-                summary = tinyfish_context.summarize(text, limit=280)
-                if not summary:
-                    continue
-                value = summary
-            source_name, _ = tinyfish_context.source_for(url)
-            stored.append({
-                "stat_key": stat["key"], "label": stat["label"],
-                "value": str(value)[:500], "unit": stat["unit"],
-                "as_of": tinyfish_context.parse_published(
-                    None, result.get("date")) or fetched_at[:10],
-                "source": source_name, "url": url, "fetched_at": fetched_at,
-            })
-            sources.append({"name": source_name, "url": url, "fetched_at": fetched_at})
-            break                                       # first usable source wins
+            url = result.get("url", "")
+            # A site's landing page states nothing about this figure — and it
+            # is where a search most often lands, which is how a homepage's
+            # accessibility widget got stored as "the latest report".
+            if (not url or url in seen or not tinyfish_context.is_allowed(url)
+                    or tinyfish_context._is_home_url(url)):
+                continue
+            seen.add(url)
+            wanted.append((stat, result))
+            per_stat += 1
+            if per_stat >= 3:              # 3 figures × 3 ≤ the 10-URL batch cap
+                break
 
-    live_store.save_case_stats(stored)
+    # 2. Round 1 reads the first candidate of every figure, round 2 the second
+    #    and so on — a figure is never starved behind another's long tail, and
+    #    each call stays small enough to be answered. Joined by URL, never by
+    #    position: the response lists only the URLs that succeeded, so a
+    #    positional zip would attribute one figure's page to another's link the
+    #    moment a single fetch failed. Nothing to read means no call at all —
+    #    even a zero-URL batch would be billed against the cap.
+    by_stat = {}
+    for pair in wanted:
+        by_stat.setdefault(pair[0]["key"], []).append(pair)
+    pages = {}
+    for index in range(3):
+        chunk = [pairs[index] for pairs in by_stat.values()
+                 if index < len(pairs)]
+        if not chunk:
+            break
+        try:
+            batch = tinyfish_service.fetch_many(
+                [result["url"] for _stat, result in chunk], ttl=0,
+                purpose=CASE_STATS[0]["label"])
+        except tinyfish_service.TinyFishError:
+            continue                 # that round's snippets still stand
+        for page in batch.get("results") or []:
+            if isinstance(page, dict) and page.get("url"):
+                pages.setdefault(str(page["url"]).strip(), page)
+
+    # 3. First usable source per figure wins; a figure the sources never state
+    #    is simply left out rather than guessed.
+    done = set()
+    for stat, result in wanted:
+        if stat["key"] in done:
+            continue
+        url = result["url"]
+        text = result.get("snippet", "")
+        page = pages.get(url)
+        if page:
+            # Adopt the redirect only when it stays on an allowlisted source.
+            # Fetch followed one CPCB page to its bare IP, and quoting that IP
+            # as the figure's source would name no authority at all.
+            final = str(page.get("final_url") or "").strip()
+            if final and tinyfish_context.is_allowed(final):
+                url = final
+            text = tinyfish_service.excerpt(page.get("text"), 4000) or text
+        if stat["pattern"]:
+            match = re.search(stat["pattern"], _normalise(text))
+            if not match:
+                continue
+            value = match.group(1)
+        else:
+            summary = tinyfish_context.summarize(text, limit=280)
+            title = tinyfish_context.sanitize(result.get("title", ""), limit=160)
+            # A summary made of page chrome states nothing citable, so the
+            # figure is dropped instead of being shown as an official report.
+            if not summary or not tinyfish_context.is_useful(title, summary):
+                continue
+            value = summary
+        source_name, _ = tinyfish_context.source_for(url)
+        stored.append({
+            "stat_key": stat["key"], "label": stat["label"],
+            "value": str(value)[:500], "unit": stat["unit"],
+            "as_of": tinyfish_context.parse_published(
+                None, result.get("date")) or fetched_at[:10],
+            "source": source_name, "url": url, "fetched_at": fetched_at,
+        })
+        sources.append({"name": source_name, "url": url, "fetched_at": fetched_at})
+        done.add(stat["key"])
+
+    live_store.save_case_stats(stored, judged)
     live_store.record_job("case_study", "ok", detail={"stats": len(stored)})
     return {"stats": stored, "sources": sources, "fetched_at": fetched_at}
 

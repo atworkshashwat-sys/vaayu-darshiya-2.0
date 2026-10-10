@@ -176,3 +176,51 @@ export const formatAge = (seconds?: number | null): string => {
   const hours = Math.floor(seconds / 3600);
   return `${hours}h ${Math.round((seconds % 3600) / 60)}m`;
 };
+
+// ── Case study figures ─────────────────────────────────
+
+/** One figure from job D, each carrying its own source and as-of date. */
+export interface CaseStat {
+  stat_key: string;
+  label: string;
+  value: string;
+  unit: string | null;
+  as_of: string | null;
+  source: string;
+  url: string;
+  fetched_at: string;
+}
+
+export interface CaseStudyData {
+  stats: CaseStat[];
+  fetched_at?: string | null;
+  server_time?: string;
+  active?: boolean;
+}
+
+/**
+ * Fetches the stored "Delhi's Drastic Case" figures, or `null` on any
+ * failure. Never throws.
+ *
+ * The route only reads the store — job D refreshes it once a day in the
+ * background — so opening the page can never spend a call against the daily
+ * TinyFish cap. A figure the sources never stated is simply absent from the
+ * array, which is why the caller renders only what it receives rather than
+ * reserving a slot for each one (a reserved slot would be a blank card).
+ */
+export async function fetchCaseStudy(
+  timeoutMs = 15000,
+): Promise<CaseStudyData | null> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(`/api/case-study`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = (await res.json()) as CaseStudyData;
+    if (!data || typeof data !== "object" || !Array.isArray(data.stats)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}

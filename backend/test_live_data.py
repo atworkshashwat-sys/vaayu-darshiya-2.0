@@ -757,5 +757,195 @@ class WaqiStationPassTests(unittest.TestCase):
         self.assertEqual(result["offline"], ["Jawaharlal Nehru"])
 
 
+class CaseStudyTests(unittest.TestCase):
+    """Job D — the reference figures behind "Delhi's Drastic Case".
+
+    Two properties are worth pinning down: every candidate page is read in ONE
+    batched call (a fetch per candidate was up to 16 calls and — with several
+    candidates timing out at 90 s each — over six minutes for three numbers),
+    and a figure the sources no longer state is dropped rather than served
+    indefinitely.
+    """
+
+    ANNUAL = {
+        "url": "https://cpcb.nic.in/reports/delhi-annual-pm25",
+        "title": "Delhi annual average PM2.5 CPCB annual report",
+        "published_date": "2026-08-01",
+        "text": "The annual mean pm2.5 for Delhi was 118 micrograms per cubic "
+                "metre across the continuous monitoring network.",
+    }
+    WINTER = {
+        "url": "https://cpcb.nic.in/reports/delhi-winter-peak",
+        "title": "Delhi winter peak AQI CPCB worst air quality index value",
+        "published_date": "2026-01-15",
+        "text": "The peak aqi reached 494 during january, the worst reading of "
+                "the season.",
+    }
+    # An entire visible body that is a widget: states nothing citable.
+    CHROME = {
+        "url": "https://cpcb.nic.in/reports/latest-air-quality",
+        "title": "Latest Delhi air quality report CPCB CAQM",
+        "published_date": "2026-10-09",
+        "text": "Accessibility Options Text To Speech Bigger Text Small Text "
+                "Line Height Highlight Links Reset All Settings.",
+    }
+    HOME = {
+        "url": "https://caqm.nic.in/",
+        "title": "Commission for Air Quality Management",
+        "published_date": "2026-10-09",
+        "text": "The Commission was constituted to address air quality in NCR.",
+    }
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        live_store.reset(os.path.join(self.tmp.name, "live.sqlite"))
+
+    def tearDown(self):
+        live_store.close()
+        self.tmp.cleanup()
+
+    @staticmethod
+    def _page(result):
+        return {**result, "url": result["url"], "final_url": result["url"]}
+
+    def _refresh(self, searches, pages):
+        """Run job D with a scripted result per figure and one batched fetch."""
+        svc = tinyfish_service_stub()
+        by_url = {page["url"]: page for page in pages}
+
+        def fetch_many(urls, **kwargs):
+            return {"results": [self._page(by_url[u]) for u in urls
+                                if u in by_url],
+                    "errors": []}
+
+        with mock.patch.object(svc, "search", side_effect=searches) as search, \
+                mock.patch.object(svc, "fetch_many",
+                                  side_effect=fetch_many) as batch:
+            data = live_data.refresh_case_study(force=True)
+        return data, search, batch
+
+    # ── budget ───────────────────────────────────────────────────────────
+    def test_every_candidate_is_read_in_one_batched_call(self):
+        data, search, batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [self.CHROME]],
+            pages=[self.ANNUAL, self.WINTER, self.CHROME])
+
+        self.assertEqual(search.call_count, 3)          # one query per figure
+        self.assertEqual(batch.call_count, 1)           # every page at once
+        self.assertEqual(list(batch.call_args.args[0]),
+                         [self.ANNUAL["url"], self.WINTER["url"],
+                          self.CHROME["url"]])
+
+        values = {s["stat_key"]: s["value"] for s in data["stats"]}
+        self.assertEqual(values["annual_pm25"], "118")
+        self.assertEqual(values["winter_aqi"], "494")
+
+    def test_nothing_to_read_means_no_call_at_all(self):
+        """A zero-URL batch would still be billed against the daily cap."""
+        _data, _search, batch = self._refresh(
+            searches=[[self.HOME], [self.HOME], [self.HOME]], pages=[self.HOME])
+        batch.assert_not_called()
+
+    def test_a_call_never_carries_more_than_one_candidate_per_figure(self):
+        """Nine live-fetched CPCB pages in one call came back HTTP 504.
+
+        The batch ceiling is a time budget as much as a URL count, so round 1
+        asks for each figure's best candidate and only an unanswered figure
+        asks for a second round. One slow figure cannot fail the other two.
+        """
+        extra = {**self.ANNUAL,
+                 "url": "https://cpcb.nic.in/reports/delhi-pm25-detail",
+                 "text": "The annual mean pm2.5 for Delhi was 118 micrograms."}
+        data, _search, batch = self._refresh(
+            searches=[[self.ANNUAL, extra], [self.WINTER], [self.CHROME]],
+            pages=[self.ANNUAL, extra, self.WINTER, self.CHROME])
+
+        self.assertEqual(batch.call_count, 2)              # round 1, then 2
+        for call in batch.call_args_list:
+            self.assertLessEqual(len(call.args[0]),
+                                 live_data.CASE_FETCH_BATCH)
+        self.assertEqual(list(batch.call_args_list[0].args[0]),
+                         [self.ANNUAL["url"], self.WINTER["url"],
+                          self.CHROME["url"]])
+        self.assertEqual(list(batch.call_args_list[1].args[0]), [extra["url"]])
+
+        # The first candidate already answered the figure, so its second was
+        # read but never needed — and a figure that round 1 settled is settled.
+        self.assertEqual([s["stat_key"] for s in data["stats"]],
+                         ["annual_pm25", "winter_aqi"])
+        self.assertEqual(data["stats"][0]["value"], "118")
+
+    # ── quality of what gets stored ──────────────────────────────────────
+    def test_a_site_homepage_is_never_used_as_a_figure(self):
+        data, _search, _batch = self._refresh(
+            searches=[[self.HOME], [self.HOME], [self.HOME]], pages=[self.HOME])
+        self.assertEqual(data["stats"], [])
+
+    def test_a_summary_made_of_page_chrome_is_rejected_and_purged(self):
+        # An earlier refresh stored a "report" that is really a widget bar.
+        live_store.save_case_stats([{
+            "stat_key": "news_strip", "label": "Latest Delhi air quality report",
+            "value": "Accessibility Options Text To Speech", "unit": None,
+            "as_of": "2026-09-01", "source": "CAQM",
+            "url": "https://caqm.nic.in/",
+            "fetched_at": "2026-09-01T00:00:00+05:30",
+        }])
+
+        data, _search, _batch = self._refresh(
+            searches=[[self.ANNUAL], [self.WINTER], [self.CHROME]],
+            pages=[self.ANNUAL, self.WINTER, self.CHROME])
+
+        self.assertNotIn("news_strip",
+                         [s["stat_key"] for s in data["stats"]])
+        # Judged and disproved, so its row is gone rather than served forever.
+        self.assertEqual([r["stat_key"] for r in live_store.case_stats()],
+                         ["annual_pm25", "winter_aqi"])
+
+    def test_a_redirect_off_an_allowlisted_source_is_not_cited(self):
+        """Fetch followed a CPCB page through to its bare IP address.
+
+        Naming "49.50.115.127" as a figure's source would cite no authority at
+        all, so the citation keeps the page that was actually asked for.
+        """
+        svc = tinyfish_service_stub()
+        stray = {**self.ANNUAL,
+                 "final_url": "https://49.50.115.127/reports/delhi-annual-pm25"}
+        with mock.patch.object(svc, "search",
+                               side_effect=[[self.ANNUAL], [self.WINTER],
+                                            [self.CHROME]]), \
+                mock.patch.object(svc, "fetch_many",
+                                  return_value={"results": [stray],
+                                                "errors": []}):
+            data = live_data.refresh_case_study(force=True)
+
+        annual = next(s for s in data["stats"] if s["stat_key"] == "annual_pm25")
+        self.assertEqual(annual["url"], self.ANNUAL["url"])
+        self.assertEqual(annual["source"], "CPCB")
+
+    def test_a_failed_search_keeps_the_previous_figure(self):
+        """A transient failure must not erase a figure that was correct."""
+        live_store.save_case_stats([{
+            "stat_key": "annual_pm25", "label": "Annual mean PM2.5",
+            "value": "99.7", "unit": "µg/m³", "as_of": "2026-08-01",
+            "source": "CPCB", "url": "https://cpcb.nic.in/reports/old",
+            "fetched_at": "2026-08-01T00:00:00+05:30",
+        }])
+
+        svc = tinyfish_service_stub()
+        with mock.patch.object(svc, "search",
+                               side_effect=[svc.TinyFishError("timed out"),
+                                            [self.WINTER], [self.CHROME]]), \
+                mock.patch.object(svc, "fetch_many",
+                                  return_value={"results": [self._page(self.WINTER),
+                                                            self._page(self.CHROME)],
+                                                "errors": []}):
+            live_data.refresh_case_study(force=True)
+
+        rows = {row["stat_key"]: row for row in live_store.case_stats()}
+        self.assertEqual(rows["annual_pm25"]["value"], "99.7")
+        # The other two were judged; news_strip had nothing citable to store.
+        self.assertNotIn("news_strip", rows)
+
+
 if __name__ == "__main__":
     unittest.main()

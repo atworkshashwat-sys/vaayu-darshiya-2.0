@@ -96,6 +96,28 @@ class HelperTests(unittest.TestCase):
         self.assertIn("construction activities remain banned", summary.lower())
         self.assertNotIn("subscribe", summary.lower())
 
+    def test_summarize_never_quotes_a_sites_navigation(self):
+        """A news home page has no full stop for hundreds of characters.
+
+        That makes its whole menu a single "sentence", so the short-line
+        boilerplate test never fires and the panel would have rendered
+        "Edition IN * IN * US Weather Sign In ## TOI Today's ePaper * News"
+        as the alert's summary.
+        """
+        nav_page = (
+            "Edition IN * IN * US Weather Sign In ## TOI Today's ePaper * News"
+            " * City News * delhi News * Cold wave grips Delhi: AQI in 'very "
+            "poor' category. Flights were delayed at the airport due to dense fog."
+        )
+        summary = ctx.summarize(nav_page)
+        self.assertNotIn("ePaper", summary)
+        self.assertIn("Flights were delayed", summary)
+
+    def test_a_page_that_is_only_navigation_summarises_to_nothing(self):
+        # Nothing citable was stated, so the item is dropped by is_useful
+        # rather than shown as a card built from a table of contents.
+        self.assertEqual(ctx.summarize("Edition IN * IN * US Weather Sign In ## TOI"), "")
+
     def test_is_useful_drops_homepages_and_page_chrome(self):
         chrome = "Accessibility Options Text To Speech Bigger Text Small Text " \
                  "Line Height Highlight Links Reset All Settings"
@@ -511,7 +533,7 @@ class WeatherWindowsTests(unittest.TestCase):
     # ── refresh / cache / failures ───────────────────────────────────────
     def test_refresh_returns_weather_and_notices_with_sources(self):
         with mock.patch.object(tinyfish_service, "search", side_effect=fake_weather_search), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fake_weather_fetch):
+                mock.patch.object(tinyfish_service, "fetch_many", side_effect=fake_batch(fake_weather_fetch)):
             data = ctx.refresh_weather_windows()
 
         self.assertEqual(data["weather"]["source"], "IMD")
@@ -526,6 +548,29 @@ class WeatherWindowsTests(unittest.TestCase):
                 self.assertIn(field, notice)
             self.assertLessEqual(len(notice["summary"]), 200)
         self.assertGreaterEqual(len(data["sources"]), 3)
+
+    def test_every_weather_page_costs_one_batched_call(self):
+        """Budget guard (spec §5): job C must fit inside the daily cap.
+
+        A fetch per forecast candidate plus a fetch per notice was up to five
+        calls — six whenever one of them retried — every 150 minutes, which is
+        roughly 130 a day for a single observation. The candidates and the
+        notice pages now each travel together, so the whole job is 3 searches
+        + 2 fetches however many URLs are read.
+        """
+        with mock.patch.object(tinyfish_service, "search",
+                               side_effect=fake_weather_search) as search, \
+                mock.patch.object(tinyfish_service, "fetch_many",
+                                  side_effect=fake_batch(fake_weather_fetch)) as batch:
+            data = ctx.refresh_weather_windows()
+
+        self.assertTrue(data["weather"])
+        self.assertEqual(search.call_count, 3)   # forecast + 2 notice queries
+        self.assertEqual(batch.call_count, 2)    # candidates, then notices
+        for call in batch.call_args_list:
+            urls = list(call.args[0])
+            self.assertEqual(len(urls), len(set(urls)))
+            self.assertTrue(all(u.startswith("https://") for u in urls))
 
     def test_timeout_without_cache_keeps_the_ml_windows(self):
         with mock.patch.object(tinyfish_service, "search",
@@ -543,7 +588,7 @@ class WeatherWindowsTests(unittest.TestCase):
     def test_malformed_search_results_do_not_raise(self):
         with mock.patch.object(tinyfish_service, "search",
                                return_value=[None, "junk", {"url": ""}]), \
-                mock.patch.object(tinyfish_service, "fetch_text", return_value={}):
+                mock.patch.object(tinyfish_service, "fetch_many", return_value={"results": [], "errors": []}):
             payload = ctx.get_weather_windows([{"period": "Evening", "status": "Moderate"}])
         self.assertEqual(payload["status"], "unavailable")
         self.assertEqual(payload["slots"][0]["status"], "Moderate")
@@ -606,7 +651,7 @@ class WeatherWindowsTests(unittest.TestCase):
                     "published_date": ""}
 
         with mock.patch.object(tinyfish_service, "search", side_effect=search), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fetch):
+                mock.patch.object(tinyfish_service, "fetch_many", side_effect=fake_batch(fetch)):
             data = ctx.refresh_weather_windows()
 
         self.assertEqual(data["weather"]["url"], IMD_TABLE_RESULT["url"])
@@ -646,7 +691,7 @@ class WeatherWindowsTests(unittest.TestCase):
                     "published_date": "2026-10-09"}
 
         with mock.patch.object(tinyfish_service, "search", side_effect=search), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fetch):
+                mock.patch.object(tinyfish_service, "fetch_many", side_effect=fake_batch(fetch)):
             data = ctx.refresh_weather_windows()
 
         urls = [notice["url"] for notice in data["notices"]]
@@ -683,7 +728,7 @@ class WeatherEndpointTests(unittest.TestCase):
             {"period": "Evening", "hours": "6:00 PM – 9:00 PM", "status": "Avoid Outdoor"},
         ]}
         with mock.patch.object(tinyfish_service, "search", side_effect=fake_weather_search), \
-                mock.patch.object(tinyfish_service, "fetch_text", side_effect=fake_weather_fetch):
+                mock.patch.object(tinyfish_service, "fetch_many", side_effect=fake_batch(fake_weather_fetch)):
             res = self.client.post("/api/context/weather-windows", json=body)
 
         self.assertEqual(res.status_code, 200)

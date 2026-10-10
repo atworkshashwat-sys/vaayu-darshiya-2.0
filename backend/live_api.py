@@ -4,6 +4,7 @@ HTTP routes for the live layer: SSE broadcast, alerts, weather, status (spec §6
     GET  /api/stream                     SSE — readings | alerts | weather | status
     GET  /api/alerts                     official first, then model, de-duplicated
     GET  /api/weather                    current weather + fog/wind flags
+    GET  /api/case-study                 stored case figures (reads only, no calls)
     GET  /api/status                     per-source health, calls vs cap, key_1
     GET  /api/admin/tinyfish-usage       protected: totals per key and the cap
     POST /api/admin/tinyfish/refresh     protected: force one job now (ops/demo)
@@ -102,6 +103,21 @@ def alerts(limit: int = 8):
 @router.get("/weather")
 def weather():
     payload = live_data.weather_payload()
+    payload["server_time"] = live_jobs.now_ist().isoformat(timespec="seconds")
+    payload["active"] = tinyfish_service.is_active()
+    return payload
+
+
+@router.get("/case-study")
+def case_study():
+    """The stored "Delhi's Drastic Case" figures (job D), never fetched here.
+
+    Job D runs once a day in the background; this route only reads the store,
+    so opening the page cannot spend a single call against the daily cap.
+    Each figure keeps its own source and as-of date — one the sources never
+    stated simply does not appear, rather than being filled in.
+    """
+    payload = live_data.case_payload()
     payload["server_time"] = live_jobs.now_ist().isoformat(timespec="seconds")
     payload["active"] = tinyfish_service.is_active()
     return payload

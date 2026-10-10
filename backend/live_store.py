@@ -363,17 +363,31 @@ def latest_weather():
 
 
 # ── Case-study stats (job D) ────────────────────────────────────────────────
-def save_case_stats(items):
-    if not items:
-        return 0
+def save_case_stats(items, judged=None):
+    """Write this refresh's figures, dropping the ones it disproved.
+
+    `judged` is the set of stat keys the refresh actually searched for. A key
+    that was judged but produced no row is a figure the sources no longer
+    state, so its stored row is deleted — leaving it would serve last week's
+    number indefinitely. A key whose search failed was never judged and keeps
+    its previous row: a transient failure must not erase a figure that was
+    correct yesterday.
+    """
     conn = connect()
     with _conn_lock:
-        conn.executemany(
-            """INSERT OR REPLACE INTO case_stats
-               (stat_key, label, value, unit, as_of, source, url, fetched_at)
-               VALUES (:stat_key, :label, :value, :unit, :as_of, :source,
-                       :url, :fetched_at)""",
-            items)
+        if items:
+            conn.executemany(
+                """INSERT OR REPLACE INTO case_stats
+                   (stat_key, label, value, unit, as_of, source, url, fetched_at)
+                   VALUES (:stat_key, :label, :value, :unit, :as_of, :source,
+                           :url, :fetched_at)""",
+                items)
+        if judged:
+            kept = {item["stat_key"] for item in items}
+            stale = [key for key in judged if key not in kept]
+            if stale:
+                conn.executemany("DELETE FROM case_stats WHERE stat_key = ?",
+                                 [(key,) for key in stale])
         conn.commit()
     return len(items)
 

@@ -1,10 +1,10 @@
-﻿"""
+"""
 Tests for the single TinyFish wrapper: budget gate, key failover, usage log.
 
 Run:
     cd backend && python -m unittest -v test_tinyfish_wrapper
 
-TinyFish is fully mocked â€” no API quota is spent and no network call is made.
+TinyFish is fully mocked — no API quota is spent and no network call is made.
 The cases mirror the spec's acceptance list: success, timeout, malformed JSON,
 out-of-range value (handled in test_live_data), wrong unit, auth error with
 key failover, all keys failed, past expiry and cap reached.
@@ -249,7 +249,7 @@ class FailoverTests(unittest.TestCase):
                     side_effect=key_error(401, "INVALID_API_KEY")) as call:
                 with self.assertRaises(svc.TinyFishError):
                     svc.search("q")
-            # one attempt per key â€” never a loop across the same key
+            # one attempt per key — never a loop across the same key
             self.assertEqual(call.call_count, 3)
 
     def test_timeout_retries_the_same_key_and_never_rotates(self):
@@ -378,7 +378,7 @@ class BudgetBaselineTests(unittest.TestCase):
 
     def test_baseline_is_a_floor_never_an_addition(self):
         # The persisted total already includes this process's calls, so the
-        # larger of the two is the truth â€” adding them would double count.
+        # larger of the two is the truth — adding them would double count.
         with env():
             with mock.patch.object(svc, "_call", return_value={"results": []}):
                 svc.search("a")
@@ -417,14 +417,58 @@ class BudgetBaselineTests(unittest.TestCase):
         self.assertEqual(entry["day"], svc.usage_day())
 
     def test_usage_day_is_the_utc_window_not_the_local_date(self):
-        # The allowance resets at 00:00 UTC, which is 05:30 IST â€” using the
+        # The allowance resets at 00:00 UTC, which is 05:30 IST — using the
         # IST date would cut the window in half every night.
         self.assertEqual(svc.usage_day(),
                          datetime.now(timezone.utc).date().isoformat())
 
+    def test_reading_the_baseline_never_re_enters_the_usage_lock(self):
+        """Regression: `/api/status` hung forever on this.
+
+        `usage_snapshot()` holds `_usage_lock` — a plain, non-reentrant
+        `threading.Lock` — while it reads the baseline. Resolving the day
+        through `usage_day()` inside that callback asked for the same lock a
+        second time, so the request never returned. Worse, that thread never
+        released the lock, so every later TinyFish call blocked behind it and
+        the whole engine went quiet after one HTTP request.
+
+        Run on a watchdog thread: without it a deadlock hangs the suite
+        instead of failing it.
+        """
+        seen = []
+        svc.set_usage_baseline(lambda day: seen.append(day) or 0)
+        result = {}
+
+        def probe():
+            result["snapshot"] = svc.usage_snapshot()
+
+        thread = threading.Thread(target=probe, daemon=True)
+        thread.start()
+        thread.join(timeout=5)
+
+        self.assertFalse(thread.is_alive(), "usage_snapshot() deadlocked")
+        # The day came from the caller rather than being re-derived inside
+        # the lock.
+        self.assertEqual(seen, [result["snapshot"]["day"]])
+
+    def test_calls_used_never_re_enters_the_usage_lock(self):
+        """The same trap from the budget gate, which runs before every call."""
+        svc.set_usage_baseline(lambda day: 7)
+        result = {}
+
+        def probe():
+            result["used"] = svc.calls_used()
+
+        thread = threading.Thread(target=probe, daemon=True)
+        thread.start()
+        thread.join(timeout=5)
+
+        self.assertFalse(thread.is_alive(), "calls_used() deadlocked")
+        self.assertEqual(result["used"], 7)
+
 
 class PayloadTests(unittest.TestCase):
-    """TinyFish returned something we did not expect â€” never crash the caller."""
+    """TinyFish returned something we did not expect — never crash the caller."""
 
     def setUp(self):
         svc.reset_usage()

@@ -26,8 +26,7 @@ live_store.reset(DB)
 
 # Mirror what api.py does at startup.
 svc.set_usage_sink(live_store.record_usage)
-svc.set_usage_baseline(
-    lambda: live_store.usage_total_for_day(svc.usage_day()))
+svc.set_usage_baseline(live_store.usage_total_for_day)
 
 # Background writer, so the state matches a server mid-refresh rather than an
 # idle one: the sink is what runs after every TinyFish call.
