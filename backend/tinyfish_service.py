@@ -301,29 +301,39 @@ def set_usage_sink(fn):
 
 
 def set_usage_baseline(fn):
-    """Register `fn() -> int`: today's calls from durable storage.
+    """Register `fn(day) -> int`: that reset day's calls from durable storage.
 
     `_usage` is in-memory and starts empty with every process, so a restart
     would otherwise reset the budget and hand out a second 400-call allowance
     for the same day. `calls_used()` takes the larger of the two numbers: the
     persisted total already includes this process's calls (each one is written
     through the sink), so the baseline is a floor, never an addition.
+
+    `day` is passed in rather than read back through `usage_day()`. Both
+    callers already hold `_usage_lock` — a plain, non-reentrant lock — so
+    asking for the day again would deadlock: `/api/status` hung on exactly
+    that, and because the lock is shared with every TinyFish call, the whole
+    engine froze behind it.
     """
     global _usage_baseline
     _usage_baseline = fn
 
 
-def _baseline_total():
+def _baseline_total(day):
     if _usage_baseline is None:
         return 0
     try:
-        return max(0, int(_usage_baseline() or 0))
+        return max(0, int(_usage_baseline(day) or 0))
     except Exception:                        # pragma: no cover - storage is best effort
         return 0
 
 
 def usage_day():
-    """The TinyFish allowance window in force (YYYY-MM-DD, resets 00:00 UTC)."""
+    """The TinyFish allowance window in force (YYYY-MM-DD, resets 00:00 UTC).
+
+    For callers that do not already hold `_usage_lock`; everything inside the
+    locked region must read `_usage_day` directly.
+    """
     with _usage_lock:
         _roll_day_locked()
         return _usage_day
@@ -353,7 +363,7 @@ def calls_used():
         _roll_day_locked()
         total = sum(slot["total"] for slot in _usage.values())
         # Never let a restart understate the day's spend (see set_usage_baseline).
-        return max(total, _baseline_total())
+        return max(total, _baseline_total(_usage_day))
 
 
 def budget_remaining():
@@ -428,7 +438,8 @@ def usage_snapshot():
             })
         # The same floor as calls_used(): without it, /api/status would show a
         # freshly restarted process as having spent nothing today.
-        used = max(sum(s["total"] for s in _usage.values()), _baseline_total())
+        used = max(sum(s["total"] for s in _usage.values()),
+                   _baseline_total(_usage_day))
         cap = daily_cap()
         log_tail = list(_call_log)[-50:]
         day = _usage_day

@@ -1,10 +1,10 @@
-"""
+﻿"""
 Tests for the single TinyFish wrapper: budget gate, key failover, usage log.
 
 Run:
     cd backend && python -m unittest -v test_tinyfish_wrapper
 
-TinyFish is fully mocked — no API quota is spent and no network call is made.
+TinyFish is fully mocked â€” no API quota is spent and no network call is made.
 The cases mirror the spec's acceptance list: success, timeout, malformed JSON,
 out-of-range value (handled in test_live_data), wrong unit, auth error with
 key failover, all keys failed, past expiry and cap reached.
@@ -13,6 +13,7 @@ key failover, all keys failed, past expiry and cap reached.
 import json
 import os
 import sys
+import threading
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -248,7 +249,7 @@ class FailoverTests(unittest.TestCase):
                     side_effect=key_error(401, "INVALID_API_KEY")) as call:
                 with self.assertRaises(svc.TinyFishError):
                     svc.search("q")
-            # one attempt per key — never a loop across the same key
+            # one attempt per key â€” never a loop across the same key
             self.assertEqual(call.call_count, 3)
 
     def test_timeout_retries_the_same_key_and_never_rotates(self):
@@ -371,25 +372,25 @@ class BudgetBaselineTests(unittest.TestCase):
 
     def test_a_restart_does_not_refill_the_allowance(self):
         # Process two: in-memory is empty, but storage says 130 were spent.
-        svc.set_usage_baseline(lambda: 130)
+        svc.set_usage_baseline(lambda day: 130)
         self.assertEqual(svc.calls_used(), 130)
         self.assertEqual(svc.budget_remaining(), 400 - 130)
 
     def test_baseline_is_a_floor_never_an_addition(self):
         # The persisted total already includes this process's calls, so the
-        # larger of the two is the truth — adding them would double count.
+        # larger of the two is the truth â€” adding them would double count.
         with env():
             with mock.patch.object(svc, "_call", return_value={"results": []}):
                 svc.search("a")
                 svc.search("b")
-        svc.set_usage_baseline(lambda: 3)
+        svc.set_usage_baseline(lambda day: 3)
         self.assertEqual(svc.calls_used(), 3)      # baseline already covers them
 
-        svc.set_usage_baseline(lambda: 1)
+        svc.set_usage_baseline(lambda day: 1)
         self.assertEqual(svc.calls_used(), 2)      # in-memory wins when higher
 
     def test_a_broken_baseline_never_blocks_a_legitimate_call(self):
-        def explode():
+        def explode(_day):
             raise RuntimeError("database is gone")
 
         svc.set_usage_baseline(explode)
@@ -400,7 +401,7 @@ class BudgetBaselineTests(unittest.TestCase):
         self.assertEqual(svc.calls_used(), 1)
 
     def test_the_gate_refuses_once_storage_reaches_the_cap(self):
-        svc.set_usage_baseline(lambda: 400)
+        svc.set_usage_baseline(lambda day: 400)
         with env():
             with mock.patch.object(svc, "_call", return_value={"results": []}) as call:
                 with self.assertRaises(svc.TinyFishError):
@@ -416,14 +417,14 @@ class BudgetBaselineTests(unittest.TestCase):
         self.assertEqual(entry["day"], svc.usage_day())
 
     def test_usage_day_is_the_utc_window_not_the_local_date(self):
-        # The allowance resets at 00:00 UTC, which is 05:30 IST — using the
+        # The allowance resets at 00:00 UTC, which is 05:30 IST â€” using the
         # IST date would cut the window in half every night.
         self.assertEqual(svc.usage_day(),
                          datetime.now(timezone.utc).date().isoformat())
 
 
 class PayloadTests(unittest.TestCase):
-    """TinyFish returned something we did not expect — never crash the caller."""
+    """TinyFish returned something we did not expect â€” never crash the caller."""
 
     def setUp(self):
         svc.reset_usage()

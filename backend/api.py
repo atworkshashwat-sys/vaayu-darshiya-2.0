@@ -401,11 +401,14 @@ def live_store_register_sink():
     The same rows back the budget baseline: without it, a restarted process
     would see `calls_used() == 0` and happily spend a second 400-call
     allowance inside the same reset day.
+
+    `usage_total_for_day` is passed straight through as the baseline because
+    it already takes the day — the wrapper supplies it while holding its usage
+    lock, so the baseline must not try to read it back (see set_usage_baseline).
     """
     import live_store
     tinyfish_service.set_usage_sink(live_store.record_usage)
-    tinyfish_service.set_usage_baseline(
-        lambda: live_store.usage_total_for_day(tinyfish_service.usage_day()))
+    tinyfish_service.set_usage_baseline(live_store.usage_total_for_day)
 
 
 @app.get("/")
