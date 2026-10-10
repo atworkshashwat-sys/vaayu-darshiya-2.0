@@ -34,8 +34,9 @@ console.log(`opening ${base}/ ...`);
 const response = await page.goto(`${base}/`, { waitUntil: "domcontentloaded" });
 console.log(`  HTTP ${response?.status()}`);
 
-// Give the SSE hook and the TanStack queries time to land.
-await page.waitForTimeout(6000);
+// Give the SSE hook and the TanStack queries time to land, including the
+// first invalidation the stream sends after the scheduler's staggered run.
+await page.waitForTimeout(15000);
 
 await page.screenshot({ path: path.join(outDir, "01-dashboard-live.png"), fullPage: true });
 console.log("  wrote 01-dashboard-live.png");
@@ -43,22 +44,24 @@ console.log("  wrote 01-dashboard-live.png");
 // The status pill the SSE hook writes — proof the browser is on the stream.
 const bodyText = await page.evaluate(() => document.body.innerText);
 const signals = {
-  "SSE connected": /connected to live updates|live/i.test(bodyText),
-  "case-study figures": /Live from official sources/i.test(bodyText),
-  "alerts panel": /Active Alerts|Alerts/i.test(bodyText),
-  "best-time panel": /Best Time|windows/i.test(bodyText),
+  "SSE live pill": /Live updated/i.test(bodyText),
+  "alerts fetched (not still checking)": /Live advisories retrieved at/i.test(bodyText),
+  "best-time panel": /Best Time To Go Outside/i.test(bodyText),
 };
 for (const [label, hit] of Object.entries(signals)) {
   console.log(`  ${hit ? "✓" : "✗"} ${label}`);
 }
 
-// Scroll the case-study strip into view for a focused shot.
-const caseStudy = page.locator("text=Live from official sources").first();
-if (await caseStudy.count()) {
-  await caseStudy.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(700);
-  await page.screenshot({ path: path.join(outDir, "02-case-study-live.png") });
+// The case study lives on its own tab, so it never appears in the shot above.
+const caseTab = page.locator("button,[role=tab]").filter({ hasText: /DRASTIC CASE/i }).first();
+if (await caseTab.count()) {
+  await caseTab.click();
+  await page.waitForTimeout(6000);
+  await page.screenshot({ path: path.join(outDir, "02-case-study-live.png"), fullPage: true });
   console.log("  wrote 02-case-study-live.png");
+  const caseText = await page.evaluate(() => document.body.innerText);
+  console.log(`  ${/Live from official sources/i.test(caseText) ? "✓" : "✗"} case-study figures`);
+  console.log(`  ${/Latest Delhi air quality report/i.test(caseText) ? "✓" : "✗"} case-study report strip`);
 }
 
 if (errors.length) {
