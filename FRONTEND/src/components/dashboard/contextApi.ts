@@ -40,10 +40,14 @@ export interface AlertsContext {
   message?: string;
 }
 
-/** Fetches Active-Alerts context, or `null` when unreachable/invalid. Never throws. */
+/** Fetches Active-Alerts context, or `null` when unreachable/invalid. Never throws.
+ *
+ * 45 s: a *cold* cache fill runs 3 searches + up to 5 page fetches, each with
+ * one retry (6–8 s budget) — past runs took 10–50 s. Warm loads hit the cache
+ * in milliseconds; only the first request after a backend restart waits. */
 export async function fetchContextAlerts(
   force = false,
-  timeoutMs = 15000,
+  timeoutMs = 45000,
 ): Promise<AlertsContext | null> {
   try {
     const controller = new AbortController();
@@ -119,11 +123,14 @@ export interface WeatherWindows {
  * Sends the ML windows to the backend, which attaches the cached official
  * forecast and a reasoned (never silent) adjustment. `null` on any failure —
  * the component then renders the ML windows exactly as before.
+ *
+ * 45 s for the same cold-cache reason as the alerts call (search + fetches,
+ * one retry each); warm loads return from the 6 h TTL cache immediately.
  */
 export async function fetchWeatherWindows(
   slots: SlotInput[],
   force = false,
-  timeoutMs = 20000,
+  timeoutMs = 45000,
 ): Promise<WeatherWindows | null> {
   try {
     const controller = new AbortController();
