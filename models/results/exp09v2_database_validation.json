@@ -1,0 +1,383 @@
+{
+  "generated_at": "2026-10-10T00:00:39",
+  "database": {
+    "extract": "data/vaayu_extract_7sites.csv",
+    "rows": 99753,
+    "min_date": "2018-04-27",
+    "max_date": "2025-07-13"
+  },
+  "targets": {
+    "NO2": {
+      "database_column": "no2",
+      "model_test": {
+        "t1h": {
+          "n": 5039,
+          "r2": 0.6854,
+          "mae": 11.16,
+          "rmse": 16.14,
+          "bias": 0.63
+        },
+        "t24h": {
+          "n": 4153,
+          "r2": 0.6504,
+          "mae": 11.99,
+          "rmse": 17.15,
+          "bias": 0.94
+        },
+        "all": {
+          "n": 109430,
+          "r2": 0.5196,
+          "mae": 14.06,
+          "rmse": 20.02,
+          "bias": -1.5
+        }
+      },
+      "database": {
+        "t1h": {
+          "n": 5039,
+          "r2": 0.6854,
+          "mae": 11.16,
+          "rmse": 16.14,
+          "bias": 0.63
+        },
+        "t24h": {
+          "n": 4886,
+          "r2": 0.6094,
+          "mae": 12.5,
+          "rmse": 17.57,
+          "bias": 1.83
+        },
+        "all": {
+          "n": 118741,
+          "r2": 0.5068,
+          "mae": 14.11,
+          "rmse": 19.95,
+          "bias": -0.74
+        }
+      },
+      "source_agreement": {
+        "n": 109430,
+        "r2": 1.0,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "bias": 0.0,
+        "correlation": 1.0,
+        "lag_correlation": {
+          "0h": 1.0,
+          "+1h": 0.5349,
+          "-1h": 0.5349
+        }
+      },
+      "per_site_t1h": [
+        {
+          "site_id": 1,
+          "site_name": "Ashok Vihar",
+          "n": 702,
+          "r2": 0.7349,
+          "mae": 10.88,
+          "rmse": 15.26,
+          "bias": 1.57
+        },
+        {
+          "site_id": 2,
+          "site_name": "Dwarka",
+          "n": 709,
+          "r2": 0.5534,
+          "mae": 13.92,
+          "rmse": 18.9,
+          "bias": 1.31
+        },
+        {
+          "site_id": 4,
+          "site_name": "Northwest Delhi",
+          "n": 778,
+          "r2": 0.6422,
+          "mae": 7.89,
+          "rmse": 10.95,
+          "bias": 1.73
+        },
+        {
+          "site_id": 5,
+          "site_name": "East Delhi",
+          "n": 1020,
+          "r2": 0.7316,
+          "mae": 11.36,
+          "rmse": 17.15,
+          "bias": -0.95
+        },
+        {
+          "site_id": 6,
+          "site_name": "Northwest Delhi 2",
+          "n": 941,
+          "r2": 0.5975,
+          "mae": 14.07,
+          "rmse": 19.78,
+          "bias": -0.13
+        },
+        {
+          "site_id": 7,
+          "site_name": "Northeast Delhi",
+          "n": 889,
+          "r2": 0.6849,
+          "mae": 8.74,
+          "rmse": 12.31,
+          "bias": 0.98
+        }
+      ],
+      "overlap": {
+        "start": "2025-04-01",
+        "end": "2025-06-18",
+        "rows": 118741
+      },
+      "verdict": "model tracks the database"
+    },
+    "O3": {
+      "database_column": "o3",
+      "model_test": {
+        "t1h": {
+          "n": 4994,
+          "r2": 0.8105,
+          "mae": 16.47,
+          "rmse": 23.23,
+          "bias": 1.49
+        },
+        "t24h": {
+          "n": 4107,
+          "r2": 0.7741,
+          "mae": 18.4,
+          "rmse": 25.84,
+          "bias": 0.54
+        },
+        "all": {
+          "n": 108330,
+          "r2": 0.7191,
+          "mae": 20.93,
+          "rmse": 28.47,
+          "bias": -0.14
+        }
+      },
+      "database": {
+        "t1h": {
+          "n": 4994,
+          "r2": 0.8105,
+          "mae": 16.47,
+          "rmse": 23.23,
+          "bias": 1.49
+        },
+        "t24h": {
+          "n": 4841,
+          "r2": 0.7022,
+          "mae": 20.74,
+          "rmse": 29.18,
+          "bias": 1.78
+        },
+        "all": {
+          "n": 117669,
+          "r2": 0.7084,
+          "mae": 21.06,
+          "rmse": 28.67,
+          "bias": 0.11
+        }
+      },
+      "source_agreement": {
+        "n": 108330,
+        "r2": 1.0,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "bias": 0.0,
+        "correlation": 1.0,
+        "lag_correlation": {
+          "0h": 1.0,
+          "+1h": 0.6025,
+          "-1h": 0.6025
+        }
+      },
+      "per_site_t1h": [
+        {
+          "site_id": 1,
+          "site_name": "Ashok Vihar",
+          "n": 703,
+          "r2": 0.816,
+          "mae": 17.78,
+          "rmse": 24.42,
+          "bias": 0.82
+        },
+        {
+          "site_id": 2,
+          "site_name": "Dwarka",
+          "n": 709,
+          "r2": 0.756,
+          "mae": 17.38,
+          "rmse": 25.79,
+          "bias": -0.21
+        },
+        {
+          "site_id": 4,
+          "site_name": "Northwest Delhi",
+          "n": 778,
+          "r2": 0.85,
+          "mae": 9.11,
+          "rmse": 12.69,
+          "bias": 0.49
+        },
+        {
+          "site_id": 5,
+          "site_name": "East Delhi",
+          "n": 1020,
+          "r2": 0.8034,
+          "mae": 21.13,
+          "rmse": 28.44,
+          "bias": 2.04
+        },
+        {
+          "site_id": 6,
+          "site_name": "Northwest Delhi 2",
+          "n": 942,
+          "r2": 0.8445,
+          "mae": 15.01,
+          "rmse": 19.79,
+          "bias": 2.87
+        },
+        {
+          "site_id": 7,
+          "site_name": "Northeast Delhi",
+          "n": 842,
+          "r2": 0.7274,
+          "mae": 17.42,
+          "rmse": 24.01,
+          "bias": 2.22
+        }
+      ],
+      "overlap": {
+        "start": "2025-04-01",
+        "end": "2025-06-18",
+        "rows": 117669
+      },
+      "verdict": "model tracks the database"
+    },
+    "HCHO": {
+      "database_column": "sat_hcho_column",
+      "model_test": {
+        "t1h": {
+          "n": 4514,
+          "r2": 0.5413,
+          "mae": 4.51,
+          "rmse": 5.88,
+          "bias": -0.49
+        },
+        "t24h": {
+          "n": 3716,
+          "r2": 0.4849,
+          "mae": 4.72,
+          "rmse": 6.14,
+          "bias": -0.92
+        },
+        "all": {
+          "n": 97969,
+          "r2": 0.2488,
+          "mae": 5.81,
+          "rmse": 7.52,
+          "bias": -1.05
+        }
+      },
+      "database": {
+        "t1h": {
+          "n": 4514,
+          "r2": 0.5413,
+          "mae": 4.51,
+          "rmse": 5.88,
+          "bias": -0.49
+        },
+        "t24h": {
+          "n": 4361,
+          "r2": 0.3867,
+          "mae": 5.02,
+          "rmse": 6.54,
+          "bias": -1.48
+        },
+        "all": {
+          "n": 106202,
+          "r2": 0.2315,
+          "mae": 5.84,
+          "rmse": 7.54,
+          "bias": -1.17
+        }
+      },
+      "source_agreement": {
+        "n": 97969,
+        "r2": 1.0,
+        "mae": 0.0,
+        "rmse": 0.0,
+        "bias": -0.0,
+        "correlation": 1.0,
+        "lag_correlation": {
+          "0h": 1.0,
+          "+1h": 0.5073,
+          "-1h": 0.5073
+        }
+      },
+      "per_site_t1h": [
+        {
+          "site_id": 1,
+          "site_name": "Ashok Vihar",
+          "n": 650,
+          "r2": 0.5766,
+          "mae": 4.11,
+          "rmse": 5.36,
+          "bias": -0.71
+        },
+        {
+          "site_id": 2,
+          "site_name": "Dwarka",
+          "n": 618,
+          "r2": 0.3341,
+          "mae": 5.04,
+          "rmse": 6.64,
+          "bias": -0.18
+        },
+        {
+          "site_id": 4,
+          "site_name": "Northwest Delhi",
+          "n": 683,
+          "r2": 0.5264,
+          "mae": 3.98,
+          "rmse": 5.12,
+          "bias": -0.23
+        },
+        {
+          "site_id": 5,
+          "site_name": "East Delhi",
+          "n": 912,
+          "r2": 0.5392,
+          "mae": 4.65,
+          "rmse": 6.07,
+          "bias": -1.07
+        },
+        {
+          "site_id": 6,
+          "site_name": "Northwest Delhi 2",
+          "n": 851,
+          "r2": 0.5185,
+          "mae": 4.85,
+          "rmse": 6.24,
+          "bias": -0.01
+        },
+        {
+          "site_id": 7,
+          "site_name": "Northeast Delhi",
+          "n": 800,
+          "r2": 0.6127,
+          "mae": 4.34,
+          "rmse": 5.65,
+          "bias": -0.62
+        }
+      ],
+      "overlap": {
+        "start": "2025-04-01",
+        "end": "2025-06-18",
+        "rows": 106202
+      },
+      "verdict": "model does not track the database"
+    }
+  }
+}

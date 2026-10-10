@@ -1,0 +1,467 @@
+================================================================================
+           VAAYU DARSHIYA / PROJECT AEGIS — Q&A Documentation
+     AI/ML-Powered Air Quality Forecasting Platform for Delhi NCR
+================================================================================
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 1: PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1: What is VAAYU DARSHIYA?
+A1: VAAYU DARSHIYA is an AI/ML-powered air quality forecasting platform that
+    predicts NO₂ (Nitrogen Dioxide) and O₃ (Ozone) levels across 7 CPCB
+    monitoring stations in Delhi NCR, India. It displays results as AQI gauges,
+    heatmaps, pollutant charts, and 24-hour forecasts in real time.
+
+Q2: What is Project AEGIS?
+A2: Project AEGIS is the research and development codename for the ML pipeline
+    and forecasting engine behind VAAYU DARSHIYA. It encompasses the data
+    engineering, model training, evaluation, and deployment of dual-stack
+    XGBoost + Deep Learning models for air quality prediction.
+
+Q3: What problem does this project solve?
+A3: Delhi NCR suffers from severe air pollution. Existing monitoring provides
+    only current readings with no actionable forecasting. VAAYU DARSHIYA
+    provides 24-hour ahead predictions of NO₂ and O₃ at individual station
+    level, enabling citizens and authorities to plan outdoor activities and
+    issue timely health advisories.
+
+Q4: What pollutants does the system forecast?
+A4: Two primary pollutants:
+    - NO₂ (Nitrogen Dioxide) — traffic/industrial emissions indicator
+    - O₃ (Ozone) — photochemical smog indicator
+    PM2.5, PM10, SO₂, CO are estimated from NO₂ ratios for display only.
+
+Q5: What is the forecast horizon?
+A5: 24 hours ahead at 1-hour resolution. The system produces 24 hourly
+    predictions for each pollutant at each station.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 2: DATA PIPELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q6: What are the data sources?
+A6: Three primary sources:
+    1. CPCB (Central Pollution Control Board) — Historical AQ records from
+       ground monitoring stations across Delhi NCR
+    2. Sentinel-5P — Satellite-based tropospheric NO₂ column density data
+    3. ERA5 Meteorological Reanalysis — Weather variables (temperature,
+       humidity, wind speed/direction, pressure, precipitation)
+
+Q7: What is the time range of the dataset?
+A7: 2016 to 2026, approximately 10 years of data.
+
+Q8: How large is the dataset?
+A8: Approximately 829 MB of raw data with 180+ engineered features.
+
+Q9: How is the data loaded given its size?
+A9: Chunked CSV loading. The data is read in manageable chunks to avoid
+    memory overflow. Each site has its own training CSV file
+    (site_1_train_data.csv through site_7_train_data.csv).
+
+Q10: What data cleaning steps are performed?
+A10: Four main steps:
+     1. Null handling — Missing values are imputed or dropped
+     2. Deduplication — Duplicate rows removed
+     3. Outlier removal — Statistical outlier detection and removal
+     4. Type normalization — Ensuring correct data types for all columns
+
+Q11: What features are engineered?
+A11: The 180+ features include:
+     - Lag features: Previous hours' pollutant and weather values
+     - Rolling statistics: Moving averages, standard deviations over windows
+     - Time-based features: Hour of day, day of week, month, season
+     - Interaction features: Wind×pollutant, temperature×humidity
+     - Satellite features: NO₂ column density, HCHO, ratios
+     - Meteorological features: T_forecast, q_forecast, u_forecast,
+       v_forecast, w_forecast from ERA5
+
+Q12: How are the 7 monitoring stations defined?
+A12: Seven CPCB stations in Delhi NCR:
+     1. Ashok Vihar (28.695, 77.182)
+     2. Dwarka (28.572, 77.071)
+     3. Jawaharlal Nehru (28.583, 77.234)
+     4. Northwest Delhi (28.823, 77.102)
+     5. East Delhi (28.531, 77.271)
+     6. Northwest Delhi 2 (28.730, 77.096)
+     7. Northeast Delhi (28.711, 77.250)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 3: ML MODELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q13: What ML models are used?
+A13: A dual-stack ensemble:
+     - XGBoost (primary): One per-target regressor each for NO₂ and O₃,
+       with 24 separate models per pollutant (one per forecast horizon)
+     - CNN + LSTM + Attention (secondary): Processes 24-timestep sequences
+       for temporal pattern extraction
+     - Fusion Layer: Ridge meta-learner that combines outputs from both
+       model stacks
+
+Q14: Why XGBoost as the primary model?
+A14: XGBoost excels at tabular data with mixed feature types. It handles
+    non-linear relationships, missing values, and feature interactions well.
+    Per-horizon models allow each forecast step to learn its own optimal
+    feature weights.
+
+Q15: How many total models are trained?
+A15: In production (EXP_09v2):
+     - 24 XGBoost models for NO₂ (horizon 0–23)
+     - 24 XGBoost models for O₃ (horizon 0–23)
+     - 1 CNN+LSTM+Attention model (shared)
+     - 1 Ridge meta-learner (fusion)
+     Total: 50 models
+
+Q16: What is the purpose of per-horizon modeling?
+A16: Each forecast horizon (t+1h, t+2h, ... t+24h) has different prediction
+    characteristics. t+1h is easier to predict than t+24h. Separate models
+    let each horizon learn its own optimal feature weights and complexity,
+    improving overall accuracy.
+
+Q17: How is data leakage prevented?
+A17: Time-based train/test split:
+     - Training: 2019–2021
+     - Validation: 2022
+     - Testing: 2023–2024
+     No future data is ever used in training. Lag features only reference
+     past timestamps.
+
+Q18: What are the model performance metrics?
+A18: For NO₂ (t+1h): R² = 0.7958, MAE = 7.87, RMSE = 12.46
+    For O₃ (t+1h):  R² = 0.8671, MAE = 7.50, RMSE = 11.63
+    Performance degrades gracefully with horizon:
+    - t+6h: NO₂ R² = 0.6357, O₃ R² = 0.7564
+    - t+12h: NO₂ R² = 0.6193, O₃ R² = 0.7523
+    - t+24h: NO₂ R² = 0.5889, O₃ R² = 0.7415
+
+Q19: What is the CNN + LSTM + Attention model architecture?
+A19: - CNN layers extract local spatial-temporal features from 24-timestep
+       input sequences
+     - LSTM layers capture long-range temporal dependencies
+     - Attention mechanism focuses on the most relevant timesteps for
+       each prediction
+     - Output layer produces 24 hourly predictions
+
+Q20: What is the Fusion Layer?
+A20: A Ridge regression meta-learner that takes predictions from both
+    XGBoost and CNN+LSTM+Attention as inputs and produces the final
+    combined prediction. It learns the optimal weighting between the
+    two model stacks.
+
+Q21: What are the XGBoost hyperparameters?
+A21: n_estimators=2500, learning_rate=0.03, max_depth=5,
+    min_child_weight=10, gamma=0.2, subsample=0.6,
+    colsample_bytree=0.5, reg_alpha=0.5, reg_lambda=2.0,
+    early_stopping_rounds=100
+
+Q22: How are features scaled?
+A22: A StandardScaler (exp09v2_feat_scaler.pkl) is fitted on training data
+    and applied to both validation and test data. The scaler and feature
+    column list are saved as pickle files for deployment.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 4: BACKEND (FastAPI)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q23: What framework is used for the backend?
+A23: FastAPI (Python), served via uvicorn on port 8000.
+
+Q24: What data is cached at startup?
+A24: All data is pre-computed and cached at startup for instant responses:
+     - Station readings (current NO₂, O₃, weather for all 7 sites)
+     - 24h forecasts (24 hourly predictions per site)
+     - Model metrics (R², MAE, RMSE per horizon)
+     - Feature importance (top 10 features per pollutant)
+     - Seasonal error breakdown
+     - Site-wise error breakdown
+
+Q25: What are the API endpoints?
+A25: Five endpoints:
+     GET /api/forecast?site=N    → 24h NO₂ + O₃ arrays for site N
+     GET /api/stations           → Current readings for all 7 sites
+     GET /api/metrics            → Model performance metrics
+     GET /api/weekly-trend?site=N → 14-day daily averages for site N
+     GET /api/time               → Current hour, minute, date
+
+Q26: How does the /api/forecast endpoint work?
+A26: It returns cached 24-hour predictions for the requested site. Each
+    prediction was generated by the per-horizon XGBoost models using the
+    most recent available prediction date from the test set CSV files.
+
+Q27: How does the /api/weekly-trend endpoint work?
+A27: It reads the site's training CSV file, constructs dates from
+    year/month/day columns, finds the last 14 dates up to the anchor date,
+    and computes daily average NO₂_target and O₃_target values from actual
+    observed measurements.
+
+Q28: How does the /api/stations endpoint work?
+A28: For each station, it finds the current NO₂ and O₃ from the prediction
+    CSV (horizon=1, current hour), reads weather data from the training CSV
+    (temperature, humidity, wind speed/direction, visibility), and returns
+    all station data as a JSON array.
+
+Q29: What external APIs does the backend use?
+A29: Two live APIs:
+     - Open-Meteo: Free weather API for real-time temperature, wind, humidity
+     - WAQI (World Air Quality Index): Free API for real-time AQI readings
+    These are used for enriching the display with current conditions beyond
+    what the ML models provide.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 5: FRONTEND (React)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q30: What framework is used for the frontend?
+A30: React 19 with TypeScript, built with Vite 8, using TanStack Router
+    for file-based routing and TanStack Start for SSR capability.
+
+Q31: What UI libraries are used?
+A31: - Radix UI primitives + shadcn/ui component library
+     - Tailwind CSS v4 for styling
+     - Framer Motion for animations
+     - Recharts for charts (area, bar)
+     - MapLibre GL for interactive maps
+     - Three.js / React Three Fiber for 3D hero animation
+
+Q32: What are the main frontend components?
+A32: - Hero: Landing section with 3D Mobius strip animation
+     - MapPanel: Interactive map with station markers and heatmap
+     - Metrics: NO₂ and O₃ reading cards with trend indicators
+     - Charts: 4 charts — 24h forecast, pollutant breakdown,
+       station comparison, 14-day trend
+     - Timeline: Time slider and quick hour buttons
+     - AIInsights: Textual pollution analysis
+     - Alerts: Real-time pollution alerts with severity
+     - BestTime: Optimal outdoor activity recommendations
+     - PollutantGuide: Educational NO₂ and O₃ information
+     - ModelMetrics: Model performance dashboard
+     - DataExport: CSV/JSON download for site data, trends, forecasts
+     - CaseStudy: Delhi pollution case study
+     - Footer: Data source credits
+
+Q33: How does the zone/station selection work?
+A33: Users can click station markers on the MapPanel or use the dropdown.
+    When a station is selected, the app fetches forecast and weekly trend
+    data for that specific site from the API, updating all charts and
+    metrics in real time.
+
+Q34: How does the time selector work?
+A34: A slider (0–23) and quick hour buttons let users scrub through the
+    24-hour forecast. A "Now" reference line on the charts marks the
+    current time. The display shows hours and minutes (e.g., "12:12 PM").
+
+Q35: How does the data export work?
+A35: Three download types with CSV and JSON support:
+     1. Site-Wise Data: All 7 stations with NO₂, O₃, lat/lon, weather
+     2. 14-Day Trend: Daily NO₂ & O₃ averages per site
+     3. 24-Hour Forecast: Hourly NO₂, O₃, AQI per site
+    Downloads include UTF-8 BOM for Excel compatibility and site names
+    in filenames. If data is empty, it fetches fresh data from the API
+    before downloading.
+
+Q36: How does the AQI gauge work?
+A36: AQI is derived from NO₂ and O₃ using CPCB National Air Quality Index
+    categories: Good (0–50), Satisfactory (51–100), Moderate (101–200),
+    Poor (201–300), Very Poor (301–400), Severe (401–500). Color coding
+    matches CPCB standards.
+
+Q37: How does the heatmap work?
+A37: MapLibre GL renders a GeoJSON layer with circle and heatmap layers
+    for each station. NO₂ and O₃ thresholds determine marker colors
+    (green/yellow/orange/red/purple). Users can toggle between NO₂ and
+    O₃ layers and switch map styles (Voyager/Satellite/Dark).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 6: DEPLOYMENT & INFRASTRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q38: How is the system deployed?
+A38: Two separate services:
+     - Backend: uvicorn api:app --port 8000 --host 0.0.0.0
+     - Frontend: npm run dev (Vite dev server on port 8080)
+    The frontend connects to the backend via VITE_API_BASE_URL
+    environment variable (default: http://localhost:8000).
+
+Q39: What are the key files in the project?
+A39: Backend:
+     - api.py — FastAPI server with all endpoints
+     - exp09v2_models/ — 48 trained XGBoost model pickle files
+     - exp09v2_*_predictions.csv — Pre-generated predictions
+     - exp09v2_feat_scaler.pkl — Feature scaler
+     - exp09v2_feature_cols.pkl — Feature column list
+     - site_*_train_data.csv — Training data per station
+
+     Frontend:
+     - FRONTEND/src/components/Dashboard.tsx — Main orchestrator
+     - FRONTEND/src/components/dashboard/data.ts — API data layer
+     - FRONTEND/src/components/dashboard/Charts.tsx — All charts
+     - FRONTEND/src/lib/export.ts — Download functionality
+     - FRONTEND/src/components/dashboard/MapPanel.tsx — Map
+
+Q40: What is the project directory structure?
+A40: VAAYU_DARSHIYA_MODEL_WORK/
+     ├── api.py                    # FastAPI backend
+     ├── exp09v2_models/           # Trained XGBoost models (48 PKL files)
+     ├── exp09v2_*_predictions.csv # Model predictions
+     ├── exp09v2_*_results.csv     # Evaluation metrics
+     ├── exp09v2_*_error_by_*.csv  # Error breakdowns
+     ├── exp09v2_feat_scaler.pkl   # Feature scaler
+     ├── exp09v2_feature_cols.pkl  # Feature columns
+     ├── site_*_train_data.csv     # Per-station training data
+     ├── vaayu_2018_2024.csv       # Combined dataset
+     ├── FRONTEND/
+     │   ├── src/
+     │   │   ├── components/
+     │   │   │   ├── Dashboard.tsx
+     │   │   │   └── dashboard/
+     │   │   │       ├── Charts.tsx
+     │   │   │       ├── MapPanel.tsx
+     │   │   │       ├── Metrics.tsx
+     │   │   │       ├── Timeline.tsx
+     │   │   │       ├── DataExport.tsx
+     │   │   │       └── data.ts
+     │   │   └── lib/
+     │   │       ├── export.ts
+     │   │       └── aqi.ts
+     │   ├── package.json
+     │   └── vite.config.ts
+     └── architecture.html         # System architecture diagram
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 7: SCIENTIFIC & DOMAIN KNOWLEDGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q41: What are the WHO guidelines for NO₂?
+A41: WHO annual mean guideline: 10 µg/m³ (≈ 5.3 ppb)
+    WHO 24-hour mean guideline: 25 µg/m³ (≈ 13.2 ppb)
+    CPCB 24-hour standard for India: 80 µg/m³ (≈ 42 ppb)
+    Our system uses ppb units throughout.
+
+Q42: What are the WHO guidelines for O₃?
+A42: WHO 8-hour mean guideline: 100 µg/m³ (≈ 50 ppb)
+    Our system thresholds: Good ≤40, Moderate 41–70, Elevated 71–100,
+    High 101–150, Very High >150 ppb.
+
+Q43: Why are NO₂ and O₃ chosen as primary targets?
+A43: NO₂ is a direct indicator of traffic and industrial pollution, which
+    is the dominant source in Delhi. O₃ is a secondary pollutant formed
+    by photochemical reactions involving NO₂ and sunlight. Both are
+    strongly correlated with respiratory health impacts and are key
+    components of the Indian AQI calculation.
+
+Q44: How does Delhi's pollution pattern differ from other cities?
+A44: Delhi has a unique pattern:
+     - Winter (Nov–Feb): Severe due to stubble burning + temperature
+       inversion trapping pollutants near ground
+     - Summer (Apr–Jun): High O₃ due to intense sunlight
+     - Monsoon (Jul–Sep): Lowest pollution due to rain washout
+     - Post-monsoon (Oct–Nov): Rapid spike from crop burning
+
+Q45: What is the CPCB National Air Quality Index?
+A55: India's AQI scale with 6 categories:
+     Good (0–50): Minimal impact
+     Satisfactory (51–100): Minor breathing discomfort
+     Moderate (101–200): Breathing discomfort for sensitive groups
+     Poor (201–300): Respiratory effects on general population
+     Very Poor (301–400): Respiratory illness on prolonged exposure
+     Severe (401–500): Affects healthy people, serious effects on others
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 8: TECHNICAL IMPLEMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q46: How is the frontend connected to the backend?
+A46: The frontend uses fetch() calls to the FastAPI backend. The base URL
+    is configured via VITE_API_BASE_URL environment variable. All API
+    responses are JSON. If the API is unavailable, the frontend falls
+    back to static fallback data.
+
+Q47: How are charts rendered?
+A47: Recharts library with ResponsiveContainer for responsive sizing.
+    Four chart types:
+    1. 24h AreaChart — Dual NO₂/O₃ area lines with gradient fills
+    2. BarChart — Pollutant breakdown at current time
+    3. Horizontal BarChart — Station-wise NO₂/O₃ comparison
+    4. 14-day AreaChart — Daily trend with dot markers
+
+Q48: How does the map work?
+A48: MapLibre GL JS renders an interactive map centered on Delhi
+    (77.15°E, 28.68°N). Stations are shown as colored circles with
+    heatmap layers. Popups show station details. Three map styles
+    available: Voyager, Satellite, Dark. NO₂/O₃ layer toggling is
+    supported.
+
+Q49: How does the system handle CORS?
+A49: FastAPI middleware is configured with allow_origins=["*"],
+    allow_methods=["*"], allow_headers=["*"] to allow cross-origin
+    requests from the frontend dev server.
+
+Q50: How does the auto-refresh work?
+A50: A setInterval timer in Dashboard.tsx updates the current hour and
+    minute every 60 seconds (60000ms). This keeps the displayed time
+    in sync with the real clock without requiring a page refresh.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 9: MODEL EXPERIMENTS & VERSIONING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q51: What experiments were conducted?
+A51: Multiple experiments leading to the final model:
+     - exp_02: Initial XGBoost for NO₂
+     - exp_03: Initial XGBoost for O₃
+     - exp_05/06/07: BiLSTM experiments with training curves
+     - exp_08: Integration/ensemble experiment
+     - exp_09: Final XGBoost (multiple variants)
+     - EXP_09_FINAL_XGBOOST: Production XGBoost
+     - exp_09_v2: Production XGBoost v2 (served by API)
+     - exp_09v3b: BiLSTM variant
+     - exp_10: Final BiLSTM
+     - HYBRID_ENSEMBLE: Hybrid ensemble approach
+     - exp_11: Ensemble experiment with actual-vs-predicted plots
+
+Q52: What is the production model version?
+A52: EXP_09v2 (exp_09_v2_xgboost.py). This is the version served by the
+    API in production. Models are stored in exp09v2_models/ directory.
+
+Q53: How are model artifacts saved?
+A53: Each model is saved as a pickle (.pkl) file named by target and
+    horizon: NO2_target_h00.pkl through NO2_target_h23.pkl, and
+    O3_target_h00.pkl through O3_target_h23.pkl. Feature importance
+    is saved as CSV files.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SECTION 10: FUTURE SCOPE & IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q54: What are potential future improvements?
+A54: - Expand to PM2.5 and PM10 direct forecasting
+     - Add more monitoring stations beyond Delhi NCR
+     - Integrate real-time satellite data for live updates
+     - Deploy to cloud (AWS/GCP) for production scalability
+     - Add mobile app (React Native)
+     - Implement WebSocket for real-time push updates
+     - Add historical data comparison and long-term trend analysis
+     - Integrate traffic data for improved NO₂ forecasting
+
+Q55: How could the model be improved?
+A55: - Add graph neural networks for spatial correlations between stations
+     - Use transformer architectures for longer sequence modeling
+     - Incorporate social media and news data for event detection
+     - Add uncertainty quantification to predictions
+     - Implement online learning for model updates with new data
+     - Use attention mechanisms to identify key pollution drivers
+
+================================================================================
+                          END OF Q&A DOCUMENTATION
+================================================================================

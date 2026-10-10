@@ -1,0 +1,5579 @@
+{
+  "model": "XGBoost EXP_12 (database retrain)",
+  "metrics": {
+    "t1h": {
+      "NO2": {
+        "r2": 0.6854,
+        "mae": 11.16,
+        "rmse": 16.14,
+        "best_iter": 809,
+        "val_r2": 0.8,
+        "val_mae": 9.37,
+        "val_rmse": 13.15
+      },
+      "O3": {
+        "r2": 0.8105,
+        "mae": 16.47,
+        "rmse": 23.23,
+        "best_iter": 947,
+        "val_r2": 0.8587,
+        "val_mae": 10.85,
+        "val_rmse": 15.54
+      },
+      "HCHO": {
+        "r2": 0.5413,
+        "mae": 4.51,
+        "rmse": 5.88,
+        "best_iter": 874,
+        "val_r2": 0.5481,
+        "val_mae": 4.21,
+        "val_rmse": 5.35
+      }
+    },
+    "t6h": {
+      "NO2": {
+        "r2": 0.6181,
+        "mae": 12.61,
+        "rmse": 17.87
+      },
+      "O3": {
+        "r2": 0.768,
+        "mae": 18.62,
+        "rmse": 25.62
+      },
+      "HCHO": {
+        "r2": 0.4952,
+        "mae": 4.77,
+        "rmse": 6.19
+      }
+    },
+    "t12h": {
+      "NO2": {
+        "r2": 0.6499,
+        "mae": 12.05,
+        "rmse": 17.07
+      },
+      "O3": {
+        "r2": 0.7797,
+        "mae": 18.17,
+        "rmse": 25.21
+      },
+      "HCHO": {
+        "r2": 0.4928,
+        "mae": 4.76,
+        "rmse": 6.19
+      }
+    },
+    "t24h": {
+      "NO2": {
+        "r2": 0.6504,
+        "mae": 11.99,
+        "rmse": 17.15
+      },
+      "O3": {
+        "r2": 0.7741,
+        "mae": 18.4,
+        "rmse": 25.84
+      },
+      "HCHO": {
+        "r2": 0.4849,
+        "mae": 4.72,
+        "rmse": 6.14
+      }
+    },
+    "all_horizons": {
+      "NO2": [
+        {
+          "horizon": 0,
+          "r2": 0.6854,
+          "mae": 11.16,
+          "rmse": 16.14
+        },
+        {
+          "horizon": 1,
+          "r2": 0.649,
+          "mae": 11.98,
+          "rmse": 17.09
+        },
+        {
+          "horizon": 2,
+          "r2": 0.6445,
+          "mae": 12.24,
+          "rmse": 17.24
+        },
+        {
+          "horizon": 3,
+          "r2": 0.4835,
+          "mae": 14.76,
+          "rmse": 20.8
+        },
+        {
+          "horizon": 4,
+          "r2": 0.4647,
+          "mae": 15,
+          "rmse": 21.19
+        },
+        {
+          "horizon": 5,
+          "r2": 0.6181,
+          "mae": 12.61,
+          "rmse": 17.87
+        },
+        {
+          "horizon": 6,
+          "r2": 0.4551,
+          "mae": 15.06,
+          "rmse": 21.33
+        },
+        {
+          "horizon": 7,
+          "r2": 0.4672,
+          "mae": 14.91,
+          "rmse": 21.08
+        },
+        {
+          "horizon": 8,
+          "r2": 0.4775,
+          "mae": 14.82,
+          "rmse": 20.88
+        },
+        {
+          "horizon": 9,
+          "r2": 0.4711,
+          "mae": 14.97,
+          "rmse": 21.01
+        },
+        {
+          "horizon": 10,
+          "r2": 0.494,
+          "mae": 14.63,
+          "rmse": 20.54
+        },
+        {
+          "horizon": 11,
+          "r2": 0.6499,
+          "mae": 12.05,
+          "rmse": 17.07
+        },
+        {
+          "horizon": 12,
+          "r2": 0.4673,
+          "mae": 14.98,
+          "rmse": 21.04
+        },
+        {
+          "horizon": 13,
+          "r2": 0.4625,
+          "mae": 14.77,
+          "rmse": 21.14
+        },
+        {
+          "horizon": 14,
+          "r2": 0.4607,
+          "mae": 14.85,
+          "rmse": 21.18
+        },
+        {
+          "horizon": 15,
+          "r2": 0.4905,
+          "mae": 14.58,
+          "rmse": 20.58
+        },
+        {
+          "horizon": 16,
+          "r2": 0.4692,
+          "mae": 14.79,
+          "rmse": 21.01
+        },
+        {
+          "horizon": 17,
+          "r2": 0.4806,
+          "mae": 14.59,
+          "rmse": 20.8
+        },
+        {
+          "horizon": 18,
+          "r2": 0.4808,
+          "mae": 14.66,
+          "rmse": 20.81
+        },
+        {
+          "horizon": 19,
+          "r2": 0.4708,
+          "mae": 14.65,
+          "rmse": 21.03
+        },
+        {
+          "horizon": 20,
+          "r2": 0.4871,
+          "mae": 14.51,
+          "rmse": 20.71
+        },
+        {
+          "horizon": 21,
+          "r2": 0.479,
+          "mae": 14.61,
+          "rmse": 20.9
+        },
+        {
+          "horizon": 22,
+          "r2": 0.4663,
+          "mae": 14.83,
+          "rmse": 21.17
+        },
+        {
+          "horizon": 23,
+          "r2": 0.6504,
+          "mae": 11.99,
+          "rmse": 17.15
+        }
+      ],
+      "O3": [
+        {
+          "horizon": 0,
+          "r2": 0.8105,
+          "mae": 16.47,
+          "rmse": 23.23
+        },
+        {
+          "horizon": 1,
+          "r2": 0.7899,
+          "mae": 17.48,
+          "rmse": 24.46
+        },
+        {
+          "horizon": 2,
+          "r2": 0.7743,
+          "mae": 18.33,
+          "rmse": 25.31
+        },
+        {
+          "horizon": 3,
+          "r2": 0.6956,
+          "mae": 22.11,
+          "rmse": 29.33
+        },
+        {
+          "horizon": 4,
+          "r2": 0.6976,
+          "mae": 22.07,
+          "rmse": 29.24
+        },
+        {
+          "horizon": 5,
+          "r2": 0.768,
+          "mae": 18.62,
+          "rmse": 25.62
+        },
+        {
+          "horizon": 6,
+          "r2": 0.6911,
+          "mae": 22.35,
+          "rmse": 29.57
+        },
+        {
+          "horizon": 7,
+          "r2": 0.6915,
+          "mae": 22.2,
+          "rmse": 29.58
+        },
+        {
+          "horizon": 8,
+          "r2": 0.6932,
+          "mae": 22.06,
+          "rmse": 29.54
+        },
+        {
+          "horizon": 9,
+          "r2": 0.6964,
+          "mae": 22.04,
+          "rmse": 29.46
+        },
+        {
+          "horizon": 10,
+          "r2": 0.6957,
+          "mae": 22.11,
+          "rmse": 29.57
+        },
+        {
+          "horizon": 11,
+          "r2": 0.7797,
+          "mae": 18.17,
+          "rmse": 25.21
+        },
+        {
+          "horizon": 12,
+          "r2": 0.6982,
+          "mae": 22.09,
+          "rmse": 29.57
+        },
+        {
+          "horizon": 13,
+          "r2": 0.698,
+          "mae": 22.12,
+          "rmse": 29.64
+        },
+        {
+          "horizon": 14,
+          "r2": 0.7001,
+          "mae": 21.88,
+          "rmse": 29.6
+        },
+        {
+          "horizon": 15,
+          "r2": 0.6968,
+          "mae": 21.89,
+          "rmse": 29.79
+        },
+        {
+          "horizon": 16,
+          "r2": 0.6991,
+          "mae": 21.8,
+          "rmse": 29.7
+        },
+        {
+          "horizon": 17,
+          "r2": 0.6951,
+          "mae": 21.82,
+          "rmse": 29.9
+        },
+        {
+          "horizon": 18,
+          "r2": 0.7,
+          "mae": 21.73,
+          "rmse": 29.66
+        },
+        {
+          "horizon": 19,
+          "r2": 0.6988,
+          "mae": 21.85,
+          "rmse": 29.73
+        },
+        {
+          "horizon": 20,
+          "r2": 0.6979,
+          "mae": 21.85,
+          "rmse": 29.79
+        },
+        {
+          "horizon": 21,
+          "r2": 0.7005,
+          "mae": 21.85,
+          "rmse": 29.68
+        },
+        {
+          "horizon": 22,
+          "r2": 0.6957,
+          "mae": 22.1,
+          "rmse": 29.94
+        },
+        {
+          "horizon": 23,
+          "r2": 0.7741,
+          "mae": 18.4,
+          "rmse": 25.84
+        }
+      ],
+      "HCHO": [
+        {
+          "horizon": 0,
+          "r2": 0.5413,
+          "mae": 4.51,
+          "rmse": 5.88
+        },
+        {
+          "horizon": 1,
+          "r2": 0.5273,
+          "mae": 4.58,
+          "rmse": 5.97
+        },
+        {
+          "horizon": 2,
+          "r2": 0.4956,
+          "mae": 4.74,
+          "rmse": 6.17
+        },
+        {
+          "horizon": 3,
+          "r2": 0.2339,
+          "mae": 5.96,
+          "rmse": 7.61
+        },
+        {
+          "horizon": 4,
+          "r2": 0.2104,
+          "mae": 6.05,
+          "rmse": 7.73
+        },
+        {
+          "horizon": 5,
+          "r2": 0.4952,
+          "mae": 4.77,
+          "rmse": 6.19
+        },
+        {
+          "horizon": 6,
+          "r2": 0.2073,
+          "mae": 6.08,
+          "rmse": 7.76
+        },
+        {
+          "horizon": 7,
+          "r2": 0.1769,
+          "mae": 6.18,
+          "rmse": 7.9
+        },
+        {
+          "horizon": 8,
+          "r2": 0.1997,
+          "mae": 6.08,
+          "rmse": 7.8
+        },
+        {
+          "horizon": 9,
+          "r2": 0.1586,
+          "mae": 6.26,
+          "rmse": 7.98
+        },
+        {
+          "horizon": 10,
+          "r2": 0.1655,
+          "mae": 6.21,
+          "rmse": 7.96
+        },
+        {
+          "horizon": 11,
+          "r2": 0.4928,
+          "mae": 4.76,
+          "rmse": 6.19
+        },
+        {
+          "horizon": 12,
+          "r2": 0.1792,
+          "mae": 6.14,
+          "rmse": 7.88
+        },
+        {
+          "horizon": 13,
+          "r2": 0.174,
+          "mae": 6.17,
+          "rmse": 7.89
+        },
+        {
+          "horizon": 14,
+          "r2": 0.1728,
+          "mae": 6.17,
+          "rmse": 7.89
+        },
+        {
+          "horizon": 15,
+          "r2": 0.1349,
+          "mae": 6.3,
+          "rmse": 8.07
+        },
+        {
+          "horizon": 16,
+          "r2": 0.1087,
+          "mae": 6.39,
+          "rmse": 8.19
+        },
+        {
+          "horizon": 17,
+          "r2": 0.1298,
+          "mae": 6.29,
+          "rmse": 8.08
+        },
+        {
+          "horizon": 18,
+          "r2": 0.0949,
+          "mae": 6.45,
+          "rmse": 8.22
+        },
+        {
+          "horizon": 19,
+          "r2": 0.1007,
+          "mae": 6.37,
+          "rmse": 8.17
+        },
+        {
+          "horizon": 20,
+          "r2": 0.1273,
+          "mae": 6.24,
+          "rmse": 8.02
+        },
+        {
+          "horizon": 21,
+          "r2": 0.109,
+          "mae": 6.3,
+          "rmse": 8.08
+        },
+        {
+          "horizon": 22,
+          "r2": 0.105,
+          "mae": 6.32,
+          "rmse": 8.1
+        },
+        {
+          "horizon": 23,
+          "r2": 0.4849,
+          "mae": 4.72,
+          "rmse": 6.14
+        }
+      ]
+    },
+    "validation_comparison": {
+      "NO2": {
+        "test": {
+          "r2": 0.6854,
+          "mae": 11.16,
+          "rmse": 16.14
+        },
+        "val": {
+          "r2": 0.8,
+          "mae": 9.37,
+          "rmse": 13.15
+        }
+      },
+      "O3": {
+        "test": {
+          "r2": 0.8105,
+          "mae": 16.47,
+          "rmse": 23.23
+        },
+        "val": {
+          "r2": 0.8587,
+          "mae": 10.85,
+          "rmse": 15.54
+        }
+      },
+      "HCHO": {
+        "test": {
+          "r2": 0.5413,
+          "mae": 4.51,
+          "rmse": 5.88
+        },
+        "val": {
+          "r2": 0.5481,
+          "mae": 4.21,
+          "rmse": 5.35
+        }
+      }
+    },
+    "database_validation": {
+      "generated_at": "2026-10-10T00:00:39",
+      "database": {
+        "extract": "data/vaayu_extract_7sites.csv",
+        "rows": 99753,
+        "min_date": "2018-04-27",
+        "max_date": "2025-07-13"
+      },
+      "targets": {
+        "NO2": {
+          "database_column": "no2",
+          "model_test": {
+            "t1h": {
+              "n": 5039,
+              "r2": 0.6854,
+              "mae": 11.16,
+              "rmse": 16.14,
+              "bias": 0.63
+            },
+            "t24h": {
+              "n": 4153,
+              "r2": 0.6504,
+              "mae": 11.99,
+              "rmse": 17.15,
+              "bias": 0.94
+            },
+            "all": {
+              "n": 109430,
+              "r2": 0.5196,
+              "mae": 14.06,
+              "rmse": 20.02,
+              "bias": -1.5
+            }
+          },
+          "database": {
+            "t1h": {
+              "n": 5039,
+              "r2": 0.6854,
+              "mae": 11.16,
+              "rmse": 16.14,
+              "bias": 0.63
+            },
+            "t24h": {
+              "n": 4886,
+              "r2": 0.6094,
+              "mae": 12.5,
+              "rmse": 17.57,
+              "bias": 1.83
+            },
+            "all": {
+              "n": 118741,
+              "r2": 0.5068,
+              "mae": 14.11,
+              "rmse": 19.95,
+              "bias": -0.74
+            }
+          },
+          "source_agreement": {
+            "n": 109430,
+            "r2": 1,
+            "mae": 0,
+            "rmse": 0,
+            "bias": 0,
+            "correlation": 1,
+            "lag_correlation": {
+              "0h": 1,
+              "+1h": 0.5349,
+              "-1h": 0.5349
+            }
+          },
+          "per_site_t1h": [
+            {
+              "site_id": 1,
+              "site_name": "Ashok Vihar",
+              "n": 702,
+              "r2": 0.7349,
+              "mae": 10.88,
+              "rmse": 15.26,
+              "bias": 1.57
+            },
+            {
+              "site_id": 2,
+              "site_name": "Dwarka",
+              "n": 709,
+              "r2": 0.5534,
+              "mae": 13.92,
+              "rmse": 18.9,
+              "bias": 1.31
+            },
+            {
+              "site_id": 4,
+              "site_name": "Northwest Delhi",
+              "n": 778,
+              "r2": 0.6422,
+              "mae": 7.89,
+              "rmse": 10.95,
+              "bias": 1.73
+            },
+            {
+              "site_id": 5,
+              "site_name": "East Delhi",
+              "n": 1020,
+              "r2": 0.7316,
+              "mae": 11.36,
+              "rmse": 17.15,
+              "bias": -0.95
+            },
+            {
+              "site_id": 6,
+              "site_name": "Northwest Delhi 2",
+              "n": 941,
+              "r2": 0.5975,
+              "mae": 14.07,
+              "rmse": 19.78,
+              "bias": -0.13
+            },
+            {
+              "site_id": 7,
+              "site_name": "Northeast Delhi",
+              "n": 889,
+              "r2": 0.6849,
+              "mae": 8.74,
+              "rmse": 12.31,
+              "bias": 0.98
+            }
+          ],
+          "overlap": {
+            "start": "2025-04-01",
+            "end": "2025-06-18",
+            "rows": 118741
+          },
+          "verdict": "model tracks the database"
+        },
+        "O3": {
+          "database_column": "o3",
+          "model_test": {
+            "t1h": {
+              "n": 4994,
+              "r2": 0.8105,
+              "mae": 16.47,
+              "rmse": 23.23,
+              "bias": 1.49
+            },
+            "t24h": {
+              "n": 4107,
+              "r2": 0.7741,
+              "mae": 18.4,
+              "rmse": 25.84,
+              "bias": 0.54
+            },
+            "all": {
+              "n": 108330,
+              "r2": 0.7191,
+              "mae": 20.93,
+              "rmse": 28.47,
+              "bias": -0.14
+            }
+          },
+          "database": {
+            "t1h": {
+              "n": 4994,
+              "r2": 0.8105,
+              "mae": 16.47,
+              "rmse": 23.23,
+              "bias": 1.49
+            },
+            "t24h": {
+              "n": 4841,
+              "r2": 0.7022,
+              "mae": 20.74,
+              "rmse": 29.18,
+              "bias": 1.78
+            },
+            "all": {
+              "n": 117669,
+              "r2": 0.7084,
+              "mae": 21.06,
+              "rmse": 28.67,
+              "bias": 0.11
+            }
+          },
+          "source_agreement": {
+            "n": 108330,
+            "r2": 1,
+            "mae": 0,
+            "rmse": 0,
+            "bias": 0,
+            "correlation": 1,
+            "lag_correlation": {
+              "0h": 1,
+              "+1h": 0.6025,
+              "-1h": 0.6025
+            }
+          },
+          "per_site_t1h": [
+            {
+              "site_id": 1,
+              "site_name": "Ashok Vihar",
+              "n": 703,
+              "r2": 0.816,
+              "mae": 17.78,
+              "rmse": 24.42,
+              "bias": 0.82
+            },
+            {
+              "site_id": 2,
+              "site_name": "Dwarka",
+              "n": 709,
+              "r2": 0.756,
+              "mae": 17.38,
+              "rmse": 25.79,
+              "bias": -0.21
+            },
+            {
+              "site_id": 4,
+              "site_name": "Northwest Delhi",
+              "n": 778,
+              "r2": 0.85,
+              "mae": 9.11,
+              "rmse": 12.69,
+              "bias": 0.49
+            },
+            {
+              "site_id": 5,
+              "site_name": "East Delhi",
+              "n": 1020,
+              "r2": 0.8034,
+              "mae": 21.13,
+              "rmse": 28.44,
+              "bias": 2.04
+            },
+            {
+              "site_id": 6,
+              "site_name": "Northwest Delhi 2",
+              "n": 942,
+              "r2": 0.8445,
+              "mae": 15.01,
+              "rmse": 19.79,
+              "bias": 2.87
+            },
+            {
+              "site_id": 7,
+              "site_name": "Northeast Delhi",
+              "n": 842,
+              "r2": 0.7274,
+              "mae": 17.42,
+              "rmse": 24.01,
+              "bias": 2.22
+            }
+          ],
+          "overlap": {
+            "start": "2025-04-01",
+            "end": "2025-06-18",
+            "rows": 117669
+          },
+          "verdict": "model tracks the database"
+        },
+        "HCHO": {
+          "database_column": "sat_hcho_column",
+          "model_test": {
+            "t1h": {
+              "n": 4514,
+              "r2": 0.5413,
+              "mae": 4.51,
+              "rmse": 5.88,
+              "bias": -0.49
+            },
+            "t24h": {
+              "n": 3716,
+              "r2": 0.4849,
+              "mae": 4.72,
+              "rmse": 6.14,
+              "bias": -0.92
+            },
+            "all": {
+              "n": 97969,
+              "r2": 0.2488,
+              "mae": 5.81,
+              "rmse": 7.52,
+              "bias": -1.05
+            }
+          },
+          "database": {
+            "t1h": {
+              "n": 4514,
+              "r2": 0.5413,
+              "mae": 4.51,
+              "rmse": 5.88,
+              "bias": -0.49
+            },
+            "t24h": {
+              "n": 4361,
+              "r2": 0.3867,
+              "mae": 5.02,
+              "rmse": 6.54,
+              "bias": -1.48
+            },
+            "all": {
+              "n": 106202,
+              "r2": 0.2315,
+              "mae": 5.84,
+              "rmse": 7.54,
+              "bias": -1.17
+            }
+          },
+          "source_agreement": {
+            "n": 97969,
+            "r2": 1,
+            "mae": 0,
+            "rmse": 0,
+            "bias": 0,
+            "correlation": 1,
+            "lag_correlation": {
+              "0h": 1,
+              "+1h": 0.5073,
+              "-1h": 0.5073
+            }
+          },
+          "per_site_t1h": [
+            {
+              "site_id": 1,
+              "site_name": "Ashok Vihar",
+              "n": 650,
+              "r2": 0.5766,
+              "mae": 4.11,
+              "rmse": 5.36,
+              "bias": -0.71
+            },
+            {
+              "site_id": 2,
+              "site_name": "Dwarka",
+              "n": 618,
+              "r2": 0.3341,
+              "mae": 5.04,
+              "rmse": 6.64,
+              "bias": -0.18
+            },
+            {
+              "site_id": 4,
+              "site_name": "Northwest Delhi",
+              "n": 683,
+              "r2": 0.5264,
+              "mae": 3.98,
+              "rmse": 5.12,
+              "bias": -0.23
+            },
+            {
+              "site_id": 5,
+              "site_name": "East Delhi",
+              "n": 912,
+              "r2": 0.5392,
+              "mae": 4.65,
+              "rmse": 6.07,
+              "bias": -1.07
+            },
+            {
+              "site_id": 6,
+              "site_name": "Northwest Delhi 2",
+              "n": 851,
+              "r2": 0.5185,
+              "mae": 4.85,
+              "rmse": 6.24,
+              "bias": -0.01
+            },
+            {
+              "site_id": 7,
+              "site_name": "Northeast Delhi",
+              "n": 800,
+              "r2": 0.6127,
+              "mae": 4.34,
+              "rmse": 5.65,
+              "bias": -0.62
+            }
+          ],
+          "overlap": {
+            "start": "2025-04-01",
+            "end": "2025-06-18",
+            "rows": 106202
+          },
+          "verdict": "model does not track the database"
+        }
+      }
+    }
+  },
+  "feature_importance": {
+    "NO2": [
+      {
+        "feature": "NO2_target_feat_roll72",
+        "importance": 6.9
+      },
+      {
+        "feature": "is_daytime",
+        "importance": 4.8
+      },
+      {
+        "feature": "NO2_target_feat_roll48",
+        "importance": 4.3
+      },
+      {
+        "feature": "NO2_target_feat",
+        "importance": 3.2
+      },
+      {
+        "feature": "NO2_target_feat_roll168",
+        "importance": 2.3
+      },
+      {
+        "feature": "NO2_target_feat_roll24",
+        "importance": 2.2
+      },
+      {
+        "feature": "hour_sin",
+        "importance": 2.1
+      },
+      {
+        "feature": "NO2_target_feat_lag24",
+        "importance": 1.6
+      },
+      {
+        "feature": "NO2_target_feat_lag48",
+        "importance": 1.6
+      },
+      {
+        "feature": "solar_radiation_fwd3",
+        "importance": 1.5
+      }
+    ],
+    "O3": [
+      {
+        "feature": "O3_target_feat",
+        "importance": 10.7
+      },
+      {
+        "feature": "O3_target_feat_lag24",
+        "importance": 5.7
+      },
+      {
+        "feature": "hour_sin",
+        "importance": 4.7
+      },
+      {
+        "feature": "O3_target_feat_lag48",
+        "importance": 4.7
+      },
+      {
+        "feature": "O3_target_feat_lag72",
+        "importance": 2.9
+      },
+      {
+        "feature": "O3_target_feat_roll72",
+        "importance": 1.8
+      },
+      {
+        "feature": "O3_target_feat_roll168",
+        "importance": 1.8
+      },
+      {
+        "feature": "stagnation_index_fwd3",
+        "importance": 1.5
+      },
+      {
+        "feature": "stagnation_index_fwd2",
+        "importance": 1.3
+      },
+      {
+        "feature": "hour_cos",
+        "importance": 1.3
+      }
+    ],
+    "HCHO": [
+      {
+        "feature": "HCHO_target_feat_roll24",
+        "importance": 16.9
+      },
+      {
+        "feature": "HCHO_target_feat_roll48",
+        "importance": 16.3
+      },
+      {
+        "feature": "HCHO_target_feat_roll72",
+        "importance": 4.4
+      },
+      {
+        "feature": "HCHO_target_feat_roll12",
+        "importance": 4.2
+      },
+      {
+        "feature": "HCHO_target_feat_roll168",
+        "importance": 2.6
+      },
+      {
+        "feature": "site_2",
+        "importance": 1.6
+      },
+      {
+        "feature": "sat_o3_column",
+        "importance": 1.6
+      },
+      {
+        "feature": "month_sin",
+        "importance": 1.4
+      },
+      {
+        "feature": "rainfall_mm_fwd1",
+        "importance": 1.3
+      },
+      {
+        "feature": "site_4",
+        "importance": 1
+      }
+    ]
+  },
+  "seasonal": {
+    "NO2": [
+      {
+        "season": "Summer",
+        "horizon": 0,
+        "r2": 0.6896,
+        "mae": 11.18,
+        "rmse": 16.1
+      },
+      {
+        "season": "Summer",
+        "horizon": 1,
+        "r2": 0.6567,
+        "mae": 11.89,
+        "rmse": 16.98
+      },
+      {
+        "season": "Summer",
+        "horizon": 2,
+        "r2": 0.6522,
+        "mae": 12.13,
+        "rmse": 17.14
+      },
+      {
+        "season": "Summer",
+        "horizon": 3,
+        "r2": 0.4884,
+        "mae": 14.78,
+        "rmse": 20.82
+      },
+      {
+        "season": "Summer",
+        "horizon": 4,
+        "r2": 0.4671,
+        "mae": 15.06,
+        "rmse": 21.28
+      },
+      {
+        "season": "Summer",
+        "horizon": 5,
+        "r2": 0.6243,
+        "mae": 12.58,
+        "rmse": 17.87
+      },
+      {
+        "season": "Summer",
+        "horizon": 6,
+        "r2": 0.4531,
+        "mae": 15.2,
+        "rmse": 21.56
+      },
+      {
+        "season": "Summer",
+        "horizon": 7,
+        "r2": 0.4677,
+        "mae": 15,
+        "rmse": 21.29
+      },
+      {
+        "season": "Summer",
+        "horizon": 8,
+        "r2": 0.4752,
+        "mae": 14.94,
+        "rmse": 21.16
+      },
+      {
+        "season": "Summer",
+        "horizon": 9,
+        "r2": 0.4657,
+        "mae": 15.1,
+        "rmse": 21.38
+      },
+      {
+        "season": "Summer",
+        "horizon": 10,
+        "r2": 0.4866,
+        "mae": 14.83,
+        "rmse": 20.96
+      },
+      {
+        "season": "Summer",
+        "horizon": 11,
+        "r2": 0.6497,
+        "mae": 12.19,
+        "rmse": 17.31
+      },
+      {
+        "season": "Summer",
+        "horizon": 12,
+        "r2": 0.4535,
+        "mae": 15.32,
+        "rmse": 21.64
+      },
+      {
+        "season": "Summer",
+        "horizon": 13,
+        "r2": 0.4524,
+        "mae": 15.09,
+        "rmse": 21.69
+      },
+      {
+        "season": "Summer",
+        "horizon": 14,
+        "r2": 0.4441,
+        "mae": 15.26,
+        "rmse": 21.88
+      },
+      {
+        "season": "Summer",
+        "horizon": 15,
+        "r2": 0.4724,
+        "mae": 15.01,
+        "rmse": 21.31
+      },
+      {
+        "season": "Summer",
+        "horizon": 16,
+        "r2": 0.4507,
+        "mae": 15.26,
+        "rmse": 21.76
+      },
+      {
+        "season": "Summer",
+        "horizon": 17,
+        "r2": 0.4596,
+        "mae": 15.13,
+        "rmse": 21.61
+      },
+      {
+        "season": "Summer",
+        "horizon": 18,
+        "r2": 0.4571,
+        "mae": 15.28,
+        "rmse": 21.68
+      },
+      {
+        "season": "Summer",
+        "horizon": 19,
+        "r2": 0.4494,
+        "mae": 15.25,
+        "rmse": 21.86
+      },
+      {
+        "season": "Summer",
+        "horizon": 20,
+        "r2": 0.4651,
+        "mae": 15.14,
+        "rmse": 21.58
+      },
+      {
+        "season": "Summer",
+        "horizon": 21,
+        "r2": 0.4592,
+        "mae": 15.26,
+        "rmse": 21.73
+      },
+      {
+        "season": "Summer",
+        "horizon": 22,
+        "r2": 0.4474,
+        "mae": 15.45,
+        "rmse": 21.99
+      },
+      {
+        "season": "Summer",
+        "horizon": 23,
+        "r2": 0.6538,
+        "mae": 12.15,
+        "rmse": 17.41
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 0,
+        "r2": 0.6631,
+        "mae": 11.09,
+        "rmse": 16.28
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 1,
+        "r2": 0.6117,
+        "mae": 12.33,
+        "rmse": 17.53
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 2,
+        "r2": 0.6067,
+        "mae": 12.67,
+        "rmse": 17.61
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 3,
+        "r2": 0.4543,
+        "mae": 14.68,
+        "rmse": 20.71
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 4,
+        "r2": 0.4448,
+        "mae": 14.77,
+        "rmse": 20.83
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 5,
+        "r2": 0.5839,
+        "mae": 12.75,
+        "rmse": 17.89
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 6,
+        "r2": 0.4518,
+        "mae": 14.48,
+        "rmse": 20.39
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 7,
+        "r2": 0.4521,
+        "mae": 14.55,
+        "rmse": 20.27
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 8,
+        "r2": 0.4734,
+        "mae": 14.33,
+        "rmse": 19.73
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 9,
+        "r2": 0.4795,
+        "mae": 14.45,
+        "rmse": 19.49
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 10,
+        "r2": 0.5113,
+        "mae": 13.87,
+        "rmse": 18.83
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 11,
+        "r2": 0.638,
+        "mae": 11.48,
+        "rmse": 16.11
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 12,
+        "r2": 0.5127,
+        "mae": 13.63,
+        "rmse": 18.48
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 13,
+        "r2": 0.4889,
+        "mae": 13.51,
+        "rmse": 18.82
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 14,
+        "r2": 0.5196,
+        "mae": 13.22,
+        "rmse": 18.14
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 15,
+        "r2": 0.5585,
+        "mae": 12.89,
+        "rmse": 17.37
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 16,
+        "r2": 0.5385,
+        "mae": 12.91,
+        "rmse": 17.71
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 17,
+        "r2": 0.5637,
+        "mae": 12.45,
+        "rmse": 17.16
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 18,
+        "r2": 0.5792,
+        "mae": 12.15,
+        "rmse": 16.81
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 19,
+        "r2": 0.5576,
+        "mae": 12.19,
+        "rmse": 17.23
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 20,
+        "r2": 0.5801,
+        "mae": 11.91,
+        "rmse": 16.73
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 21,
+        "r2": 0.5617,
+        "mae": 11.98,
+        "rmse": 17.06
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 22,
+        "r2": 0.5452,
+        "mae": 12.26,
+        "rmse": 17.4
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 23,
+        "r2": 0.618,
+        "mae": 11.34,
+        "rmse": 16.01
+      }
+    ],
+    "O3": [
+      {
+        "season": "Summer",
+        "horizon": 0,
+        "r2": 0.8303,
+        "mae": 15.49,
+        "rmse": 21.53
+      },
+      {
+        "season": "Summer",
+        "horizon": 1,
+        "r2": 0.8156,
+        "mae": 16.29,
+        "rmse": 22.45
+      },
+      {
+        "season": "Summer",
+        "horizon": 2,
+        "r2": 0.7988,
+        "mae": 17.14,
+        "rmse": 23.51
+      },
+      {
+        "season": "Summer",
+        "horizon": 3,
+        "r2": 0.734,
+        "mae": 20.65,
+        "rmse": 27.09
+      },
+      {
+        "season": "Summer",
+        "horizon": 4,
+        "r2": 0.7335,
+        "mae": 20.72,
+        "rmse": 27.15
+      },
+      {
+        "season": "Summer",
+        "horizon": 5,
+        "r2": 0.793,
+        "mae": 17.29,
+        "rmse": 23.96
+      },
+      {
+        "season": "Summer",
+        "horizon": 6,
+        "r2": 0.7263,
+        "mae": 21.09,
+        "rmse": 27.59
+      },
+      {
+        "season": "Summer",
+        "horizon": 7,
+        "r2": 0.7283,
+        "mae": 20.95,
+        "rmse": 27.54
+      },
+      {
+        "season": "Summer",
+        "horizon": 8,
+        "r2": 0.7296,
+        "mae": 20.86,
+        "rmse": 27.54
+      },
+      {
+        "season": "Summer",
+        "horizon": 9,
+        "r2": 0.7315,
+        "mae": 20.85,
+        "rmse": 27.52
+      },
+      {
+        "season": "Summer",
+        "horizon": 10,
+        "r2": 0.7264,
+        "mae": 21,
+        "rmse": 27.85
+      },
+      {
+        "season": "Summer",
+        "horizon": 11,
+        "r2": 0.8009,
+        "mae": 17.08,
+        "rmse": 23.81
+      },
+      {
+        "season": "Summer",
+        "horizon": 12,
+        "r2": 0.7296,
+        "mae": 20.92,
+        "rmse": 27.81
+      },
+      {
+        "season": "Summer",
+        "horizon": 13,
+        "r2": 0.7332,
+        "mae": 20.87,
+        "rmse": 27.68
+      },
+      {
+        "season": "Summer",
+        "horizon": 14,
+        "r2": 0.7311,
+        "mae": 20.75,
+        "rmse": 27.83
+      },
+      {
+        "season": "Summer",
+        "horizon": 15,
+        "r2": 0.7274,
+        "mae": 20.83,
+        "rmse": 28.04
+      },
+      {
+        "season": "Summer",
+        "horizon": 16,
+        "r2": 0.7279,
+        "mae": 20.73,
+        "rmse": 28.05
+      },
+      {
+        "season": "Summer",
+        "horizon": 17,
+        "r2": 0.7268,
+        "mae": 20.77,
+        "rmse": 28.13
+      },
+      {
+        "season": "Summer",
+        "horizon": 18,
+        "r2": 0.7292,
+        "mae": 20.79,
+        "rmse": 28.04
+      },
+      {
+        "season": "Summer",
+        "horizon": 19,
+        "r2": 0.7293,
+        "mae": 20.81,
+        "rmse": 28.09
+      },
+      {
+        "season": "Summer",
+        "horizon": 20,
+        "r2": 0.7287,
+        "mae": 20.79,
+        "rmse": 28.18
+      },
+      {
+        "season": "Summer",
+        "horizon": 21,
+        "r2": 0.7264,
+        "mae": 21.07,
+        "rmse": 28.36
+      },
+      {
+        "season": "Summer",
+        "horizon": 22,
+        "r2": 0.721,
+        "mae": 21.33,
+        "rmse": 28.67
+      },
+      {
+        "season": "Summer",
+        "horizon": 23,
+        "r2": 0.7939,
+        "mae": 17.45,
+        "rmse": 24.67
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 0,
+        "r2": 0.7421,
+        "mae": 20.22,
+        "rmse": 28.81
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 1,
+        "r2": 0.7014,
+        "mae": 22.06,
+        "rmse": 30.95
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 2,
+        "r2": 0.6866,
+        "mae": 22.89,
+        "rmse": 31.27
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 3,
+        "r2": 0.5534,
+        "mae": 27.72,
+        "rmse": 36.67
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 4,
+        "r2": 0.5631,
+        "mae": 27.29,
+        "rmse": 36.16
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 5,
+        "r2": 0.673,
+        "mae": 23.73,
+        "rmse": 31.19
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 6,
+        "r2": 0.5569,
+        "mae": 27.2,
+        "rmse": 36.2
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 7,
+        "r2": 0.5504,
+        "mae": 27.03,
+        "rmse": 36.38
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 8,
+        "r2": 0.5533,
+        "mae": 26.71,
+        "rmse": 36.25
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 9,
+        "r2": 0.5607,
+        "mae": 26.65,
+        "rmse": 35.99
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 10,
+        "r2": 0.5764,
+        "mae": 26.43,
+        "rmse": 35.45
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 11,
+        "r2": 0.6968,
+        "mae": 22.41,
+        "rmse": 30.05
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 12,
+        "r2": 0.5758,
+        "mae": 26.65,
+        "rmse": 35.62
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 13,
+        "r2": 0.5616,
+        "mae": 27.05,
+        "rmse": 36.33
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 14,
+        "r2": 0.5795,
+        "mae": 26.33,
+        "rmse": 35.7
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 15,
+        "r2": 0.5777,
+        "mae": 26.07,
+        "rmse": 35.86
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 16,
+        "r2": 0.5862,
+        "mae": 26.05,
+        "rmse": 35.49
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 17,
+        "r2": 0.5698,
+        "mae": 25.98,
+        "rmse": 36.11
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 18,
+        "r2": 0.5823,
+        "mae": 25.48,
+        "rmse": 35.41
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 19,
+        "r2": 0.5744,
+        "mae": 26.04,
+        "rmse": 35.57
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 20,
+        "r2": 0.5705,
+        "mae": 26.14,
+        "rmse": 35.56
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 21,
+        "r2": 0.5908,
+        "mae": 25.05,
+        "rmse": 34.52
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 22,
+        "r2": 0.5869,
+        "mae": 25.24,
+        "rmse": 34.66
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 23,
+        "r2": 0.6889,
+        "mae": 22.32,
+        "rmse": 30.16
+      }
+    ],
+    "HCHO": [
+      {
+        "season": "Summer",
+        "horizon": 0,
+        "r2": 0.5254,
+        "mae": 4.69,
+        "rmse": 6.12
+      },
+      {
+        "season": "Summer",
+        "horizon": 1,
+        "r2": 0.5096,
+        "mae": 4.78,
+        "rmse": 6.22
+      },
+      {
+        "season": "Summer",
+        "horizon": 2,
+        "r2": 0.4744,
+        "mae": 4.96,
+        "rmse": 6.45
+      },
+      {
+        "season": "Summer",
+        "horizon": 3,
+        "r2": 0.193,
+        "mae": 6.3,
+        "rmse": 8
+      },
+      {
+        "season": "Summer",
+        "horizon": 4,
+        "r2": 0.1725,
+        "mae": 6.38,
+        "rmse": 8.11
+      },
+      {
+        "season": "Summer",
+        "horizon": 5,
+        "r2": 0.474,
+        "mae": 5.01,
+        "rmse": 6.48
+      },
+      {
+        "season": "Summer",
+        "horizon": 6,
+        "r2": 0.1715,
+        "mae": 6.42,
+        "rmse": 8.14
+      },
+      {
+        "season": "Summer",
+        "horizon": 7,
+        "r2": 0.1378,
+        "mae": 6.53,
+        "rmse": 8.3
+      },
+      {
+        "season": "Summer",
+        "horizon": 8,
+        "r2": 0.1598,
+        "mae": 6.43,
+        "rmse": 8.19
+      },
+      {
+        "season": "Summer",
+        "horizon": 9,
+        "r2": 0.1171,
+        "mae": 6.62,
+        "rmse": 8.39
+      },
+      {
+        "season": "Summer",
+        "horizon": 10,
+        "r2": 0.1233,
+        "mae": 6.57,
+        "rmse": 8.37
+      },
+      {
+        "season": "Summer",
+        "horizon": 11,
+        "r2": 0.4772,
+        "mae": 4.97,
+        "rmse": 6.45
+      },
+      {
+        "season": "Summer",
+        "horizon": 12,
+        "r2": 0.138,
+        "mae": 6.49,
+        "rmse": 8.28
+      },
+      {
+        "season": "Summer",
+        "horizon": 13,
+        "r2": 0.1372,
+        "mae": 6.49,
+        "rmse": 8.27
+      },
+      {
+        "season": "Summer",
+        "horizon": 14,
+        "r2": 0.1336,
+        "mae": 6.51,
+        "rmse": 8.28
+      },
+      {
+        "season": "Summer",
+        "horizon": 15,
+        "r2": 0.0891,
+        "mae": 6.67,
+        "rmse": 8.49
+      },
+      {
+        "season": "Summer",
+        "horizon": 16,
+        "r2": 0.0645,
+        "mae": 6.74,
+        "rmse": 8.6
+      },
+      {
+        "season": "Summer",
+        "horizon": 17,
+        "r2": 0.0885,
+        "mae": 6.62,
+        "rmse": 8.47
+      },
+      {
+        "season": "Summer",
+        "horizon": 18,
+        "r2": 0.0521,
+        "mae": 6.79,
+        "rmse": 8.62
+      },
+      {
+        "season": "Summer",
+        "horizon": 19,
+        "r2": 0.0568,
+        "mae": 6.71,
+        "rmse": 8.57
+      },
+      {
+        "season": "Summer",
+        "horizon": 20,
+        "r2": 0.0873,
+        "mae": 6.56,
+        "rmse": 8.4
+      },
+      {
+        "season": "Summer",
+        "horizon": 21,
+        "r2": 0.0673,
+        "mae": 6.63,
+        "rmse": 8.47
+      },
+      {
+        "season": "Summer",
+        "horizon": 22,
+        "r2": 0.0637,
+        "mae": 6.65,
+        "rmse": 8.48
+      },
+      {
+        "season": "Summer",
+        "horizon": 23,
+        "r2": 0.4762,
+        "mae": 4.87,
+        "rmse": 6.34
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 0,
+        "r2": 0.5473,
+        "mae": 3.69,
+        "rmse": 4.7
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 1,
+        "r2": 0.5436,
+        "mae": 3.69,
+        "rmse": 4.69
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 2,
+        "r2": 0.5319,
+        "mae": 3.74,
+        "rmse": 4.74
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 3,
+        "r2": 0.3547,
+        "mae": 4.43,
+        "rmse": 5.57
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 4,
+        "r2": 0.3087,
+        "mae": 4.56,
+        "rmse": 5.75
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 5,
+        "r2": 0.5377,
+        "mae": 3.7,
+        "rmse": 4.69
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 6,
+        "r2": 0.2943,
+        "mae": 4.58,
+        "rmse": 5.77
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 7,
+        "r2": 0.2831,
+        "mae": 4.6,
+        "rmse": 5.82
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 8,
+        "r2": 0.3135,
+        "mae": 4.51,
+        "rmse": 5.7
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 9,
+        "r2": 0.2769,
+        "mae": 4.62,
+        "rmse": 5.81
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 10,
+        "r2": 0.2911,
+        "mae": 4.57,
+        "rmse": 5.77
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 11,
+        "r2": 0.4927,
+        "mae": 3.84,
+        "rmse": 4.86
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 12,
+        "r2": 0.3039,
+        "mae": 4.55,
+        "rmse": 5.69
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 13,
+        "r2": 0.2643,
+        "mae": 4.7,
+        "rmse": 5.85
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 14,
+        "r2": 0.2748,
+        "mae": 4.64,
+        "rmse": 5.81
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 15,
+        "r2": 0.2822,
+        "mae": 4.62,
+        "rmse": 5.77
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 16,
+        "r2": 0.239,
+        "mae": 4.8,
+        "rmse": 5.95
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 17,
+        "r2": 0.2438,
+        "mae": 4.78,
+        "rmse": 5.92
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 18,
+        "r2": 0.2086,
+        "mae": 4.86,
+        "rmse": 6.05
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 19,
+        "r2": 0.2264,
+        "mae": 4.78,
+        "rmse": 5.97
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 20,
+        "r2": 0.2283,
+        "mae": 4.76,
+        "rmse": 5.94
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 21,
+        "r2": 0.2255,
+        "mae": 4.74,
+        "rmse": 5.93
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 22,
+        "r2": 0.2183,
+        "mae": 4.77,
+        "rmse": 5.96
+      },
+      {
+        "season": "Monsoon",
+        "horizon": 23,
+        "r2": 0.4344,
+        "mae": 3.99,
+        "rmse": 5.05
+      }
+    ]
+  },
+  "site_errors": {
+    "NO2": [
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 0,
+        "r2": 0.7349,
+        "mae": 10.88,
+        "rmse": 15.26
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 1,
+        "r2": 0.7102,
+        "mae": 11.65,
+        "rmse": 16
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 2,
+        "r2": 0.702,
+        "mae": 12.09,
+        "rmse": 16.27
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 3,
+        "r2": 0.5125,
+        "mae": 15.33,
+        "rmse": 20.88
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 4,
+        "r2": 0.4941,
+        "mae": 15.61,
+        "rmse": 21.32
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 5,
+        "r2": 0.7061,
+        "mae": 12.08,
+        "rmse": 16.25
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 6,
+        "r2": 0.4812,
+        "mae": 15.62,
+        "rmse": 21.59
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 7,
+        "r2": 0.5044,
+        "mae": 15.53,
+        "rmse": 21.16
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 8,
+        "r2": 0.5241,
+        "mae": 15.25,
+        "rmse": 20.8
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 9,
+        "r2": 0.5128,
+        "mae": 15.48,
+        "rmse": 21.13
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 10,
+        "r2": 0.5269,
+        "mae": 15.32,
+        "rmse": 20.88
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 11,
+        "r2": 0.7189,
+        "mae": 11.8,
+        "rmse": 16.14
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 12,
+        "r2": 0.5106,
+        "mae": 15.75,
+        "rmse": 21.31
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 13,
+        "r2": 0.5011,
+        "mae": 15.68,
+        "rmse": 21.54
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 14,
+        "r2": 0.5144,
+        "mae": 15.35,
+        "rmse": 21.29
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 15,
+        "r2": 0.5376,
+        "mae": 15.25,
+        "rmse": 20.79
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 16,
+        "r2": 0.5063,
+        "mae": 15.82,
+        "rmse": 21.49
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 17,
+        "r2": 0.5011,
+        "mae": 15.74,
+        "rmse": 21.62
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 18,
+        "r2": 0.5181,
+        "mae": 15.41,
+        "rmse": 21.26
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 19,
+        "r2": 0.5072,
+        "mae": 15.58,
+        "rmse": 21.54
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 20,
+        "r2": 0.52,
+        "mae": 15.46,
+        "rmse": 21.3
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 21,
+        "r2": 0.5149,
+        "mae": 15.52,
+        "rmse": 21.46
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 22,
+        "r2": 0.5009,
+        "mae": 15.85,
+        "rmse": 21.8
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 23,
+        "r2": 0.7298,
+        "mae": 11.38,
+        "rmse": 16.06
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 0,
+        "r2": 0.5534,
+        "mae": 13.92,
+        "rmse": 18.9
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 1,
+        "r2": 0.4655,
+        "mae": 15.57,
+        "rmse": 20.77
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 2,
+        "r2": 0.4686,
+        "mae": 15.84,
+        "rmse": 20.8
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 3,
+        "r2": 0.4077,
+        "mae": 16.82,
+        "rmse": 21.95
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 4,
+        "r2": 0.3885,
+        "mae": 16.88,
+        "rmse": 22.24
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 5,
+        "r2": 0.4046,
+        "mae": 16.42,
+        "rmse": 21.95
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 6,
+        "r2": 0.3656,
+        "mae": 17.16,
+        "rmse": 22.67
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 7,
+        "r2": 0.3637,
+        "mae": 17.35,
+        "rmse": 22.7
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 8,
+        "r2": 0.3622,
+        "mae": 17.44,
+        "rmse": 22.76
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 9,
+        "r2": 0.3542,
+        "mae": 17.57,
+        "rmse": 22.92
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 10,
+        "r2": 0.3734,
+        "mae": 16.94,
+        "rmse": 22.36
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 11,
+        "r2": 0.4069,
+        "mae": 15.92,
+        "rmse": 21.43
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 12,
+        "r2": 0.3347,
+        "mae": 16.66,
+        "rmse": 22.35
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 13,
+        "r2": 0.3255,
+        "mae": 16.84,
+        "rmse": 22.39
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 14,
+        "r2": 0.3273,
+        "mae": 16.74,
+        "rmse": 22.22
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 15,
+        "r2": 0.3206,
+        "mae": 16.57,
+        "rmse": 22.2
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 16,
+        "r2": 0.3297,
+        "mae": 16.41,
+        "rmse": 22.05
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 17,
+        "r2": 0.3645,
+        "mae": 15.9,
+        "rmse": 21.5
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 18,
+        "r2": 0.359,
+        "mae": 15.71,
+        "rmse": 21.6
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 19,
+        "r2": 0.3553,
+        "mae": 15.97,
+        "rmse": 21.7
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 20,
+        "r2": 0.3957,
+        "mae": 15.46,
+        "rmse": 20.97
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 21,
+        "r2": 0.4041,
+        "mae": 15.37,
+        "rmse": 20.82
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 22,
+        "r2": 0.3805,
+        "mae": 15.75,
+        "rmse": 21.25
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 23,
+        "r2": 0.3909,
+        "mae": 15.83,
+        "rmse": 21.12
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 0,
+        "r2": 0.6422,
+        "mae": 7.89,
+        "rmse": 10.95
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 1,
+        "r2": 0.6338,
+        "mae": 7.98,
+        "rmse": 11.11
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 2,
+        "r2": 0.6326,
+        "mae": 8.18,
+        "rmse": 11.09
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 3,
+        "r2": 0.3628,
+        "mae": 10.59,
+        "rmse": 14.57
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 4,
+        "r2": 0.3895,
+        "mae": 10.48,
+        "rmse": 14.28
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 5,
+        "r2": 0.6125,
+        "mae": 8.21,
+        "rmse": 11.31
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 6,
+        "r2": 0.3817,
+        "mae": 10.45,
+        "rmse": 14.23
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 7,
+        "r2": 0.3743,
+        "mae": 10.51,
+        "rmse": 14.26
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 8,
+        "r2": 0.3904,
+        "mae": 10.23,
+        "rmse": 13.98
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 9,
+        "r2": 0.3848,
+        "mae": 10.36,
+        "rmse": 14.02
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 10,
+        "r2": 0.4236,
+        "mae": 10.06,
+        "rmse": 13.53
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 11,
+        "r2": 0.6128,
+        "mae": 8.02,
+        "rmse": 11.05
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 12,
+        "r2": 0.4222,
+        "mae": 10.14,
+        "rmse": 13.47
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 13,
+        "r2": 0.4037,
+        "mae": 10.14,
+        "rmse": 13.71
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 14,
+        "r2": 0.412,
+        "mae": 10.06,
+        "rmse": 13.66
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 15,
+        "r2": 0.455,
+        "mae": 9.87,
+        "rmse": 13.19
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 16,
+        "r2": 0.4359,
+        "mae": 9.93,
+        "rmse": 13.45
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 17,
+        "r2": 0.4549,
+        "mae": 9.84,
+        "rmse": 13.25
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 18,
+        "r2": 0.457,
+        "mae": 9.86,
+        "rmse": 13.25
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 19,
+        "r2": 0.44,
+        "mae": 9.94,
+        "rmse": 13.48
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 20,
+        "r2": 0.4435,
+        "mae": 9.77,
+        "rmse": 13.44
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 21,
+        "r2": 0.4158,
+        "mae": 9.88,
+        "rmse": 13.77
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 22,
+        "r2": 0.4094,
+        "mae": 10.09,
+        "rmse": 13.86
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 23,
+        "r2": 0.5925,
+        "mae": 8.49,
+        "rmse": 11.53
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 0,
+        "r2": 0.7316,
+        "mae": 11.36,
+        "rmse": 17.15
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 1,
+        "r2": 0.6963,
+        "mae": 12.3,
+        "rmse": 18.27
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 2,
+        "r2": 0.7048,
+        "mae": 12.24,
+        "rmse": 18.04
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 3,
+        "r2": 0.5077,
+        "mae": 15.59,
+        "rmse": 23.31
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 4,
+        "r2": 0.4879,
+        "mae": 15.89,
+        "rmse": 23.78
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 5,
+        "r2": 0.6837,
+        "mae": 12.85,
+        "rmse": 18.7
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 6,
+        "r2": 0.473,
+        "mae": 16.13,
+        "rmse": 24.16
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 7,
+        "r2": 0.4625,
+        "mae": 16.17,
+        "rmse": 24.45
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 8,
+        "r2": 0.488,
+        "mae": 15.92,
+        "rmse": 23.92
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 9,
+        "r2": 0.4829,
+        "mae": 16.19,
+        "rmse": 24.07
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 10,
+        "r2": 0.5035,
+        "mae": 15.94,
+        "rmse": 23.63
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 11,
+        "r2": 0.716,
+        "mae": 12.15,
+        "rmse": 17.89
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 12,
+        "r2": 0.4734,
+        "mae": 16.38,
+        "rmse": 24.4
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 13,
+        "r2": 0.4643,
+        "mae": 16.37,
+        "rmse": 24.63
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 14,
+        "r2": 0.4348,
+        "mae": 16.86,
+        "rmse": 25.31
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 15,
+        "r2": 0.4799,
+        "mae": 16.31,
+        "rmse": 24.27
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 16,
+        "r2": 0.448,
+        "mae": 16.51,
+        "rmse": 24.99
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 17,
+        "r2": 0.4633,
+        "mae": 16.42,
+        "rmse": 24.63
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 18,
+        "r2": 0.4619,
+        "mae": 16.66,
+        "rmse": 24.65
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 19,
+        "r2": 0.4339,
+        "mae": 16.73,
+        "rmse": 25.28
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 20,
+        "r2": 0.4549,
+        "mae": 16.46,
+        "rmse": 24.8
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 21,
+        "r2": 0.438,
+        "mae": 16.8,
+        "rmse": 25.2
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 22,
+        "r2": 0.4447,
+        "mae": 16.83,
+        "rmse": 25.08
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 23,
+        "r2": 0.683,
+        "mae": 12.47,
+        "rmse": 18.98
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 0,
+        "r2": 0.5975,
+        "mae": 14.07,
+        "rmse": 19.78
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 1,
+        "r2": 0.5714,
+        "mae": 14.91,
+        "rmse": 20.44
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 2,
+        "r2": 0.5627,
+        "mae": 15.07,
+        "rmse": 20.65
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 3,
+        "r2": 0.3727,
+        "mae": 18.07,
+        "rmse": 24.75
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 4,
+        "r2": 0.3369,
+        "mae": 18.61,
+        "rmse": 25.46
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 5,
+        "r2": 0.5255,
+        "mae": 15.47,
+        "rmse": 21.41
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 6,
+        "r2": 0.3412,
+        "mae": 18.3,
+        "rmse": 25.04
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 7,
+        "r2": 0.381,
+        "mae": 17.7,
+        "rmse": 24.12
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 8,
+        "r2": 0.3701,
+        "mae": 17.79,
+        "rmse": 24.17
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 9,
+        "r2": 0.3642,
+        "mae": 17.84,
+        "rmse": 24.12
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 10,
+        "r2": 0.4028,
+        "mae": 17.39,
+        "rmse": 23.35
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 11,
+        "r2": 0.5729,
+        "mae": 14.52,
+        "rmse": 19.77
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 12,
+        "r2": 0.3681,
+        "mae": 17.98,
+        "rmse": 24.09
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 13,
+        "r2": 0.347,
+        "mae": 17.61,
+        "rmse": 24.54
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 14,
+        "r2": 0.3732,
+        "mae": 17.56,
+        "rmse": 24.05
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 15,
+        "r2": 0.4159,
+        "mae": 17.26,
+        "rmse": 23.23
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 16,
+        "r2": 0.3908,
+        "mae": 17.62,
+        "rmse": 23.72
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 17,
+        "r2": 0.3932,
+        "mae": 17.42,
+        "rmse": 23.69
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 18,
+        "r2": 0.3959,
+        "mae": 17.53,
+        "rmse": 23.66
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 19,
+        "r2": 0.3952,
+        "mae": 17.34,
+        "rmse": 23.7
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 20,
+        "r2": 0.4061,
+        "mae": 17.42,
+        "rmse": 23.52
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 21,
+        "r2": 0.4014,
+        "mae": 17.57,
+        "rmse": 23.64
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 22,
+        "r2": 0.373,
+        "mae": 17.74,
+        "rmse": 24.2
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 23,
+        "r2": 0.581,
+        "mae": 14.54,
+        "rmse": 19.72
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 0,
+        "r2": 0.6849,
+        "mae": 8.74,
+        "rmse": 12.31
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 1,
+        "r2": 0.6342,
+        "mae": 9.42,
+        "rmse": 13.29
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 2,
+        "r2": 0.5929,
+        "mae": 10.07,
+        "rmse": 14.06
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 3,
+        "r2": 0.4563,
+        "mae": 11.85,
+        "rmse": 16.28
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 4,
+        "r2": 0.4368,
+        "mae": 12.17,
+        "rmse": 16.6
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 5,
+        "r2": 0.5497,
+        "mae": 10.58,
+        "rmse": 14.86
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 6,
+        "r2": 0.4168,
+        "mae": 12.3,
+        "rmse": 16.93
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 7,
+        "r2": 0.4469,
+        "mae": 11.92,
+        "rmse": 16.51
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 8,
+        "r2": 0.4598,
+        "mae": 12,
+        "rmse": 16.35
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 9,
+        "r2": 0.4467,
+        "mae": 12.08,
+        "rmse": 16.58
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 10,
+        "r2": 0.463,
+        "mae": 11.82,
+        "rmse": 16.36
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 11,
+        "r2": 0.6093,
+        "mae": 10,
+        "rmse": 13.97
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 12,
+        "r2": 0.4227,
+        "mae": 12.4,
+        "rmse": 17
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 13,
+        "r2": 0.4767,
+        "mae": 11.62,
+        "rmse": 16.22
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 14,
+        "r2": 0.4592,
+        "mae": 11.88,
+        "rmse": 16.51
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 15,
+        "r2": 0.4819,
+        "mae": 11.72,
+        "rmse": 16.18
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 16,
+        "r2": 0.4632,
+        "mae": 11.86,
+        "rmse": 16.48
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 17,
+        "r2": 0.4843,
+        "mae": 11.63,
+        "rmse": 16.17
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 18,
+        "r2": 0.4655,
+        "mae": 11.94,
+        "rmse": 16.48
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 19,
+        "r2": 0.4756,
+        "mae": 11.64,
+        "rmse": 16.34
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 20,
+        "r2": 0.4887,
+        "mae": 11.65,
+        "rmse": 16.15
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 21,
+        "r2": 0.4811,
+        "mae": 11.61,
+        "rmse": 16.29
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 22,
+        "r2": 0.4516,
+        "mae": 11.88,
+        "rmse": 16.76
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 23,
+        "r2": 0.6656,
+        "mae": 9.44,
+        "rmse": 13.08
+      }
+    ],
+    "O3": [
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 0,
+        "r2": 0.816,
+        "mae": 17.78,
+        "rmse": 24.42
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 1,
+        "r2": 0.8044,
+        "mae": 18.28,
+        "rmse": 25.23
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 2,
+        "r2": 0.7857,
+        "mae": 19.57,
+        "rmse": 26.48
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 3,
+        "r2": 0.696,
+        "mae": 23.79,
+        "rmse": 31.64
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 4,
+        "r2": 0.6914,
+        "mae": 24.06,
+        "rmse": 31.93
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 5,
+        "r2": 0.7832,
+        "mae": 19.64,
+        "rmse": 26.8
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 6,
+        "r2": 0.6972,
+        "mae": 24.02,
+        "rmse": 31.71
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 7,
+        "r2": 0.7017,
+        "mae": 23.73,
+        "rmse": 31.56
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 8,
+        "r2": 0.7016,
+        "mae": 23.56,
+        "rmse": 31.67
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 9,
+        "r2": 0.709,
+        "mae": 23.43,
+        "rmse": 31.39
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 10,
+        "r2": 0.7092,
+        "mae": 23.71,
+        "rmse": 31.48
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 11,
+        "r2": 0.7939,
+        "mae": 19.14,
+        "rmse": 26.57
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 12,
+        "r2": 0.7058,
+        "mae": 23.87,
+        "rmse": 31.8
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 13,
+        "r2": 0.703,
+        "mae": 23.86,
+        "rmse": 31.98
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 14,
+        "r2": 0.7045,
+        "mae": 23.22,
+        "rmse": 31.95
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 15,
+        "r2": 0.7068,
+        "mae": 23.23,
+        "rmse": 31.86
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 16,
+        "r2": 0.7083,
+        "mae": 23.41,
+        "rmse": 31.8
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 17,
+        "r2": 0.7096,
+        "mae": 23.34,
+        "rmse": 31.73
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 18,
+        "r2": 0.7141,
+        "mae": 23,
+        "rmse": 31.49
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 19,
+        "r2": 0.7075,
+        "mae": 23.21,
+        "rmse": 31.86
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 20,
+        "r2": 0.7037,
+        "mae": 23.53,
+        "rmse": 32.09
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 21,
+        "r2": 0.7061,
+        "mae": 23.56,
+        "rmse": 31.99
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 22,
+        "r2": 0.6982,
+        "mae": 24.17,
+        "rmse": 32.46
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 23,
+        "r2": 0.8032,
+        "mae": 18.82,
+        "rmse": 26.21
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 0,
+        "r2": 0.756,
+        "mae": 17.38,
+        "rmse": 25.79
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 1,
+        "r2": 0.7099,
+        "mae": 19.46,
+        "rmse": 27.97
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 2,
+        "r2": 0.7112,
+        "mae": 19.56,
+        "rmse": 27.11
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 3,
+        "r2": 0.6966,
+        "mae": 20.52,
+        "rmse": 26.71
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 4,
+        "r2": 0.6857,
+        "mae": 20.51,
+        "rmse": 26.72
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 5,
+        "r2": 0.6998,
+        "mae": 20.21,
+        "rmse": 25.9
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 6,
+        "r2": 0.6823,
+        "mae": 20.54,
+        "rmse": 26.44
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 7,
+        "r2": 0.6886,
+        "mae": 20.09,
+        "rmse": 26.03
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 8,
+        "r2": 0.6848,
+        "mae": 20.13,
+        "rmse": 26.15
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 9,
+        "r2": 0.6881,
+        "mae": 20.22,
+        "rmse": 26.06
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 10,
+        "r2": 0.7034,
+        "mae": 19.61,
+        "rmse": 25.49
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 11,
+        "r2": 0.7243,
+        "mae": 19,
+        "rmse": 24.64
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 12,
+        "r2": 0.7203,
+        "mae": 19.2,
+        "rmse": 24.91
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 13,
+        "r2": 0.7162,
+        "mae": 19.33,
+        "rmse": 25.19
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 14,
+        "r2": 0.7249,
+        "mae": 19.16,
+        "rmse": 24.86
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 15,
+        "r2": 0.7136,
+        "mae": 19.68,
+        "rmse": 25.43
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 16,
+        "r2": 0.7168,
+        "mae": 19.4,
+        "rmse": 25.39
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 17,
+        "r2": 0.72,
+        "mae": 19.35,
+        "rmse": 25.36
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 18,
+        "r2": 0.7217,
+        "mae": 19.5,
+        "rmse": 25.4
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 19,
+        "r2": 0.7251,
+        "mae": 19.42,
+        "rmse": 25.33
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 20,
+        "r2": 0.7234,
+        "mae": 19.31,
+        "rmse": 25.51
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 21,
+        "r2": 0.7193,
+        "mae": 19.71,
+        "rmse": 25.81
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 22,
+        "r2": 0.7171,
+        "mae": 19.76,
+        "rmse": 25.99
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 23,
+        "r2": 0.7394,
+        "mae": 19.11,
+        "rmse": 24.98
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 0,
+        "r2": 0.85,
+        "mae": 9.11,
+        "rmse": 12.69
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 1,
+        "r2": 0.8242,
+        "mae": 9.88,
+        "rmse": 13.8
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 2,
+        "r2": 0.7889,
+        "mae": 11.14,
+        "rmse": 15.16
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 3,
+        "r2": 0.6213,
+        "mae": 14.48,
+        "rmse": 20.36
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 4,
+        "r2": 0.6615,
+        "mae": 13.6,
+        "rmse": 19.3
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 5,
+        "r2": 0.774,
+        "mae": 11.23,
+        "rmse": 15.81
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 6,
+        "r2": 0.6237,
+        "mae": 14.32,
+        "rmse": 20.43
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 7,
+        "r2": 0.6197,
+        "mae": 14.33,
+        "rmse": 20.57
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 8,
+        "r2": 0.6321,
+        "mae": 13.79,
+        "rmse": 20.28
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 9,
+        "r2": 0.6076,
+        "mae": 14.37,
+        "rmse": 21
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 10,
+        "r2": 0.6364,
+        "mae": 13.83,
+        "rmse": 20.25
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 11,
+        "r2": 0.7975,
+        "mae": 10.34,
+        "rmse": 15.12
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 12,
+        "r2": 0.6369,
+        "mae": 13.8,
+        "rmse": 20.24
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 13,
+        "r2": 0.5944,
+        "mae": 14.34,
+        "rmse": 21.43
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 14,
+        "r2": 0.6295,
+        "mae": 13.82,
+        "rmse": 20.54
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 15,
+        "r2": 0.6517,
+        "mae": 13.18,
+        "rmse": 20
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 16,
+        "r2": 0.6621,
+        "mae": 13.17,
+        "rmse": 19.76
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 17,
+        "r2": 0.645,
+        "mae": 13.34,
+        "rmse": 20.27
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 18,
+        "r2": 0.6473,
+        "mae": 13.22,
+        "rmse": 20.19
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 19,
+        "r2": 0.6523,
+        "mae": 13.52,
+        "rmse": 20.02
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 20,
+        "r2": 0.6481,
+        "mae": 13.53,
+        "rmse": 20.07
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 21,
+        "r2": 0.6451,
+        "mae": 13.44,
+        "rmse": 20.1
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 22,
+        "r2": 0.6566,
+        "mae": 13.22,
+        "rmse": 19.73
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 23,
+        "r2": 0.7778,
+        "mae": 10.42,
+        "rmse": 15.88
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 0,
+        "r2": 0.8034,
+        "mae": 21.13,
+        "rmse": 28.44
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 1,
+        "r2": 0.789,
+        "mae": 21.7,
+        "rmse": 29.43
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 2,
+        "r2": 0.7669,
+        "mae": 22.88,
+        "rmse": 31
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 3,
+        "r2": 0.6699,
+        "mae": 28.44,
+        "rmse": 36.97
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 4,
+        "r2": 0.6801,
+        "mae": 28.12,
+        "rmse": 36.45
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 5,
+        "r2": 0.7616,
+        "mae": 23.11,
+        "rmse": 31.5
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 6,
+        "r2": 0.6593,
+        "mae": 29.12,
+        "rmse": 37.68
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 7,
+        "r2": 0.6585,
+        "mae": 28.84,
+        "rmse": 37.76
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 8,
+        "r2": 0.6582,
+        "mae": 28.92,
+        "rmse": 37.82
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 9,
+        "r2": 0.6605,
+        "mae": 28.62,
+        "rmse": 37.76
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 10,
+        "r2": 0.6498,
+        "mae": 29.44,
+        "rmse": 38.44
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 11,
+        "r2": 0.7673,
+        "mae": 23.08,
+        "rmse": 31.41
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 12,
+        "r2": 0.6486,
+        "mae": 29.61,
+        "rmse": 38.69
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 13,
+        "r2": 0.6566,
+        "mae": 29.37,
+        "rmse": 38.32
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 14,
+        "r2": 0.645,
+        "mae": 29.7,
+        "rmse": 39.03
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 15,
+        "r2": 0.6347,
+        "mae": 29.93,
+        "rmse": 39.62
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 16,
+        "r2": 0.6301,
+        "mae": 30.19,
+        "rmse": 39.84
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 17,
+        "r2": 0.6197,
+        "mae": 30.21,
+        "rmse": 40.35
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 18,
+        "r2": 0.6344,
+        "mae": 29.71,
+        "rmse": 39.5
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 19,
+        "r2": 0.6351,
+        "mae": 29.95,
+        "rmse": 39.4
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 20,
+        "r2": 0.6341,
+        "mae": 29.89,
+        "rmse": 39.41
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 21,
+        "r2": 0.651,
+        "mae": 29.17,
+        "rmse": 38.45
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 22,
+        "r2": 0.6529,
+        "mae": 29.4,
+        "rmse": 38.36
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 23,
+        "r2": 0.753,
+        "mae": 23.89,
+        "rmse": 32.4
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 0,
+        "r2": 0.8445,
+        "mae": 15.01,
+        "rmse": 19.79
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 1,
+        "r2": 0.8216,
+        "mae": 16.39,
+        "rmse": 21.21
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 2,
+        "r2": 0.805,
+        "mae": 17.03,
+        "rmse": 22.23
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 3,
+        "r2": 0.7262,
+        "mae": 20.95,
+        "rmse": 26.41
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 4,
+        "r2": 0.7233,
+        "mae": 21.06,
+        "rmse": 26.61
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 5,
+        "r2": 0.8038,
+        "mae": 17.27,
+        "rmse": 22.44
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 6,
+        "r2": 0.7269,
+        "mae": 21.1,
+        "rmse": 26.51
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 7,
+        "r2": 0.729,
+        "mae": 20.93,
+        "rmse": 26.44
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 8,
+        "r2": 0.7273,
+        "mae": 21.06,
+        "rmse": 26.56
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 9,
+        "r2": 0.728,
+        "mae": 21.12,
+        "rmse": 26.57
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 10,
+        "r2": 0.7279,
+        "mae": 21.15,
+        "rmse": 26.63
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 11,
+        "r2": 0.8093,
+        "mae": 17.25,
+        "rmse": 22.33
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 12,
+        "r2": 0.7341,
+        "mae": 20.98,
+        "rmse": 26.41
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 13,
+        "r2": 0.7338,
+        "mae": 20.96,
+        "rmse": 26.49
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 14,
+        "r2": 0.735,
+        "mae": 20.92,
+        "rmse": 26.47
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 15,
+        "r2": 0.7365,
+        "mae": 20.81,
+        "rmse": 26.4
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 16,
+        "r2": 0.7444,
+        "mae": 20.51,
+        "rmse": 25.99
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 17,
+        "r2": 0.7424,
+        "mae": 20.39,
+        "rmse": 26.04
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 18,
+        "r2": 0.7488,
+        "mae": 20.16,
+        "rmse": 25.66
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 19,
+        "r2": 0.745,
+        "mae": 20.16,
+        "rmse": 25.82
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 20,
+        "r2": 0.7418,
+        "mae": 20.3,
+        "rmse": 25.98
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 21,
+        "r2": 0.7379,
+        "mae": 20.34,
+        "rmse": 26.15
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 22,
+        "r2": 0.7267,
+        "mae": 20.81,
+        "rmse": 26.69
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 23,
+        "r2": 0.8005,
+        "mae": 17.05,
+        "rmse": 22.81
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 0,
+        "r2": 0.7274,
+        "mae": 17.42,
+        "rmse": 24.01
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 1,
+        "r2": 0.7036,
+        "mae": 18.29,
+        "rmse": 25.08
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 2,
+        "r2": 0.6885,
+        "mae": 18.82,
+        "rmse": 25.79
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 3,
+        "r2": 0.6086,
+        "mae": 22.62,
+        "rmse": 28.99
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 4,
+        "r2": 0.6006,
+        "mae": 23.23,
+        "rmse": 29.36
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 5,
+        "r2": 0.6652,
+        "mae": 19.26,
+        "rmse": 26.94
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 6,
+        "r2": 0.6083,
+        "mae": 22.86,
+        "rmse": 29.19
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 7,
+        "r2": 0.6013,
+        "mae": 23.09,
+        "rmse": 29.5
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 8,
+        "r2": 0.6159,
+        "mae": 22.61,
+        "rmse": 29.03
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 9,
+        "r2": 0.6336,
+        "mae": 22.23,
+        "rmse": 28.41
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 10,
+        "r2": 0.6288,
+        "mae": 22.35,
+        "rmse": 28.67
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 11,
+        "r2": 0.6895,
+        "mae": 18.76,
+        "rmse": 26.27
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 12,
+        "r2": 0.6347,
+        "mae": 22.36,
+        "rmse": 28.56
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 13,
+        "r2": 0.6406,
+        "mae": 22.27,
+        "rmse": 28.37
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 14,
+        "r2": 0.6581,
+        "mae": 21.58,
+        "rmse": 27.7
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 15,
+        "r2": 0.6523,
+        "mae": 21.61,
+        "rmse": 27.98
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 16,
+        "r2": 0.6618,
+        "mae": 21.13,
+        "rmse": 27.64
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 17,
+        "r2": 0.6624,
+        "mae": 21.27,
+        "rmse": 27.66
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 18,
+        "r2": 0.6489,
+        "mae": 21.87,
+        "rmse": 28.26
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 19,
+        "r2": 0.6459,
+        "mae": 21.87,
+        "rmse": 28.44
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 20,
+        "r2": 0.6528,
+        "mae": 21.56,
+        "rmse": 28.23
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 21,
+        "r2": 0.639,
+        "mae": 22.14,
+        "rmse": 28.84
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 22,
+        "r2": 0.6194,
+        "mae": 22.39,
+        "rmse": 29.65
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 23,
+        "r2": 0.6794,
+        "mae": 19.31,
+        "rmse": 27.27
+      }
+    ],
+    "HCHO": [
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 0,
+        "r2": 0.5766,
+        "mae": 4.11,
+        "rmse": 5.36
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 1,
+        "r2": 0.5341,
+        "mae": 4.29,
+        "rmse": 5.61
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 2,
+        "r2": 0.5054,
+        "mae": 4.44,
+        "rmse": 5.79
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 3,
+        "r2": 0.1898,
+        "mae": 5.78,
+        "rmse": 7.41
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 4,
+        "r2": 0.1581,
+        "mae": 5.9,
+        "rmse": 7.56
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 5,
+        "r2": 0.4844,
+        "mae": 4.56,
+        "rmse": 5.93
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 6,
+        "r2": 0.1518,
+        "mae": 5.96,
+        "rmse": 7.62
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 7,
+        "r2": 0.0923,
+        "mae": 6.16,
+        "rmse": 7.87
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 8,
+        "r2": 0.142,
+        "mae": 5.94,
+        "rmse": 7.68
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 9,
+        "r2": 0.0788,
+        "mae": 6.17,
+        "rmse": 7.94
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 10,
+        "r2": 0.0837,
+        "mae": 6.18,
+        "rmse": 7.95
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 11,
+        "r2": 0.4693,
+        "mae": 4.55,
+        "rmse": 6.05
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 12,
+        "r2": 0.1217,
+        "mae": 5.98,
+        "rmse": 7.79
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 13,
+        "r2": 0.1165,
+        "mae": 6.02,
+        "rmse": 7.79
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 14,
+        "r2": 0.1022,
+        "mae": 6.04,
+        "rmse": 7.84
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 15,
+        "r2": 0.0312,
+        "mae": 6.27,
+        "rmse": 8.13
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 16,
+        "r2": 0.0104,
+        "mae": 6.31,
+        "rmse": 8.17
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 17,
+        "r2": 0.0255,
+        "mae": 6.19,
+        "rmse": 8.05
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 18,
+        "r2": 0.0059,
+        "mae": 6.3,
+        "rmse": 8.12
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 19,
+        "r2": -0.0138,
+        "mae": 6.32,
+        "rmse": 8.16
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 20,
+        "r2": 0.0588,
+        "mae": 6.06,
+        "rmse": 7.83
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 21,
+        "r2": 0.0008,
+        "mae": 6.21,
+        "rmse": 8.02
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 22,
+        "r2": 0.013,
+        "mae": 6.14,
+        "rmse": 7.95
+      },
+      {
+        "site_id": 1,
+        "site_name": "Ashok Vihar",
+        "horizon": 23,
+        "r2": 0.489,
+        "mae": 4.32,
+        "rmse": 5.7
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 0,
+        "r2": 0.3341,
+        "mae": 5.04,
+        "rmse": 6.64
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 1,
+        "r2": 0.3327,
+        "mae": 5.06,
+        "rmse": 6.66
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 2,
+        "r2": 0.2896,
+        "mae": 5.24,
+        "rmse": 6.91
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 3,
+        "r2": 0.1089,
+        "mae": 5.96,
+        "rmse": 7.77
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 4,
+        "r2": 0.1104,
+        "mae": 5.97,
+        "rmse": 7.78
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 5,
+        "r2": 0.3051,
+        "mae": 5.32,
+        "rmse": 6.91
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 6,
+        "r2": 0.0873,
+        "mae": 6.12,
+        "rmse": 7.95
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 7,
+        "r2": 0.081,
+        "mae": 6.12,
+        "rmse": 7.96
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 8,
+        "r2": 0.079,
+        "mae": 6.13,
+        "rmse": 7.96
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 9,
+        "r2": 0.0498,
+        "mae": 6.23,
+        "rmse": 8.09
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 10,
+        "r2": 0.033,
+        "mae": 6.25,
+        "rmse": 8.17
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 11,
+        "r2": 0.3011,
+        "mae": 5.42,
+        "rmse": 6.97
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 12,
+        "r2": 0.053,
+        "mae": 6.27,
+        "rmse": 8.13
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 13,
+        "r2": 0.0668,
+        "mae": 6.23,
+        "rmse": 8.07
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 14,
+        "r2": 0.0501,
+        "mae": 6.33,
+        "rmse": 8.17
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 15,
+        "r2": 0.0263,
+        "mae": 6.43,
+        "rmse": 8.31
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 16,
+        "r2": 0.0214,
+        "mae": 6.48,
+        "rmse": 8.37
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 17,
+        "r2": 0.0103,
+        "mae": 6.5,
+        "rmse": 8.42
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 18,
+        "r2": -0.006,
+        "mae": 6.6,
+        "rmse": 8.51
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 19,
+        "r2": 0.0182,
+        "mae": 6.48,
+        "rmse": 8.37
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 20,
+        "r2": 0.0092,
+        "mae": 6.46,
+        "rmse": 8.35
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 21,
+        "r2": 0.007,
+        "mae": 6.42,
+        "rmse": 8.35
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 22,
+        "r2": 0.0331,
+        "mae": 6.4,
+        "rmse": 8.23
+      },
+      {
+        "site_id": 2,
+        "site_name": "Dwarka",
+        "horizon": 23,
+        "r2": 0.2256,
+        "mae": 5.67,
+        "rmse": 7.33
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 0,
+        "r2": 0.5264,
+        "mae": 3.98,
+        "rmse": 5.12
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 1,
+        "r2": 0.5295,
+        "mae": 3.98,
+        "rmse": 5.11
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 2,
+        "r2": 0.503,
+        "mae": 4.08,
+        "rmse": 5.26
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 3,
+        "r2": 0.2494,
+        "mae": 5.12,
+        "rmse": 6.48
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 4,
+        "r2": 0.2241,
+        "mae": 5.19,
+        "rmse": 6.58
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 5,
+        "r2": 0.4863,
+        "mae": 4.18,
+        "rmse": 5.37
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 6,
+        "r2": 0.2345,
+        "mae": 5.21,
+        "rmse": 6.57
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 7,
+        "r2": 0.2408,
+        "mae": 5.13,
+        "rmse": 6.49
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 8,
+        "r2": 0.2387,
+        "mae": 5.16,
+        "rmse": 6.49
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 9,
+        "r2": 0.2068,
+        "mae": 5.24,
+        "rmse": 6.59
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 10,
+        "r2": 0.2096,
+        "mae": 5.18,
+        "rmse": 6.57
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 11,
+        "r2": 0.5305,
+        "mae": 3.98,
+        "rmse": 5.01
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 12,
+        "r2": 0.206,
+        "mae": 5.18,
+        "rmse": 6.51
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 13,
+        "r2": 0.2029,
+        "mae": 5.19,
+        "rmse": 6.5
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 14,
+        "r2": 0.2125,
+        "mae": 5.12,
+        "rmse": 6.44
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 15,
+        "r2": 0.1875,
+        "mae": 5.14,
+        "rmse": 6.51
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 16,
+        "r2": 0.1872,
+        "mae": 5.15,
+        "rmse": 6.49
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 17,
+        "r2": 0.1901,
+        "mae": 5.1,
+        "rmse": 6.47
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 18,
+        "r2": 0.1514,
+        "mae": 5.19,
+        "rmse": 6.58
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 19,
+        "r2": 0.1702,
+        "mae": 5.14,
+        "rmse": 6.5
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 20,
+        "r2": 0.2034,
+        "mae": 5.01,
+        "rmse": 6.34
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 21,
+        "r2": 0.1615,
+        "mae": 5.11,
+        "rmse": 6.48
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 22,
+        "r2": 0.1631,
+        "mae": 5.11,
+        "rmse": 6.47
+      },
+      {
+        "site_id": 4,
+        "site_name": "Northwest Delhi",
+        "horizon": 23,
+        "r2": 0.5215,
+        "mae": 3.85,
+        "rmse": 4.86
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 0,
+        "r2": 0.5392,
+        "mae": 4.65,
+        "rmse": 6.07
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 1,
+        "r2": 0.5376,
+        "mae": 4.63,
+        "rmse": 6.07
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 2,
+        "r2": 0.4936,
+        "mae": 4.86,
+        "rmse": 6.35
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 3,
+        "r2": 0.2792,
+        "mae": 5.97,
+        "rmse": 7.58
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 4,
+        "r2": 0.2516,
+        "mae": 6.06,
+        "rmse": 7.71
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 5,
+        "r2": 0.5165,
+        "mae": 4.77,
+        "rmse": 6.19
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 6,
+        "r2": 0.2715,
+        "mae": 6,
+        "rmse": 7.59
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 7,
+        "r2": 0.2405,
+        "mae": 6.14,
+        "rmse": 7.76
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 8,
+        "r2": 0.2656,
+        "mae": 6,
+        "rmse": 7.62
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 9,
+        "r2": 0.2246,
+        "mae": 6.2,
+        "rmse": 7.8
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 10,
+        "r2": 0.2497,
+        "mae": 6.05,
+        "rmse": 7.66
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 11,
+        "r2": 0.5368,
+        "mae": 4.7,
+        "rmse": 5.97
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 12,
+        "r2": 0.2481,
+        "mae": 6,
+        "rmse": 7.59
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 13,
+        "r2": 0.2407,
+        "mae": 6.01,
+        "rmse": 7.6
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 14,
+        "r2": 0.2295,
+        "mae": 6.06,
+        "rmse": 7.63
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 15,
+        "r2": 0.211,
+        "mae": 6.14,
+        "rmse": 7.69
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 16,
+        "r2": 0.1671,
+        "mae": 6.28,
+        "rmse": 7.9
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 17,
+        "r2": 0.1685,
+        "mae": 6.23,
+        "rmse": 7.87
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 18,
+        "r2": 0.1402,
+        "mae": 6.39,
+        "rmse": 7.97
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 19,
+        "r2": 0.1302,
+        "mae": 6.33,
+        "rmse": 7.97
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 20,
+        "r2": 0.165,
+        "mae": 6.16,
+        "rmse": 7.78
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 21,
+        "r2": 0.1708,
+        "mae": 6.15,
+        "rmse": 7.71
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 22,
+        "r2": 0.133,
+        "mae": 6.29,
+        "rmse": 7.87
+      },
+      {
+        "site_id": 5,
+        "site_name": "East Delhi",
+        "horizon": 23,
+        "r2": 0.5075,
+        "mae": 4.74,
+        "rmse": 5.94
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 0,
+        "r2": 0.5185,
+        "mae": 4.85,
+        "rmse": 6.24
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 1,
+        "r2": 0.498,
+        "mae": 4.97,
+        "rmse": 6.38
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 2,
+        "r2": 0.4836,
+        "mae": 5.06,
+        "rmse": 6.47
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 3,
+        "r2": 0.1859,
+        "mae": 6.51,
+        "rmse": 8.15
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 4,
+        "r2": 0.1335,
+        "mae": 6.73,
+        "rmse": 8.43
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 5,
+        "r2": 0.4781,
+        "mae": 5.12,
+        "rmse": 6.54
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 6,
+        "r2": 0.1358,
+        "mae": 6.73,
+        "rmse": 8.43
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 7,
+        "r2": 0.0961,
+        "mae": 6.89,
+        "rmse": 8.64
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 8,
+        "r2": 0.117,
+        "mae": 6.76,
+        "rmse": 8.53
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 9,
+        "r2": 0.0838,
+        "mae": 6.92,
+        "rmse": 8.7
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 10,
+        "r2": 0.0838,
+        "mae": 6.92,
+        "rmse": 8.71
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 11,
+        "r2": 0.4374,
+        "mae": 5.26,
+        "rmse": 6.82
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 12,
+        "r2": 0.0944,
+        "mae": 6.86,
+        "rmse": 8.65
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 13,
+        "r2": 0.0777,
+        "mae": 6.95,
+        "rmse": 8.72
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 14,
+        "r2": 0.108,
+        "mae": 6.82,
+        "rmse": 8.59
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 15,
+        "r2": 0.0521,
+        "mae": 7.04,
+        "rmse": 8.85
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 16,
+        "r2": 0.0164,
+        "mae": 7.15,
+        "rmse": 9.01
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 17,
+        "r2": 0.0673,
+        "mae": 6.95,
+        "rmse": 8.77
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 18,
+        "r2": 0.0144,
+        "mae": 7.18,
+        "rmse": 9.02
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 19,
+        "r2": 0.0127,
+        "mae": 7.07,
+        "rmse": 9
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 20,
+        "r2": 0.0472,
+        "mae": 6.95,
+        "rmse": 8.82
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 21,
+        "r2": 0.0269,
+        "mae": 7.03,
+        "rmse": 8.9
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 22,
+        "r2": 0.0134,
+        "mae": 7.04,
+        "rmse": 8.97
+      },
+      {
+        "site_id": 6,
+        "site_name": "Northwest Delhi 2",
+        "horizon": 23,
+        "r2": 0.4375,
+        "mae": 5.21,
+        "rmse": 6.77
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 0,
+        "r2": 0.6127,
+        "mae": 4.34,
+        "rmse": 5.65
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 1,
+        "r2": 0.5921,
+        "mae": 4.47,
+        "rmse": 5.79
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 2,
+        "r2": 0.554,
+        "mae": 4.66,
+        "rmse": 6.04
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 3,
+        "r2": 0.22,
+        "mae": 6.21,
+        "rmse": 7.98
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 4,
+        "r2": 0.2205,
+        "mae": 6.2,
+        "rmse": 7.96
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 5,
+        "r2": 0.5473,
+        "mae": 4.66,
+        "rmse": 6.08
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 6,
+        "r2": 0.1933,
+        "mae": 6.28,
+        "rmse": 8.08
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 7,
+        "r2": 0.1466,
+        "mae": 6.39,
+        "rmse": 8.29
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 8,
+        "r2": 0.1823,
+        "mae": 6.29,
+        "rmse": 8.12
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 9,
+        "r2": 0.1256,
+        "mae": 6.54,
+        "rmse": 8.38
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 10,
+        "r2": 0.1348,
+        "mae": 6.46,
+        "rmse": 8.34
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 11,
+        "r2": 0.5336,
+        "mae": 4.62,
+        "rmse": 6.11
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 12,
+        "r2": 0.1563,
+        "mae": 6.34,
+        "rmse": 8.21
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 13,
+        "r2": 0.1488,
+        "mae": 6.36,
+        "rmse": 8.22
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 14,
+        "r2": 0.1337,
+        "mae": 6.42,
+        "rmse": 8.29
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 15,
+        "r2": 0.0898,
+        "mae": 6.57,
+        "rmse": 8.51
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 16,
+        "r2": 0.054,
+        "mae": 6.72,
+        "rmse": 8.67
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 17,
+        "r2": 0.1005,
+        "mae": 6.53,
+        "rmse": 8.45
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 18,
+        "r2": 0.0528,
+        "mae": 6.74,
+        "rmse": 8.65
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 19,
+        "r2": 0.0835,
+        "mae": 6.6,
+        "rmse": 8.51
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 20,
+        "r2": 0.0851,
+        "mae": 6.53,
+        "rmse": 8.49
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 21,
+        "r2": 0.0637,
+        "mae": 6.63,
+        "rmse": 8.56
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 22,
+        "r2": 0.0702,
+        "mae": 6.64,
+        "rmse": 8.54
+      },
+      {
+        "site_id": 7,
+        "site_name": "Northeast Delhi",
+        "horizon": 23,
+        "r2": 0.5417,
+        "mae": 4.52,
+        "rmse": 5.98
+      }
+    ]
+  },
+  "hyperparameters": {
+    "n_estimators": 2500,
+    "learning_rate": 0.03,
+    "max_depth": 6,
+    "min_child_weight": 20,
+    "gamma": 0.1,
+    "subsample": 0.6,
+    "colsample_bytree": 0.5,
+    "reg_alpha": 0.5,
+    "reg_lambda": 2,
+    "early_stopping_rounds": 100
+  },
+  "training": {
+    "train_years": "2018 – Dec 2023 (< 2025-01-01)",
+    "val_years": "Jan – Mar 2025 (real)",
+    "test_years": "Apr – Jun 2025 (real)",
+    "sites": 7,
+    "targets": [
+      "NO2_target",
+      "O3_target",
+      "HCHO_target"
+    ],
+    "horizons": 24,
+    "features": 199
+  }
+}

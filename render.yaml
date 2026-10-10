@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: vaayu-darshiya-api
+    runtime: image
+    image:
+      dockerfilePath: Dockerfile
+    region: oregon
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"

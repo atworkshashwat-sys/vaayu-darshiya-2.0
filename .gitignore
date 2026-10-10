@@ -1,0 +1,80 @@
+# === Secrets ===
+.env
+.env.*
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Virtual Environments ===
+.venv/
+venv/
+env/
+
+# === IDE / Editor ===
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === AI Tool Configs ===
+.claude/
+.junie/
+
+# === OS Files ===
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# === Large Raw Data Files (not tracked) ===
+vaayu_final_ml_ready.csv
+vaayu_2018_2024.csv
+vaayu_openaq_gap_2023_2024.csv
+vaayu_station_data.csv
+vaayu_final_v3.csv
+
+# === Generated from vaayu_final_v3.csv by backend/database.py ===
+data/vaayu_extract_7sites.csv
+data/vaayu_extract_7sites.csv.tmp
+data/vaayu_extract_7sites.csv.*.tmp
+
+# === Generated Plots ===
+*_actual_vs_predicted.png
+*_error_dist.png
+*_results.png
+*_training_curve.png
+
+# === Node (FRONTEND) ===
+FRONTEND/node_modules/
+FRONTEND/dist/
+FRONTEND/dist-ssr/
+FRONTEND/.output/
+FRONTEND/.vinxi/
+FRONTEND/.tanstack/
+FRONTEND/.nitro/
+FRONTEND/*.local
+
+# === Node (frontend) ===
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.output/
+frontend/.vinxi/
+frontend/.tanstack/
+frontend/.nitro/
+frontend/*.local
+
+# === Scratch Scripts ===
+check.py
+cpu.py
+diagnose.py
+somethingclaudeasked.py
+test_error.py
+
+# === Pre-retrain artefact backups (old versions live in git history) ===
+models/_backup_*/

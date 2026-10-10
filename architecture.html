@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAAYU DARSHIYA — System Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 32px; min-height: 100vh; }
+  h1 { text-align: center; font-size: 28px; font-weight: 800; margin-bottom: 4px; background: linear-gradient(135deg, #10b981, #6366f1, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { text-align: center; font-size: 13px; color: #94a3b8; margin-bottom: 32px; }
+  .diagram { display: flex; flex-direction: column; gap: 0; max-width: 1200px; margin: 0 auto; }
+
+  .layer { border-radius: 16px; padding: 24px 28px; position: relative; }
+  .layer-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .layer-title .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .layer-data { background: rgba(16,185,129,0.08); border: 1.5px solid rgba(16,185,129,0.3); }
+  .layer-data .layer-title { color: #10b981; }
+  .layer-data .dot { background: #10b981; }
+
+  .layer-ml { background: rgba(99,102,241,0.08); border: 1.5px solid rgba(99,102,241,0.3); }
+  .layer-ml .layer-title { color: #818cf8; }
+  .layer-ml .dot { background: #818cf8; }
+
+  .layer-backend { background: rgba(245,158,11,0.08); border: 1.5px solid rgba(245,158,11,0.3); }
+  .layer-backend .layer-title { color: #f59e0b; }
+  .layer-backend .dot { background: #f59e0b; }
+
+  .layer-frontend { background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.3); }
+  .layer-frontend .layer-title { color: #f87171; }
+  .layer-frontend .dot { background: #f87171; }
+
+  .layer-output { background: rgba(100,116,139,0.08); border: 1.5px solid rgba(100,116,139,0.3); }
+  .layer-output .layer-title { color: #94a3b8; }
+  .layer-output .dot { background: #94a3b8; }
+
+  .blocks { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .block { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 18px; min-width: 180px; max-width: 240px; flex: 1; text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
+  .block:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .block-icon { font-size: 22px; margin-bottom: 6px; }
+  .block-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .block-desc { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+
+  .block-data .block-title { color: #34d399; }
+  .block-ml .block-title { color: #a5b4fc; }
+  .block-backend .block-title { color: #fbbf24; }
+  .block-frontend .block-title { color: #fca5a5; }
+  .block-output .block-title { color: #cbd5e1; }
+
+  .flow-arrow { display: flex; justify-content: center; padding: 6px 0; }
+  .flow-arrow svg { filter: drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
+
+  .sub-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 10px; }
+  .sub-row .block { min-width: 150px; max-width: 200px; padding: 10px 14px; }
+
+  .data-flow { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; flex-wrap: wrap; }
+  .data-flow .block { min-width: 130px; max-width: 170px; padding: 8px 12px; font-size: 11px; }
+  .data-flow .arrow { color: #475569; font-size: 18px; }
+
+  .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .api-grid .block { min-width: unset; max-width: unset; }
+
+  .legend { display: flex; gap: 20px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  .connector { text-align: center; padding: 2px 0; }
+  .connector svg { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<h1>VAAYU DARSHIYA / PROJECT AEGIS</h1>
+<p class="subtitle">AI/ML-Powered Air Quality Forecasting Platform — End-to-End System Architecture</p>
+
+<div class="diagram">
+
+  <!-- DATA LAYER -->
+  <div class="layer layer-data">
+    <div class="layer-title"><span class="dot"></span> DATA LAYER — Data Sources & Pipeline</div>
+    <div class="sub-row">
+      <div class="block block-data"><div class="block-icon">🛰️</div><div class="block-title">CPCB Historical AQ Records</div><div class="block-desc">Central Pollution Control Board — Delhi NCR monitoring stations (2016–2026)</div></div>
+      <div class="block block-data"><div class="block-icon">🛰️</div><div class="block-title">Sentinel-5P Satellite</div><div class="block-desc">Tropospheric NO₂ column density — space-based atmospheric measurements</div></div>
+      <div class="block block-data"><div class="block-icon">🛰️</div><div class="block-title">ERA5 Meteorological Reanalysis</div><div class="block-desc">Temperature, humidity, wind, pressure — 180+ engineered features</div></div>
+    </div>
+    <div class="data-flow">
+      <div class="block block-data"><div class="block-icon">📥</div><div class="block-title">Data Acquisition</div><div class="block-desc">Pull from 3 sources — 829 MB raw dataset</div></div>
+      <span class="arrow">→</span>
+      <div class="block block-data"><div class="block-icon">⚙️</div><div class="block-title">Data Processing</div><div class="block-desc">Chunked CSV loading — memory-efficient batch processing</div></div>
+      <span class="arrow">→</span>
+      <div class="block block-data"><div class="block-icon">🧹</div><div class="block-title">Data Cleaning</div><div class="block-desc">Null handling, deduplication, outlier removal</div></div>
+      <span class="arrow">→</span>
+      <div class="block block-data"><div class="block-icon">🔧</div><div class="block-title">Feature Engineering</div><div class="block-desc">Lag features, rolling stats, time-based features</div></div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <svg width="40" height="32"><path d="M20 2 L20 22 M14 16 L20 22 L26 16" stroke="#10b981" stroke-width="2" fill="none" opacity="0.5"/></svg>
+  </div>
+
+  <!-- ML LAYER -->
+  <div class="layer layer-ml">
+    <div class="layer-title"><span class="dot"></span> ML LAYER — Model Training & Inference</div>
+    <div class="sub-row">
+      <div class="block block-ml"><div class="block-icon">🌲</div><div class="block-title">XGBoost NO₂</div><div class="block-desc">Per-horizon tree ensemble — 24 models for 24h forecast</div></div>
+      <div class="block block-ml"><div class="block-icon">🌲</div><div class="block-title">XGBoost O₃</div><div class="block-desc">Per-horizon tree ensemble — 24 models for 24h forecast</div></div>
+      <div class="block block-ml"><div class="block-icon">🧠</div><div class="block-title">CNN + LSTM + Attention</div><div class="block-desc">24-timestep sequence — temporal pattern extraction</div></div>
+    </div>
+    <div class="data-flow">
+      <div class="block block-ml" style="border-color: rgba(129,140,248,0.4);"><div class="block-icon">🔗</div><div class="block-title">Fusion Layer</div><div class="block-desc">Ridge meta-learner — combines all model outputs</div></div>
+      <span class="arrow">→</span>
+      <div class="block block-ml" style="border-color: rgba(129,140,248,0.4);"><div class="block-icon">📊</div><div class="block-title">Predictions</div><div class="block-desc">Predicted NO₂ & O₃ — per zone per timestep</div></div>
+      <span class="arrow">→</span>
+      <div class="block block-ml"><div class="block-icon">📈</div><div class="block-title">Evaluation</div><div class="block-desc">MAE, RMSE, R² — time-based train/test split</div></div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <svg width="40" height="32"><path d="M20 2 L20 22 M14 16 L20 22 L26 16" stroke="#818cf8" stroke-width="2" fill="none" opacity="0.5"/></svg>
+  </div>
+
+  <!-- BACKEND LAYER -->
+  <div class="layer layer-backend">
+    <div class="layer-title"><span class="dot"></span> BACKEND LAYER — FastAPI Server</div>
+    <div class="sub-row">
+      <div class="block block-backend"><div class="block-icon">⚡</div><div class="block-title">FastAPI Server</div><div class="block-desc">Python REST API — handles inference & live data requests</div></div>
+      <div class="block block-backend"><div class="block-icon">🌤️</div><div class="block-title">Open-Meteo API</div><div class="block-desc">Live weather — temperature, wind, humidity</div></div>
+      <div class="block block-backend"><div class="block-icon">💨</div><div class="block-title">WAQI API</div><div class="block-desc">Live air quality index — real-time AQ readings</div></div>
+    </div>
+    <div class="api-grid" style="margin-top: 10px;">
+      <div class="block block-backend"><div class="block-icon">📡</div><div class="block-title">/api/forecast</div><div class="block-desc">24h NO₂ + O₃ arrays — hourly pollutant predictions per site</div></div>
+      <div class="block block-backend"><div class="block-icon">📡</div><div class="block-title">/api/stations</div><div class="block-desc">7 sites — current NO₂, O₃, weather readings</div></div>
+      <div class="block block-backend"><div class="block-icon">📡</div><div class="block-title">/api/metrics</div><div class="block-desc">Model R², MAE, RMSE — per-horizon performance</div></div>
+      <div class="block block-backend"><div class="block-icon">📡</div><div class="block-title">/api/weekly-trend</div><div class="block-desc">14-day daily averages — historical NO₂ & O₃ trends</div></div>
+      <div class="block block-backend"><div class="block-icon">📡</div><div class="block-title">/api/time</div><div class="block-desc">Current hour, minute & date — real-time clock sync</div></div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <svg width="40" height="32"><path d="M20 2 L20 22 M14 16 L20 22 L26 16" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.5"/></svg>
+  </div>
+
+  <!-- FRONTEND LAYER -->
+  <div class="layer layer-frontend">
+    <div class="layer-title"><span class="dot"></span> FRONTEND LAYER — React Dashboard</div>
+    <div class="sub-row">
+      <div class="block block-frontend"><div class="block-icon">📍</div><div class="block-title">Zone Selector</div><div class="block-desc">9 Delhi NCR monitoring zones — click map or dropdown</div></div>
+      <div class="block block-frontend"><div class="block-icon">🎯</div><div class="block-title">AQI Gauge</div><div class="block-desc">Dial/meter display — color-coded severity</div></div>
+      <div class="block block-frontend"><div class="block-icon">📊</div><div class="block-title">NO₂ & O₃ Charts</div><div class="block-desc">24h forecast + 14-day trend — Recharts area charts</div></div>
+      <div class="block block-frontend"><div class="block-icon">🗺️</div><div class="block-title">Delhi NCR Heatmap</div><div class="block-desc">Pollution intensity overlay — MapLibre GL map</div></div>
+      <div class="block block-frontend"><div class="block-icon">📥</div><div class="block-title">Data Export</div><div class="block-desc">CSV/JSON — site-wise, trend, forecast downloads</div></div>
+      <div class="block block-frontend"><div class="block-icon">🤖</div><div class="block-title">AI Insights</div><div class="block-desc">Pollution analysis — health advisories</div></div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <svg width="40" height="32"><path d="M20 2 L20 22 M14 16 L20 22 L26 16" stroke="#f87171" stroke-width="2" fill="none" opacity="0.5"/></svg>
+  </div>
+
+  <!-- OUTPUT LAYER -->
+  <div class="layer layer-output">
+    <div class="layer-title"><span class="dot"></span> OUTPUT LAYER — User Output</div>
+    <div class="blocks">
+      <div class="block block-output"><div class="block-icon">📊</div><div class="block-title">AQI Reading</div><div class="block-desc">Current air quality index — color-coded Good/Moderate/Poor</div></div>
+      <div class="block block-output"><div class="block-icon">📈</div><div class="block-title">Pollutant Levels</div><div class="block-desc">NO₂ & O₃ concentrations — hourly breakdown with trends</div></div>
+      <div class="block block-output"><div class="block-icon">🗺️</div><div class="block-title">Zone Heatmap</div><div class="block-desc">Spatial pollution map — all 9 zones compared</div></div>
+      <div class="block block-output"><div class="block-icon">📉</div><div class="block-title">Model Accuracy</div><div class="block-desc">R², MAE, RMSE — per-horizon precision metrics</div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div> Data Layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div> ML Layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div> Backend Layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> Frontend Layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64748b;"></div> Output Layer</div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+Station Info - Vaayu Darshiya
+=============================
+
+Site ID  Name                 Latitude    Longitude
+------  ----                 --------    ---------
+1        Ashok Vihar          28.69536    77.18169
+2        Dwarka               28.57180    77.07125
+3        Jawaharlal Nehru     28.58278    77.23441
+4        Northwest Delhi      28.82286    77.10197
+5        East Delhi           28.53077    77.27123
+6        Northwest Delhi 2    28.72954    77.09601
+7        Northeast Delhi      28.71052    77.24951

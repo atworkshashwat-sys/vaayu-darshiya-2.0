@@ -1,0 +1,281 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-aqi-good: var(--aqi-good);
+  --color-aqi-moderate: var(--aqi-moderate);
+  --color-aqi-unhealthy: var(--aqi-unhealthy);
+  --color-aqi-very-unhealthy: var(--aqi-very-unhealthy);
+  --color-aqi-hazardous: var(--aqi-hazardous);
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.875rem;
+  --background: oklch(0.97 0.008 250);
+  --foreground: oklch(0.18 0.06 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.06 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.06 265);
+  --primary: oklch(0.5 0.22 264); /* Deeper blue for contrast */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.5 0.25 295); /* Deeper purple */
+  --secondary-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.94 0.012 250);
+  --muted-foreground: oklch(0.32 0.05 257);
+  --accent: oklch(0.65 0.15 210); /* Stronger cyan */
+  --accent-foreground: oklch(0.15 0.06 265);
+  --destructive: oklch(0.55 0.26 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.88 0.025 255);
+  --input: oklch(0.88 0.025 255);
+  --ring: oklch(0.5 0.22 264);
+
+  --aqi-good: #00a84d;
+  --aqi-moderate: #d4a000;
+  --aqi-unhealthy: #e06800;
+  --aqi-very-unhealthy: #cc0000;
+  --aqi-hazardous: #6b001a;
+
+  --text-secondary: #475569;
+
+  --gradient-hero:
+    radial-gradient(
+      1200px 600px at 70% 30%,
+      color-mix(in oklab, var(--primary) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 20% 80%,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent 60%
+    );
+  --gradient-primary: linear-gradient(135deg, oklch(0.5 0.22 264), oklch(0.5 0.25 295));
+  --gradient-glow: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in oklab, var(--primary) 30%, transparent),
+    transparent 70%
+  );
+  --shadow-glass: 0 4px 20px -4px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-elegant: 0 16px 40px -12px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(
+        1400px 800px at 80% -10%,
+        color-mix(in oklab, var(--primary) 12%, transparent),
+        transparent 55%
+      ),
+      radial-gradient(
+        1000px 700px at -10% 30%,
+        color-mix(in oklab, var(--accent) 10%, transparent),
+        transparent 55%
+      );
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* --- Animated grid background --- */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: grid-drift 40s linear infinite;
+}
+
+.grid-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, var(--color-background) 75%);
+}
+
+@keyframes grid-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(60px, 60px) rotate(0deg);
+  }
+}
+
+@utility glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility glass-strong {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-elegant);
+}
+
+@utility text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--destructive) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 16px color-mix(in oklab, var(--destructive) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--destructive) 0%, transparent);
+  }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.animate-float {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+@keyframes grid-fade {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Light mode card enhancement */
+:root .glass,
+:root .glass-strong {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Light mode text contrast fix */
+:root .text-muted-foreground {
+  color: oklch(0.3 0.04 257) !important;
+}
+
+/* Light mode stronger borders on cards */
+:root .border {
+  border-color: oklch(0.85 0.02 255) !important;
+}
+
+/* Station popup on map */
+.station-popup {
+  background: #0c1529 !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(100, 140, 220, 0.15) !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  z-index: 100 !important;
+}
+.station-popup .maplibregl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+.station-popup .maplibregl-popup-tip {
+  border-top-color: #0c1529 !important;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* Station marker pulsing ring animation */
+@keyframes station-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Ensure map markers are above heatmap layers */
+.maplibregl-marker {
+  z-index: 10 !important;
+}
+
+/* --- Card description text utility --- */
+@utility text-secondary {
+  color: var(--text-secondary);
+}

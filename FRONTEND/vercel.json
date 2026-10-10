@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".vercel/output",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://vaayu-darshiya-api.onrender.com/api/:path*"
+    }
+  ]
+}
