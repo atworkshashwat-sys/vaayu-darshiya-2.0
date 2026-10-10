@@ -255,7 +255,9 @@ class RefreshAlertsTests(unittest.TestCase):
         self.assertEqual(search.call_count, len(ctx.ALERT_SEARCHES))
 
     def test_missing_key_fails_closed(self):
-        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY": ""}):
+        with mock.patch.dict(os.environ, {
+            "TINYFISH_API_KEY_1": "", "TINYFISH_API_KEY_2": "",
+            "TINYFISH_API_KEY_3": ""}, clear=True):
             with self.assertRaises(tinyfish_service.TinyFishError):
                 ctx.refresh_alerts()
 

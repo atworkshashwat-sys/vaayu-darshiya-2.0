@@ -21,6 +21,13 @@ from ai_insights import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+# All three key slots blank: the wrapper must fail closed (no call, no crash).
+NO_KEYS = {
+    "TINYFISH_API_KEY_1": "",
+    "TINYFISH_API_KEY_2": "",
+    "TINYFISH_API_KEY_3": "",
+}
+
 SEARCH_PAYLOAD = {
     "query": "Delhi air quality pollution news and official advisory",
     "results": [
@@ -53,18 +60,19 @@ FETCH_PAYLOAD = {
 
 class TinyFishServiceTests(unittest.TestCase):
     def test_search_without_key_fails_closed(self):
-        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY": ""}):
+        with mock.patch.dict(os.environ, NO_KEYS, clear=True):
             with self.assertRaises(tinyfish_service.TinyFishError):
                 tinyfish_service.search("Delhi air quality")
 
     def test_api_key_read_from_environment_only(self):
-        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY": " sk-test-123 "}):
+        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY_1": " sk-test-123 "},
+                             clear=True):
             self.assertEqual(tinyfish_service.api_key(), "sk-test-123")
-        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY": ""}):
+        with mock.patch.dict(os.environ, NO_KEYS, clear=True):
             self.assertIsNone(tinyfish_service.api_key())
 
     def test_search_maps_results_and_skips_unlinkable_ones(self):
-        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY": "sk-test"}), \
+        with mock.patch.dict(os.environ, {"TINYFISH_API_KEY_1": "sk-test"}, clear=True), \
                 mock.patch.object(tinyfish_service, "_call", return_value=SEARCH_PAYLOAD):
             items = tinyfish_service.search("Delhi air quality")
         self.assertEqual(len(items), 1)  # the url-less result is dropped
