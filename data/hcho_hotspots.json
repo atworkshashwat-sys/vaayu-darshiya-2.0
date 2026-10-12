@@ -1,0 +1,822 @@
+{
+ "schema_version": 1,
+ "generated_at": "2026-10-10T21:52:17+00:00",
+ "as_of": "2026-06-01",
+ "region": "Delhi-NCR",
+ "unit": "µmol/m²",
+ "window_days": 7,
+ "cluster_km": 8.0,
+ "hotspots": [],
+ "stations": [
+  {
+   "id": "10820",
+   "name": "Sector 30, Faridabad - HSPCB",
+   "lat": 28.4417,
+   "lon": 77.3217,
+   "value": 9.9,
+   "date": "2026-06-01",
+   "mean_7d": 11.3,
+   "days": 7,
+   "latest_pass": true
+  },
+  {
+   "id": "10900",
+   "name": "Teri Gram, Gurugram - HSPCB",
+   "lat": 28.4275,
+   "lon": 77.1465,
+   "value": 4.6,
+   "date": "2026-05-26",
+   "mean_7d": 4.6,
+   "days": 1,
+   "latest_pass": false
+  },
+  {
+   "id": "6105800",
+   "name": "Sector 1, Noida extension",
+   "lat": 28.58349,
+   "lon": 77.43171,
+   "value": 9.5,
+   "date": "2026-06-01",
+   "mean_7d": 9.7,
+   "days": 7,
+   "latest_pass": true
+  },
+  {
+   "id": "6125489",
+   "name": "Uptitude Cloud Pvt Ltd",
+   "lat": 28.40241,
+   "lon": 77.08477,
+   "value": 10.9,
+   "date": "2026-06-01",
+   "mean_7d": 11.4,
+   "days": 7,
+   "latest_pass": true
+  },
+  {
+   "id": "6145551",
+   "name": "Anand Lok",
+   "lat": 28.5587,
+   "lon": 77.21886,
+   "value": 13.0,
+   "date": "2026-06-01",
+   "mean_7d": 11.0,
+   "days": 7,
+   "latest_pass": true
+  }
+ ],
+ "no_recent_data": [
+  {
+   "id": "103",
+   "name": "Income Tax Office, Delhi - CPCB",
+   "lat": 28.6235,
+   "lon": 77.2494,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10484",
+   "name": "Sri Aurobindo Marg, Delhi - DPCC",
+   "lat": 28.53135,
+   "lon": 77.19016,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10485",
+   "name": "Narela, Delhi - DPCC",
+   "lat": 28.82284,
+   "lon": 77.10198,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10486",
+   "name": "Mundka, Delhi - DPCC",
+   "lat": 28.68468,
+   "lon": 77.07657,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10487",
+   "name": "Anand Vihar, Delhi - DPCC",
+   "lat": 28.64683,
+   "lon": 77.31603,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10488",
+   "name": "Najafgarh, Delhi - DPCC",
+   "lat": 28.57017,
+   "lon": 76.93376,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10489",
+   "name": "ITO, Delhi - CPCB",
+   "lat": 28.62862,
+   "lon": 77.24106,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10825",
+   "name": "Sector-51, Gurugram - HSPCB",
+   "lat": 28.4227,
+   "lon": 77.0667,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10831",
+   "name": "Rohini, Delhi - DPCC",
+   "lat": 28.73253,
+   "lon": 77.11992,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10908",
+   "name": "Sector 11, Faridabad - HSPCB",
+   "lat": 28.37606,
+   "lon": 77.31574,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10919",
+   "name": "Sanjay Nagar, Ghaziabad - UPPCB",
+   "lat": 28.68538,
+   "lon": 77.45384,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10920",
+   "name": "New Industrial Town, Faridabad - HSPCB",
+   "lat": 28.39072,
+   "lon": 77.30059,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "10921",
+   "name": "NISE Gwal Pahari, Gurugram - IMD",
+   "lat": 28.42268,
+   "lon": 77.14894,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "11603",
+   "name": "Chandni Chowk, Delhi - IITM",
+   "lat": 28.65676,
+   "lon": 77.22723,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "11607",
+   "name": "Lodhi Road, Delhi - IITM",
+   "lat": 28.58833,
+   "lon": 77.22167,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "13",
+   "name": "Delhi Technological University, Delhi - CPCB",
+   "lat": 28.744,
+   "lon": 77.12,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "17",
+   "name": "R K Puram, Delhi - DPCC",
+   "lat": 28.56326,
+   "lon": 77.18694,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "235",
+   "name": "Anand Vihar, New Delhi - DPCC",
+   "lat": 28.64683,
+   "lon": 77.31603,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "236",
+   "name": "Mandir Marg, Delhi - DPCC",
+   "lat": 28.6341,
+   "lon": 77.2005,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "2503",
+   "name": "Shadipur, Delhi - CPCB",
+   "lat": 28.6517,
+   "lon": 77.1581,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "2587",
+   "name": "Sector16A, Faridabad - HSPCB",
+   "lat": 28.41012,
+   "lon": 77.31378,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "2597",
+   "name": "US Diplomatic Post: New Delhi",
+   "lat": 28.5981,
+   "lon": 77.18907,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "2860223",
+   "name": "GK1 (Oberoi Terrace)",
+   "lat": 28.55,
+   "lon": 77.24311,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "301",
+   "name": "Vikas Sadan, Gurugram - HSPCB",
+   "lat": 28.45012,
+   "lon": 77.02631,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "3024966",
+   "name": "NASA GSFC Rutgers Calib. N8",
+   "lat": 28.31733,
+   "lon": 76.91603,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "3409496",
+   "name": "New Moti Bagh, Delhi - MHUA",
+   "lat": 28.57834,
+   "lon": 77.184,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "3410004",
+   "name": "Amity University, Panchgaon - IITM",
+   "lat": 28.3153,
+   "lon": 76.9143,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "431",
+   "name": "IHBAS, Delhi - CPCB",
+   "lat": 28.6821,
+   "lon": 77.305,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "4663956",
+   "name": "Santushti Apartments, Vasant Kunj",
+   "lat": 28.5266,
+   "lon": 77.1493,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "4712609",
+   "name": "Air Check",
+   "lat": 28.62306,
+   "lon": 77.23417,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "50",
+   "name": "Punjabi Bagh, Delhi - DPCC",
+   "lat": 28.67404,
+   "lon": 77.13102,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5404",
+   "name": "Pusa, Delhi - IMD",
+   "lat": 28.63965,
+   "lon": 77.14626,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5509",
+   "name": "Anand Vihar, Delhi - DPCC",
+   "lat": 28.64762,
+   "lon": 77.31581,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5540",
+   "name": "Punjabi Bagh, Delhi - DPCC",
+   "lat": 28.66709,
+   "lon": 77.13012,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5541",
+   "name": "Burari Crossing, New Delhi - IMD",
+   "lat": 28.72565,
+   "lon": 77.20116,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5570",
+   "name": "Aya Nagar, New Delhi - IMD",
+   "lat": 28.47426,
+   "lon": 77.13161,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5581",
+   "name": "Pusa, New Delhi - IMD",
+   "lat": 28.6103,
+   "lon": 77.09969,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5586",
+   "name": "Sirifort, Delhi - CPCB",
+   "lat": 28.55042,
+   "lon": 77.21594,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5598",
+   "name": "Sector - 125, Noida, UP - UPPCB",
+   "lat": 28.54476,
+   "lon": 77.32313,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5610",
+   "name": "North Campus, DU, Delhi - IMD",
+   "lat": 28.65738,
+   "lon": 77.15854,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5613",
+   "name": "ITO, New Delhi - CPCB",
+   "lat": 28.62862,
+   "lon": 77.24106,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5616",
+   "name": "Sector - 62, Noida, UP - IMD",
+   "lat": 28.62455,
+   "lon": 77.35771,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5617",
+   "name": "Sector- 16A, Faridabad - HSPCB",
+   "lat": 28.40884,
+   "lon": 77.30991,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5622",
+   "name": "NSIT Dwarka, Delhi - CPCB",
+   "lat": 28.60909,
+   "lon": 77.03254,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5626",
+   "name": "DTU, New Delhi - CPCB",
+   "lat": 28.75005,
+   "lon": 77.11126,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5627",
+   "name": "CRRI Mathura Road, New Delhi - IMD",
+   "lat": 28.5512,
+   "lon": 77.27357,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5630",
+   "name": "Shadipur, Delhi - CPCB",
+   "lat": 28.65148,
+   "lon": 77.14731,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5634",
+   "name": "Lodhi Road, New Delhi - IMD",
+   "lat": 28.59182,
+   "lon": 77.22731,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5639",
+   "name": "R K Puram, New Delhi - DPCC",
+   "lat": 28.56461,
+   "lon": 77.16701,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5641",
+   "name": "Mandir Marg, New Delhi - DPCC",
+   "lat": 28.63727,
+   "lon": 77.20056,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5650",
+   "name": "IGI Airport (T3), Delhi - IMD",
+   "lat": 28.56278,
+   "lon": 77.11801,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5665",
+   "name": "Vasundhara, Ghaziabad - UPPCB",
+   "lat": 28.66033,
+   "lon": 77.35726,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5742",
+   "name": "Patparganj, Delhi - DPCC",
+   "lat": 28.63105,
+   "lon": 77.28462,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5743",
+   "name": "Rohini, Delhi - DPCC",
+   "lat": 28.74071,
+   "lon": 77.05775,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5744",
+   "name": "Dr. Karni Singh Shooting Range, Delhi - DPCC",
+   "lat": 28.49973,
+   "lon": 77.26491,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5753",
+   "name": "Vivek Vihar, Delhi - DPCC",
+   "lat": 28.66878,
+   "lon": 77.3131,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5754",
+   "name": "Jawaharlal Nehru Stadium, Delhi - DPCC",
+   "lat": 28.58285,
+   "lon": 77.23218,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5755",
+   "name": "Major Dhyan Chand National Stadium, Delhi - DPCC",
+   "lat": 28.6125,
+   "lon": 77.2352,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5759",
+   "name": "Sonia Vihar, Delhi - DPCC",
+   "lat": 28.67795,
+   "lon": 77.29868,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5760",
+   "name": "Dwarka-Sector 8, Delhi - DPCC ",
+   "lat": 28.52068,
+   "lon": 76.80239,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5761",
+   "name": "Jahangirpuri, Delhi - DPCC",
+   "lat": 28.72584,
+   "lon": 77.16056,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5762",
+   "name": "Ashok Vihar, Delhi - DPCC",
+   "lat": 28.69572,
+   "lon": 77.18129,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5763",
+   "name": "Narela, Delhi - DPCC",
+   "lat": 28.84469,
+   "lon": 77.03327,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5765",
+   "name": "Okhla Phase-2, Delhi - DPCC",
+   "lat": 28.53664,
+   "lon": 77.26646,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "5766",
+   "name": "Nehru Nagar, Delhi - DPCC",
+   "lat": 28.56395,
+   "lon": 77.25879,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6119272",
+   "name": "Sector - 5, Vasundhara, Ghaziabad, Uttar Pradesh ",
+   "lat": 28.6584,
+   "lon": 77.37805,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6148686",
+   "name": "IIT Delhi, Delhi - IITM",
+   "lat": 28.54246,
+   "lon": 77.19165,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6254594",
+   "name": "Talkatora Garden, Delhi - DPCC",
+   "lat": 28.62181,
+   "lon": 77.19446,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6254663",
+   "name": "JNU, Delhi - DPCC",
+   "lat": 28.54072,
+   "lon": 77.16854,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6254664",
+   "name": "NSUT Jaffarpur, Delhi - DPCC",
+   "lat": 28.594,
+   "lon": 76.90942,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6254665",
+   "name": "Commonwealth Sports Complex, Delhi - DPCC",
+   "lat": 28.61583,
+   "lon": 77.27199,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6254666",
+   "name": "IGNOU_Maidan Garhi, Delhi - DPCC",
+   "lat": 28.49362,
+   "lon": 77.20116,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6257818",
+   "name": "Cantonment Area, Delhi - DPCC",
+   "lat": 28.59417,
+   "lon": 77.1251,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6314",
+   "name": "NISE Gwal Pahari, Gurugram - IMD",
+   "lat": 28.42289,
+   "lon": 76.8497,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6356",
+   "name": "Pusa, Delhi - DPCC",
+   "lat": 28.63965,
+   "lon": 77.14626,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6357",
+   "name": "Punjabi Bagh, Delhi - DPCC",
+   "lat": 28.67404,
+   "lon": 77.13102,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6358",
+   "name": "Mandir Marg, New Delhi - DPCC",
+   "lat": 28.63643,
+   "lon": 77.20107,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6359",
+   "name": "IHBAS, Dilshad Garden,New Delhi - CPCB",
+   "lat": 28.68117,
+   "lon": 77.30252,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6924",
+   "name": "Indirapuram, Ghaziabad - UPPCB",
+   "lat": 28.64623,
+   "lon": 77.35807,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6929",
+   "name": "Major Dhyan Chand National Stadium, Delhi - DPCC",
+   "lat": 28.61128,
+   "lon": 77.23774,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6931",
+   "name": "Dwarka-Sector 8, Delhi - DPCC ",
+   "lat": 28.57103,
+   "lon": 77.0719,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6932",
+   "name": "Alipur, Delhi - DPCC",
+   "lat": 28.81533,
+   "lon": 77.15301,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6934",
+   "name": "Dr. Karni Singh Shooting Range, Delhi - DPCC",
+   "lat": 28.49857,
+   "lon": 77.26484,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6936",
+   "name": "Arya Nagar, Bahadurgarh - HSPCB",
+   "lat": 28.6701,
+   "lon": 76.9254,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6938",
+   "name": "Vivek Vihar, Delhi - DPCC",
+   "lat": 28.67234,
+   "lon": 77.31526,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6953",
+   "name": "Sector-2 IMT, Manesar - HSPCB",
+   "lat": 28.3607,
+   "lon": 76.93609,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6957",
+   "name": "Jawaharlal Nehru Stadium, Delhi - DPCC",
+   "lat": 28.58028,
+   "lon": 77.23383,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6960",
+   "name": "Patparganj, Delhi - DPCC",
+   "lat": 28.62375,
+   "lon": 77.28721,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6972",
+   "name": "Nathu Colony, Ballabgarh - HSPCB",
+   "lat": 28.34192,
+   "lon": 77.3197,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6978",
+   "name": "Knowledge Park - III, Greater Noida - UPPCB",
+   "lat": 28.47272,
+   "lon": 77.482,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6980",
+   "name": "Sector-1, Noida - UPPCB",
+   "lat": 28.58925,
+   "lon": 77.32196,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6986",
+   "name": "Knowledge Park - V, Greater Noida - UPPCB",
+   "lat": 28.55705,
+   "lon": 77.45366,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "6988",
+   "name": "Sector-116, Noida - UPPCB",
+   "lat": 28.56923,
+   "lon": 77.39385,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "7005",
+   "name": "Loni, Ghaziabad - UPPCB",
+   "lat": 28.75729,
+   "lon": 77.27879,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "7044",
+   "name": "R K Puram, Delhi - DPCC",
+   "lat": 28.56326,
+   "lon": 77.18694,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "7434",
+   "name": "East Arjun Nagar, Delhi - CPCB",
+   "lat": 28.6556,
+   "lon": 77.28593,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8092",
+   "name": "East Arjun Nagar, Delhi - CPCB",
+   "lat": 28.65593,
+   "lon": 77.2949,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8118",
+   "name": "New Delhi",
+   "lat": 28.63576,
+   "lon": 77.22445,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8235",
+   "name": "Jahangirpuri, Delhi - DPCC",
+   "lat": 28.73282,
+   "lon": 77.17063,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8239",
+   "name": "Okhla Phase-2, Delhi - DPCC",
+   "lat": 28.53079,
+   "lon": 77.27125,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8365",
+   "name": "Nehru Nagar, Delhi - DPCC",
+   "lat": 28.56789,
+   "lon": 77.25051,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8472",
+   "name": "Bawana, Delhi - DPCC",
+   "lat": 28.7762,
+   "lon": 77.05107,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8475",
+   "name": "Sonia Vihar, Delhi - DPCC",
+   "lat": 28.71051,
+   "lon": 77.24949,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8915",
+   "name": "Wazirpur, Delhi - DPCC",
+   "lat": 28.69979,
+   "lon": 77.16545,
+   "reason": "no HCHO in the last 7 days"
+  },
+  {
+   "id": "8917",
+   "name": "Ashok Vihar, Delhi - DPCC",
+   "lat": 28.69538,
+   "lon": 77.18166,
+   "reason": "no HCHO in the last 7 days"
+  }
+ ],
+ "region_stats": {
+  "as_of": "2026-06-01",
+  "n_stations": 4,
+  "n_stations_window": 5,
+  "median": 10.4,
+  "p75": 11.4,
+  "p90": 12.4,
+  "threshold": 31.0,
+  "elevated_floor": 31.0
+ },
+ "rule": "hotspot = value ≥ region P90 (12.4) and ≥ the Elevated floor (31 µmol/m²); adjacent hotspots within 8 km form one cluster",
+ "notes": {
+  "measurement": "Sentinel-5P satellite HCHO vertical column, not ground-level air",
+  "scale": "database stores mol/m²; values here are ×1e6 = µmol/m²",
+  "pass": "one station-day = mean of that day's hourly column values",
+  "resolution": "TROPOMI pixel ≈ 5 × 3.5 km — stations inside one pixel are not independent",
+  "relative": "HCHO has no WHO/CPCB limit; hotspots are relative to the region on the pass date"
+ }
+}

@@ -38,10 +38,10 @@ export function ModelStatusBadge() {
 
   const tone: Record<DataSourceLabel, string> = {
     live: isFallbackModel
-      ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
-      : "border-emerald-500/30 bg-emerald-500/10 text-emerald-500",
+      ? "border-sev-moderate/30 bg-sev-moderate/10 text-ink"
+      : "border-sev-good/30 bg-sev-good/10 text-ink",
     static: "border-border/60 bg-muted/50 text-muted-foreground",
-    "static (fallback)": "border-red-500/30 bg-red-500/10 text-red-400",
+    "static (fallback)": "border-sev-poor/30 bg-sev-poor/10 text-accent",
   };
 
   const dataLabel: Record<DataSourceLabel, string> = {

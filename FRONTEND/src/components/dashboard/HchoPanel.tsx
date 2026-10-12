@@ -17,12 +17,15 @@ import {
   formatTime,
   hchoBand,
   hchoLevel,
-  HCHO_BAND_COLORS,
   HCHO_BAND_EDGES,
   HCHO_BAND_LABELS,
 } from "./data";
+import { hchoBandSwatch } from "./hchoHotspots";
+import { accent } from "@/lib/palette";
 
-const HCHO_COLOR = "#8B5CF6";
+// HCHO reads through the single accent — colour is reserved for severity,
+// the HCHO ramp and the accent.
+const HCHO_COLOR = accent();
 
 // Human ranges for each band, derived from the shared edges so the legend can
 // never drift from the scale everything else classifies against.
@@ -72,8 +75,8 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
   return (
     <section className="mx-4 mt-8 md:mx-8">
       <div className="mb-4 flex items-center gap-2">
-        <div className="rounded-lg bg-violet-500/10 p-2">
-          <FlaskConical className="h-5 w-5 text-violet-500" />
+        <div className="rounded-lg bg-accent/10 p-2">
+          <FlaskConical className="h-5 w-5 text-accent" />
         </div>
         <div>
           <h2 className="font-display text-xl font-bold">Formaldehyde (HCHO) Panel</h2>
@@ -93,13 +96,13 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
                   At {formatTime(timeIdx, currentMinute)} · {forecast.label}
                 </p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-violet-500">{current ?? "—"}</span>
+                  <span className="text-3xl font-bold text-accent">{current ?? "—"}</span>
                   <span className="text-sm text-muted-foreground">µmol/m²</span>
                 </div>
                 {bandIdx != null && (
                   <Badge
-                    className="mt-1 text-[10px] font-semibold text-white"
-                    style={{ backgroundColor: HCHO_BAND_COLORS[bandIdx] }}
+                    className={`mt-1 text-[10px] font-semibold ${bandIdx <= 2 ? "text-ink" : "text-paper-2"}`}
+                    style={{ backgroundColor: `rgb(${hchoBandSwatch(bandIdx).join(",")})` }}
                   >
                     {hchoLevel(current!)}
                   </Badge>
@@ -108,7 +111,7 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
               <div className="space-y-1.5 rounded-lg bg-muted/40 p-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <TrendingUp className="h-3.5 w-3.5 text-violet-500" /> Peak
+                    <TrendingUp className="h-3.5 w-3.5 text-accent" /> Peak
                   </span>
                   <span className="font-semibold">
                     {peak} µmol/m² · {TIMES[peakAt]}
@@ -116,7 +119,7 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1.5 text-muted-foreground">
-                    <TrendingDown className="h-3.5 w-3.5 text-emerald-500" /> Low
+                    <TrendingDown className="h-3.5 w-3.5 text-sev-good" /> Low
                   </span>
                   <span className="font-semibold">
                     {low} µmol/m² · {TIMES[lowAt]}
@@ -138,8 +141,8 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="hchoPanelGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.3} />
-                      <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0} />
+                      <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.18} />
+                      <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0.18} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -172,7 +175,7 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
                     type="monotone"
                     dataKey="value"
                     stroke={HCHO_COLOR}
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     fill="url(#hchoPanelGrad)"
                     dot={false}
                     activeDot={{ r: 4 }}
@@ -195,7 +198,7 @@ export function HchoPanel({ forecast, timeIdx, currentMinute }: HchoPanelProps) 
                     <span className="flex items-center gap-2">
                       <span
                         className="inline-block h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: HCHO_BAND_COLORS[i] }}
+                        style={{ backgroundColor: `rgb(${hchoBandSwatch(i).join(",")})` }}
                       />
                       {label}
                     </span>

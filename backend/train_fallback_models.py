@@ -131,20 +131,36 @@ except Exception:                                               # pragma: no cov
 
 # ── Model factories ────────────────────────────────────────────────────────
 def make_random_forest():
+    # Depth/leaf/feature caps: unbounded trees over 199 features took ~4.5 min
+    # per horizon (hours per target); these caps keep the model a real
+    # RandomForest while fitting in seconds per horizon.
     return RandomForestRegressor(
-        n_estimators=200, max_depth=None, min_samples_leaf=2,
-        n_jobs=-1, random_state=42)
+        n_estimators=120, max_depth=16, min_samples_leaf=4,
+        max_features=0.5, n_jobs=-1, random_state=42)
 
 
 def make_lightgbm():
     return lgb.LGBMRegressor(
-        n_estimators=1000, learning_rate=0.05, num_leaves=64,
+        n_estimators=500, learning_rate=0.05, num_leaves=64,
         min_child_samples=20, subsample=0.6, colsample_bytree=0.6,
         reg_lambda=2.0, random_state=42, n_jobs=-1, verbose=-1)
 
 
 def make_ridge(alpha: float = 1.0):
     return Ridge(alpha=alpha)
+
+
+def dense(x: np.ndarray) -> np.ndarray:
+    """Impute NaN/inf with 0 — the train mean, since x is StandardScaler output.
+
+    The lag/forward weather columns legitimately carry NaN at segment edges,
+    and the row filter only covers `needed_cols`, so a few remain. XGBoost,
+    LightGBM and RandomForest route NaN down a learned branch natively, but
+    Ridge and an LSTM cannot: without this they either raise (Ridge) or emit
+    all-NaN predictions (LSTM), which would silently poison the ensemble.
+    """
+    return np.nan_to_num(np.asarray(x, dtype=np.float64), nan=0.0,
+                         posinf=0.0, neginf=0.0)
 
 
 class SingleLSTM(nn.Module):
@@ -162,7 +178,7 @@ class SingleLSTM(nn.Module):
 
 
 def train_lstm(x_tr, y_tr, x_va, y_va, n_features, epochs=12, batch=256):
-    """Fit the single-layer LSTM; returns a callable f(X)->pred on numpy."""
+    """Fit the single-layer LSTM; returns (model, callable f(X)->pred)."""
     torch.manual_seed(42)
     model = SingleLSTM(n_features).to(_DEVICE)
     opt = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -190,7 +206,52 @@ def train_lstm(x_tr, y_tr, x_va, y_va, n_features, epochs=12, batch=256):
             t = torch.tensor(np.asarray(X, dtype=np.float32),
                              device=_DEVICE).unsqueeze(1)
             return model(t).cpu().numpy()
-    return _predict
+    return model, _predict
+
+
+def _lstm_predict_from_ckpt(path, X, n_features, hidden=64):
+    """Reload a saved LSTM state_dict and predict — used for resume and serving."""
+    model = SingleLSTM(n_features, hidden=hidden).to(_DEVICE)
+    ckpt = torch.load(path, map_location=_DEVICE, weights_only=True)
+    model.load_state_dict(ckpt)
+    model.eval()
+    with torch.no_grad():
+        t = torch.tensor(np.asarray(X, dtype=np.float32),
+                         device=_DEVICE).unsqueeze(1)
+        return model(t).cpu().numpy()
+
+
+def _resume_predict(model_name, tgt, h, x_te, n_features):
+    """Predict from an already-trained artefact, or None if it must be trained.
+
+    Lets an interrupted run continue where it stopped: every horizon whose
+    .pkl/.pt is already on disk is reloaded instead of retrained, and its
+    predictions are recomputed on the current test frame (identical split, so
+    identical rows).
+    """
+    if model_name == "LSTM":
+        if not _HAVE_TORCH:
+            return None
+        p = os.path.join(ENSEMBLE_DIR, f"LSTM_{tgt}_h{h:02d}.pt")
+        if not os.path.exists(p):
+            return None
+        try:
+            return np.clip(_lstm_predict_from_ckpt(p, dense(x_te), n_features),
+                           0, None)
+        except Exception as exc:                              # corrupt ckpt
+            print(f"        resume: bad checkpoint {p} ({exc}) — retraining",
+                  flush=True)
+            return None
+
+    p = os.path.join(ENSEMBLE_DIR, f"{model_name}_{tgt}_h{h:02d}.pkl")
+    if not os.path.exists(p):
+        return None
+    try:
+        x = dense(x_te) if model_name == "Ridge" else x_te
+        return np.clip(joblib.load(p).predict(x), 0, None)
+    except Exception as exc:
+        print(f"        resume: bad artefact {p} ({exc}) — retraining", flush=True)
+        return None
 
 
 def score(y, p):
@@ -360,35 +421,45 @@ for tgt, (src_col, scale) in TARGETS.items():
             if tr_ok.sum() < 10:
                 continue
 
-            if model_name == "RandomForest":
-                m = make_random_forest(); m.fit(x_tr[tr_ok], y_tr[tr_ok])
-                pred = np.clip(m.predict(x_te), 0, None)
-                path = os.path.join(ENSEMBLE_DIR, f"{tgt}_h{h:02d}.pkl")
-                joblib.dump(m, os.path.join(
-                    ENSEMBLE_DIR, f"RandomForest_{tgt}_h{h:02d}.pkl"))
-            elif model_name == "LightGBM":
-                if not _HAVE_LGB:
-                    continue
-                m = make_lightgbm()
-                m.fit(x_tr[tr_ok], y_tr[tr_ok],
-                      eval_set=[(x_va[va_ok], y_va[va_ok])])
-                pred = np.clip(m.predict(x_te), 0, None)
-                joblib.dump(m, os.path.join(
-                    ENSEMBLE_DIR, f"LightGBM_{tgt}_h{h:02d}.pkl"))
-            elif model_name == "Ridge":
-                m = make_ridge(); m.fit(x_tr[tr_ok], y_tr[tr_ok])
-                pred = np.clip(m.predict(x_te), 0, None)
-                joblib.dump(m, os.path.join(
-                    ENSEMBLE_DIR, f"Ridge_{tgt}_h{h:02d}.pkl"))
-            elif model_name == "LSTM":
-                if not _HAVE_TORCH:
-                    continue
-                fn = train_lstm(x_tr[tr_ok], y_tr[tr_ok], x_va[va_ok],
-                                y_va[va_ok], len(cols))
-                pred = np.clip(fn(x_te), 0, None)
-                torch.save({"n_features": len(cols), "hidden": 64},
-                           os.path.join(
-                               ENSEMBLE_DIR, f"LSTM_{tgt}_h{h:02d}.pt"))
+            # ── Resume: a horizon whose artefact is already on disk is
+            # reloaded and re-predicted instead of retrained. The interrupted
+            # earlier run therefore costs minutes, not hours.
+            _art = _resume_predict(model_name, tgt, h, x_te, len(cols))
+            if _art is not None:
+                pred = _art
+                resumed = True
+            else:
+                resumed = False
+                if model_name == "RandomForest":
+                    m = make_random_forest(); m.fit(x_tr[tr_ok], y_tr[tr_ok])
+                    pred = np.clip(m.predict(x_te), 0, None)
+                    joblib.dump(m, os.path.join(
+                        ENSEMBLE_DIR, f"RandomForest_{tgt}_h{h:02d}.pkl"))
+                elif model_name == "LightGBM":
+                    if not _HAVE_LGB:
+                        continue
+                    m = make_lightgbm()
+                    m.fit(x_tr[tr_ok], y_tr[tr_ok],
+                          eval_set=[(x_va[va_ok], y_va[va_ok])])
+                    pred = np.clip(m.predict(x_te), 0, None)
+                    joblib.dump(m, os.path.join(
+                        ENSEMBLE_DIR, f"LightGBM_{tgt}_h{h:02d}.pkl"))
+                elif model_name == "Ridge":
+                    m = make_ridge(); m.fit(dense(x_tr[tr_ok]), y_tr[tr_ok])
+                    pred = np.clip(m.predict(dense(x_te)), 0, None)
+                    joblib.dump(m, os.path.join(
+                        ENSEMBLE_DIR, f"Ridge_{tgt}_h{h:02d}.pkl"))
+                elif model_name == "LSTM":
+                    if not _HAVE_TORCH:
+                        continue
+                    _m, fn = train_lstm(dense(x_tr[tr_ok]), y_tr[tr_ok],
+                                        dense(x_va[va_ok]), y_va[va_ok],
+                                        len(cols))
+                    pred = np.clip(fn(dense(x_te)), 0, None)
+                    # Save the weights (not a metadata dict) so the checkpoint
+                    # can be reloaded for serving or a resumed run.
+                    torch.save(_m.state_dict(), os.path.join(
+                        ENSEMBLE_DIR, f"LSTM_{tgt}_h{h:02d}.pt"))
 
             preds_test[:, h] = pred
             s = score(Y["test"][:, h], pred)
@@ -397,7 +468,8 @@ for tgt, (src_col, scale) in TARGETS.items():
                          "n": s["n"]})
             if h in (0, 5, 11, 23):
                 print(f"        t+{h+1:02d}  r2={s['r2']:.4f}  "
-                      f"rmse={s['rmse']:.2f}", flush=True)
+                      f"rmse={s['rmse']:.2f}{'  (resumed)' if resumed else ''}",
+                      flush=True)
 
         if not rows:
             continue

@@ -192,7 +192,7 @@ export function AIInsights({ city, forecast }: AIInsightsProps) {
         {insights.map((insight, i) => (
           <Card
             key={insight.title}
-            className={`glass transition-all hover:shadow-lg${
+            className={`glass border border-rule transition-all${
               // Odd card count: let the last card span the row instead of
               // leaving a half-empty grid cell.
               i === insights.length - 1 && insights.length % 2 === 1 ? " md:col-span-2" : ""

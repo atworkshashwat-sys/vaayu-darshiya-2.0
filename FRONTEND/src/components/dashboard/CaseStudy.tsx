@@ -89,10 +89,10 @@ const CRITICALLY_AFFECTED_ZONES: Zone[] = [
 ];
 
 const DELHI_STATS = [
-  { label: "Annual avg PM2.5", value: "99.7 µg/m³", subtext: "WHO limit: 5 µg/m³", icon: Activity, color: "text-red-500" },
-  { label: "Annual avg NO₂", value: "52.3 ppb", subtext: "WHO limit: 10 ppb", icon: TrendingUp, color: "text-amber-500" },
-  { label: "Population at risk", value: "~2 Crore", subtext: "Entire NCT population", icon: Users, color: "text-purple-500" },
-  { label: "Avg winter AQI", value: "350+", category: "Very Poor to Severe", icon: AlertTriangle, color: "text-red-600" },
+  { label: "Annual avg PM2.5", value: "99.7 µg/m³", subtext: "WHO limit: 5 µg/m³", icon: Activity, color: "text-sev-very-poor" },
+  { label: "Annual avg NO₂", value: "52.3 ppb", subtext: "WHO limit: 10 ppb", icon: TrendingUp, color: "text-ink-muted" },
+  { label: "Population at risk", value: "~2 Crore", subtext: "Entire NCT population", icon: Users, color: "text-accent" },
+  { label: "Avg winter AQI", value: "350+", category: "Very Poor to Severe", icon: AlertTriangle, color: "text-sev-severe" },
 ];
 
 const MONITORING_SITES_ZONES: Record<string, string> = {
@@ -108,29 +108,30 @@ const MONITORING_SITES_ZONES: Record<string, string> = {
 function getRiskBadge(level: Zone["riskLevel"]) {
   switch (level) {
     case "Critical":
-      return "bg-red-600 text-white";
+      return "bg-sev-very-poor text-paper-2";
     case "High":
-      return "bg-amber-500 text-black";
+      return "bg-sev-poor text-ink";
     case "Moderate":
-      return "bg-yellow-400 text-black";
+      return "bg-sev-moderate text-ink";
   }
 }
 
 function getRiskBorder(level: Zone["riskLevel"]) {
   switch (level) {
     case "Critical":
-      return "border-l-red-600";
+      return "border-l-sev-very-poor";
     case "High":
-      return "border-l-amber-500";
+      return "border-l-sev-poor";
     case "Moderate":
-      return "border-l-yellow-400";
+      return "border-l-sev-moderate";
   }
 }
 
 function getPollutantColor(val: number, threshold: number): string {
-  if (val >= threshold * 1.2) return "text-red-600 font-bold";
-  if (val >= threshold) return "text-amber-500 font-semibold";
-  return "text-green-600";
+  // Neutral by default; severity colour only when a threshold is crossed.
+  if (val >= threshold * 1.2) return "text-sev-very-poor font-bold";
+  if (val >= threshold) return "text-accent font-semibold";
+  return "text-ink";
 }
 
 /** A figure exactly as its source states it: number plus unit, never invented. */
@@ -160,8 +161,8 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
     <section className="mx-4 mt-8 md:mx-8">
       {/* Header */}
       <div className="mb-6 flex items-center gap-2">
-        <div className="rounded-lg bg-red-600/10 p-2">
-          <Building2 className="h-5 w-5 text-red-600" />
+        <div className="rounded-lg bg-sev-very-poor/10 p-2">
+          <Building2 className="h-5 w-5 text-sev-very-poor" />
         </div>
         <div>
           <h2 className="font-display text-xl font-bold">Delhi Air Pollution — Case Study</h2>
@@ -210,8 +211,8 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
             {figures.map((stat) => (
               <Card key={stat.stat_key} className="glass">
                 <CardContent className="flex items-start gap-3 p-4">
-                  <div className="rounded-lg bg-emerald-600/10 p-2">
-                    <Activity className="h-4 w-4 text-emerald-500" />
+                  <div className="rounded-lg bg-sev-good/10 p-2">
+                    <Activity className="h-4 w-4 text-sev-good" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{stat.label}</p>
@@ -237,7 +238,7 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
       )}
 
       {report && (
-        <Card className="glass mb-6 border-l-4 border-l-emerald-600">
+        <Card className="glass mb-6 border-l-4 border-l-sev-good">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{report.label}</p>
             <p className="mt-1 text-sm leading-relaxed text-secondary">{report.value}</p>
@@ -249,11 +250,11 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
       )}
 
       {/* Narratives */}
-      <Card className="glass mb-6 border-l-4 border-l-red-600">
+      <Card className="glass mb-6 border-l-4 border-l-sev-very-poor">
         <CardContent className="p-5">
           <p className="text-sm leading-relaxed text-secondary">
             <span className="font-semibold text-foreground">Delhi consistently ranks among the world's most polluted cities.</span>{" "}
-            With an annual average PM2.5 concentration of <span className="text-red-600 font-bold">99.7 µg/m³</span> — nearly
+            With an annual average PM2.5 concentration of <span className="text-sev-very-poor font-bold">99.7 µg/m³</span> — nearly
             20 times the WHO guideline of 5 µg/m³ — the city faces a severe public health crisis. Winter months
             (October–February) routinely see AQI levels exceeding 400, classified as "Severe" or "Hazardous." The
             combination of vehicular emissions, industrial discharge, construction dust, crop residue burning in
@@ -278,7 +279,7 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
           {CRITICALLY_AFFECTED_ZONES.map((zone) => (
             <Card
               key={zone.name}
-              className={`glass border-l-4 ${getRiskBorder(zone.riskLevel)} transition-all hover:shadow-lg`}
+              className={`glass border-l-4 ${getRiskBorder(zone.riskLevel)} transition-all`}
             >
               <CardHeader className="flex flex-row items-start gap-3 pb-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
@@ -353,10 +354,10 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
                     <tr key={site.name} className="border-b border-border/30 transition-colors hover:bg-muted/30">
                       <td className="px-4 py-2.5 font-medium">{site.name}</td>
                       <td className="px-4 py-2.5 text-muted-foreground">{MONITORING_SITES_ZONES[site.name] || "—"}</td>
-                      <td className={`px-4 py-2.5 text-right font-mono ${no2VeryHigh ? "text-red-600 font-bold" : no2High ? "text-amber-500 font-semibold" : "text-green-600"}`}>
+                      <td className={`px-4 py-2.5 text-right font-mono ${no2VeryHigh ? "text-sev-very-poor font-bold" : no2High ? "text-accent font-semibold" : "text-ink"}`}>
                         {site.no2}
                       </td>
-                      <td className={`px-4 py-2.5 text-right font-mono ${o3VeryHigh ? "text-red-600 font-bold" : o3High ? "text-amber-500 font-semibold" : "text-green-600"}`}>
+                      <td className={`px-4 py-2.5 text-right font-mono ${o3VeryHigh ? "text-sev-very-poor font-bold" : o3High ? "text-accent font-semibold" : "text-ink"}`}>
                         {site.o3}
                       </td>
                       <td className="px-4 py-2.5 text-center">

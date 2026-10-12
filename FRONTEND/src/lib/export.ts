@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { StationData, WeeklyTrend, CityForecast, TIMES } from "@/components/dashboard/data";
+import { inkRgb, inkMutedRgb, tokenRgb } from "@/lib/palette";
 
 const API_BASE = "";
 
@@ -34,9 +35,9 @@ function pdfDoc(title: string, subtitle: string): jsPDF {
   doc.setFontSize(16);
   doc.text(title, 14, 15);
   doc.setFontSize(10);
-  doc.setTextColor(100);
+  doc.setTextColor(...inkMutedRgb());
   doc.text(subtitle, 14, 22);
-  doc.setTextColor(0);
+  doc.setTextColor(...inkRgb());
   return doc;
 }
 
@@ -75,7 +76,7 @@ export async function downloadStationData(stations: StationData[], timeIdx: numb
         s.temp, s.humidity, s.wind, s.visibility,
       ]),
       styles: { fontSize: 8 },
-      headStyles: { fillColor: [34, 197, 94] },
+      headStyles: { fillColor: inkRgb() },
     });
     savePdf(doc, `vaayu_site_data_${siteSlug(timeLabel)}.pdf`);
   } else if (format === "json") {
@@ -190,7 +191,7 @@ export async function downloadWeeklyTrend(_trend: WeeklyTrend, siteName: string,
       ]);
       rows.push([date, ...vals]);
     }
-    autoTable(doc, { startY: 28, head: [headers], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [34, 197, 94] } });
+    autoTable(doc, { startY: 28, head: [headers], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: inkRgb() } });
     savePdf(doc, "vaayu_14day_trend_all_stations.pdf");
   } else if (format === "json") {
     const payload = {
@@ -245,7 +246,7 @@ export async function download24HourForecast(_forecast: CityForecast, siteName: 
       ]);
       return [t, ...vals];
     });
-    autoTable(doc, { startY: 28, head: [headers], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [34, 197, 94] } });
+    autoTable(doc, { startY: 28, head: [headers], body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: inkRgb() } });
     savePdf(doc, "vaayu_24hour_forecast_all_stations.pdf");
   } else if (format === "json") {
     const payload = {
@@ -278,7 +279,7 @@ export async function download24HourForecast(_forecast: CityForecast, siteName: 
   }
 }
 
-const HCHO_PDF_COLOR: [number, number, number] = [139, 92, 246]; // matches HCHO_COLOR #8B5CF6
+const HCHO_PDF_COLOR: [number, number, number] = tokenRgb("hcho-4"); // shared HCHO ramp stop #B4472B
 
 /** 24-hour HCHO-only export across every station, mirroring download24HourForecast. */
 export async function downloadHchoForecast(timeIdx: number, format: "csv" | "json" | "pdf") {

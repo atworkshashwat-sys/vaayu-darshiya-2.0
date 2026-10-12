@@ -156,12 +156,12 @@ export default function Dashboard() {
           : "Offline";
   const streamDot =
     live.status === "live"
-      ? "bg-emerald-500 animate-pulse"
+      ? "bg-sev-good animate-pulse"
       : live.status === "polling"
-        ? "bg-amber-500"
+        ? "bg-sev-moderate"
         : live.status === "connecting"
-          ? "bg-slate-400 animate-pulse"
-          : "bg-slate-500";
+          ? "bg-ink-muted animate-pulse"
+          : "bg-ink-muted";
   const closedMessage = windowClosed ? liveStatus?.message ?? "Live context ended" : null;
 
   // Data freshness, derived from the readings actually received. Station 3
@@ -197,7 +197,7 @@ export default function Dashboard() {
 
       {(forecastError || stationsError) && (
         <div className="mx-4 mt-4 md:mx-8">
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
+          <div className="rounded-xl border border-sev-poor/30 bg-sev-poor/10 px-4 py-2.5 text-sm text-accent">
             Unable to fetch data from the server. Showing fallback data.
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function Dashboard() {
         <div className="glass flex items-center justify-between rounded-xl px-4 py-2.5">
           <div className="flex items-center gap-3">
             <div
-              className={`h-2 w-2 rounded-full ${windowClosed ? "bg-slate-500" : streamDot}`}
+              className={`h-2 w-2 rounded-full ${windowClosed ? "bg-ink-muted" : streamDot}`}
               title={closedMessage ?? `SSE ${streamLabel}`}
             />
             <span className="text-sm font-medium">{formatDate(matchedDate)}</span>
@@ -219,9 +219,9 @@ export default function Dashboard() {
               <span
                 className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
                   freshness === "live"
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
+                    ? "border-sev-good/30 bg-sev-good/10 text-ink"
                     : freshness === "stale"
-                      ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
+                      ? "border-sev-moderate/30 bg-sev-moderate/10 text-ink"
                       : "border-border/60 bg-muted/50 text-muted-foreground"
                 }`}
                 title={`SSE ${streamLabel}`}
@@ -232,7 +232,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             {closedMessage && (
-              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+              <span className="rounded-full border border-sev-moderate/30 bg-sev-moderate/10 px-2 py-0.5 text-[10px] font-medium text-ink">
                 {closedMessage}
               </span>
             )}

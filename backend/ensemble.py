@@ -18,6 +18,12 @@ Selection rules (select_active):
     3. > 40% missing features     -> RandomForest (robust to ERA5 / cloud-cover gaps)
     4. otherwise                  -> lowest rolling-7-day RMSE across targets
 
+The rolling RMSE in rule 4 is averaged over the targets EVERY available model
+shares (see rolling_common_targets), not over whatever each model happens to
+have. Averaging per model would compare XGBoost's NO2+O3+HCHO mean against a
+still-training model's NO2-only mean, rewarding the latter for having fewer
+targets and flipping the winner for the wrong reason.
+
 Artefact loading is defensive: a model with no usable predictions is dropped
 rather than crashing the server, so XGBoost (always present) remains the floor.
 """
@@ -76,6 +82,10 @@ class ModelInfo:
     available: bool = False
     per_target: Dict[str, Dict[str, ModelScore]] = field(default_factory=dict)
     rolling_rmse: Optional[float] = None       # mean over targets, last 7 days
+    # Which targets `rolling_rmse` was averaged over — the intersection every
+    # available model shares, so the lowest-RMSE selector compares like with
+    # like instead of rewarding a model for having fewer targets trained.
+    rolling_common_targets: List[str] = field(default_factory=list)
     rolling_by_target: Dict[str, Optional[float]] = field(default_factory=dict)
     horizon_metrics: Dict[str, List[dict]] = field(default_factory=dict)
     strongest_horizons: Dict[str, List[int]] = field(default_factory=dict)
@@ -183,8 +193,34 @@ def build_registry() -> Dict[str, ModelInfo]:
 
         registry[name] = info
 
-    log.info("ensemble: registry built — available=%s",
-             [m for m, i in registry.items() if i.available])
+    # Averaging each model's rolling RMSE over WHATEVER TARGETS it happens to
+    # have would make the comparison unfair: a model with only NO2 trained
+    # averages its one easy target, while XGBoost averages NO2 + O3 + HCHO and
+    # is dragged up by O3's larger scale. A model is then rewarded for having
+    # fewer targets. Recompute the headline number over the targets every
+    # available model has in common, so the lowest-RMSE selector compares like
+    # with like. The per-target values above are untouched and still shown.
+    common = None
+    for name in MODEL_ORDER:
+        info = registry[name]
+        if not info.available:
+            continue
+        have = {t for t, v in info.rolling_by_target.items() if v is not None}
+        common = have if common is None else (common & have)
+    common = common or set()
+
+    if common:
+        for name in MODEL_ORDER:
+            info = registry[name]
+            if not info.available:
+                continue
+            vals = [info.rolling_by_target[t] for t in sorted(common)
+                    if info.rolling_by_target.get(t) is not None]
+            info.rolling_rmse = round(float(np.mean(vals)), 2) if vals else None
+            info.rolling_common_targets = sorted(common)
+
+    log.info("ensemble: registry built — available=%s common_targets=%s",
+             [m for m, i in registry.items() if i.available], sorted(common))
     return registry
 
 

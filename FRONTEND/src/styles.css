@@ -3,12 +3,44 @@
 @import "tw-animate-css";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
+/* ==========================================================================
+   VAAYU DARSHIYA — warm colour system (single source of truth)
+   Every colour in the UI, map, charts and exports derives from these tokens.
+   JS consumers (MapLibre paint props, Recharts, jsPDF) read them at runtime
+   through src/lib/palette.ts. Do not hard-code hex values elsewhere.
+   ========================================================================== */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
+
+  /* core palette */
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+
+  /* severity scale — single source of truth for map, charts, table, alerts,
+     hero and markers */
+  --color-sev-good: var(--sev-good);
+  --color-sev-satisfactory: var(--sev-satisfactory);
+  --color-sev-moderate: var(--sev-moderate);
+  --color-sev-poor: var(--sev-poor);
+  --color-sev-very-poor: var(--sev-very-poor);
+  --color-sev-severe: var(--sev-severe);
+
+  /* HCHO sequential ramp — 5 stops, interpolated linearly, never banded */
+  --color-hcho-1: var(--hcho-1);
+  --color-hcho-2: var(--hcho-2);
+  --color-hcho-3: var(--hcho-3);
+  --color-hcho-4: var(--hcho-4);
+  --color-hcho-5: var(--hcho-5);
+
+  /* shadcn semantic layer, remapped onto the warm tokens above */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -21,71 +53,87 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-aqi-good: var(--aqi-good);
-  --color-aqi-moderate: var(--aqi-moderate);
-  --color-aqi-unhealthy: var(--aqi-unhealthy);
-  --color-aqi-very-unhealthy: var(--aqi-very-unhealthy);
-  --color-aqi-hazardous: var(--aqi-hazardous);
+
+  /* legacy aqi-* utilities, repointed at the severity scale */
+  --color-aqi-good: var(--sev-good);
+  --color-aqi-moderate: var(--sev-moderate);
+  --color-aqi-unhealthy: var(--sev-poor);
+  --color-aqi-very-unhealthy: var(--sev-very-poor);
+  --color-aqi-hazardous: var(--sev-severe);
+
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.97 0.008 250);
-  --foreground: oklch(0.18 0.06 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.06 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.06 265);
-  --primary: oklch(0.5 0.22 264); /* Deeper blue for contrast */
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.5 0.25 295); /* Deeper purple */
-  --secondary-foreground: oklch(0.99 0 0);
-  --muted: oklch(0.94 0.012 250);
-  --muted-foreground: oklch(0.32 0.05 257);
-  --accent: oklch(0.65 0.15 210); /* Stronger cyan */
-  --accent-foreground: oklch(0.15 0.06 265);
-  --destructive: oklch(0.55 0.26 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.88 0.025 255);
-  --input: oklch(0.88 0.025 255);
-  --ring: oklch(0.5 0.22 264);
 
-  --aqi-good: #00a84d;
-  --aqi-moderate: #d4a000;
-  --aqi-unhealthy: #e06800;
-  --aqi-very-unhealthy: #cc0000;
-  --aqi-hazardous: #6b001a;
+  /* ── core palette ───────────────────────────────────────────────────── */
+  --paper: #f6f1e7; /* page background */
+  --paper-2: #fbf8f1; /* raised items only (cards, popovers, popups) */
+  --ink: #1f1b16; /* text */
+  --ink-muted: #6b6257; /* secondary text */
+  --rule: #d9d0bf; /* 1px borders (replaces drop shadows) */
+  --accent: #a8432a; /* the single accent */
 
-  --text-secondary: #475569;
+  /* ── severity scale ─────────────────────────────────────────────────── */
+  --sev-good: #5e8c61;
+  --sev-satisfactory: #a9b44a;
+  --sev-moderate: #e2b33c;
+  --sev-poor: #e07b39;
+  --sev-very-poor: #b33a2e;
+  --sev-severe: #6e1f2b;
 
-  --gradient-hero:
-    radial-gradient(
-      1200px 600px at 70% 30%,
-      color-mix(in oklab, var(--primary) 18%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      900px 500px at 20% 80%,
-      color-mix(in oklab, var(--accent) 14%, transparent),
-      transparent 60%
-    );
-  --gradient-primary: linear-gradient(135deg, oklch(0.5 0.22 264), oklch(0.5 0.25 295));
+  /* ── HCHO sequential ramp (interpolated linearly, no step bands) ────── */
+  --hcho-1: #f3e9d2;
+  --hcho-2: #e8c98a;
+  --hcho-3: #d98e4e;
+  --hcho-4: #b4472b;
+  --hcho-5: #5c1f1a;
+
+  /* ── shadcn semantic mapping onto the warm tokens ───────────────────── */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-2);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: var(--paper-2);
+  --secondary: color-mix(in oklab, var(--rule) 30%, var(--paper-2));
+  --secondary-foreground: var(--ink);
+  --muted: color-mix(in oklab, var(--rule) 30%, var(--paper-2));
+  --muted-foreground: var(--ink-muted);
+  --accent-foreground: var(--paper-2);
+  --destructive: var(--sev-very-poor);
+  --destructive-foreground: var(--paper-2);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--accent);
+
+  --text-secondary: var(--ink-muted);
+
+  /* warm, quiet washes — colour only where the accent lives */
+  --gradient-hero: radial-gradient(
+    1200px 600px at 70% 30%,
+    color-mix(in oklab, var(--accent) 8%, transparent),
+    transparent 60%
+  );
+  --gradient-primary: var(--accent);
   --gradient-glow: radial-gradient(
     circle at 50% 50%,
-    color-mix(in oklab, var(--primary) 30%, transparent),
+    color-mix(in oklab, var(--accent) 22%, transparent),
     transparent 70%
   );
-  --shadow-glass: 0 4px 20px -4px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-elegant: 0 16px 40px -12px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  /* drop shadows replaced by 1px rule borders */
+  --shadow-glass: none;
+  --shadow-elegant: none;
 }
 
 @layer base {
@@ -96,17 +144,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image:
-      radial-gradient(
-        1400px 800px at 80% -10%,
-        color-mix(in oklab, var(--primary) 12%, transparent),
-        transparent 55%
-      ),
-      radial-gradient(
-        1000px 700px at -10% 30%,
-        color-mix(in oklab, var(--accent) 10%, transparent),
-        transparent 55%
-      );
     background-attachment: fixed;
   }
   h1,
@@ -118,7 +155,7 @@
   }
 }
 
-/* --- Animated grid background --- */
+/* --- Animated grid background (neutral rule lines) --- */
 .grid-bg {
   position: fixed;
   inset: 0;
@@ -134,8 +171,8 @@
   width: 200%;
   height: 200%;
   background-image:
-    linear-gradient(color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+    linear-gradient(color-mix(in oklab, var(--rule) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--rule) 55%, transparent) 1px, transparent 1px);
   background-size: 60px 60px;
   animation: grid-drift 40s linear infinite;
 }
@@ -157,24 +194,23 @@
 }
 
 @utility glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: var(--shadow-glass);
+  background: color-mix(in oklab, var(--paper-2) 88%, transparent);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--rule);
+  box-shadow: none;
 }
 
 @utility glass-strong {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px) saturate(170%);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: var(--shadow-elegant);
+  background: color-mix(in oklab, var(--paper-2) 94%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--rule);
+  box-shadow: none;
 }
 
+/* "gradient" word kept for class-name compatibility; now a flat accent */
 @utility text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: none;
+  color: var(--accent);
 }
 
 @keyframes pulse-ring {
@@ -205,43 +241,12 @@
   animation: float-slow 6s ease-in-out infinite;
 }
 
-@keyframes grid-fade {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* Light mode card enhancement */
-:root .glass,
-:root .glass-strong {
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-/* Light mode text contrast fix */
-:root .text-muted-foreground {
-  color: oklch(0.3 0.04 257) !important;
-}
-
-/* Light mode stronger borders on cards */
-:root .border {
-  border-color: oklch(0.85 0.02 255) !important;
-}
-
-/* Station popup on map */
+/* Station popup on the map — warm paper card, 1px rule border, no shadow */
 .station-popup {
-  background: #0c1529 !important;
+  background: var(--paper-2) !important;
   border-radius: 12px !important;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(100, 140, 220, 0.15) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--rule) !important;
   padding: 0 !important;
   overflow: visible !important;
   z-index: 100 !important;
@@ -254,8 +259,8 @@
   margin: 0 !important;
 }
 .station-popup .maplibregl-popup-tip {
-  border-top-color: #0c1529 !important;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+  border-top-color: var(--paper-2) !important;
+  filter: none;
 }
 
 /* Station marker pulsing ring animation */

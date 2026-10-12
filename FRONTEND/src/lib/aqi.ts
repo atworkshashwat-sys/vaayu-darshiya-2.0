@@ -1,6 +1,9 @@
 // AQI helper utilities — CPCB National Air Quality Index (India)
 // Scale: Good 0–50, Satisfactory 51–100, Moderate 101–200,
 //        Poor 201–300, Very Poor 301–400, Severe 401–500
+// Colours come from the shared severity scale in src/styles.css via
+// lib/palette.ts — thresholds and labels are unchanged.
+import { severityColor, severityTextColor } from "@/lib/palette";
 
 export type AqiCategory = {
   label: string;
@@ -11,12 +14,12 @@ export type AqiCategory = {
 };
 
 export const AQI_BREAKPOINTS = [
-  { min: 0, max: 50, label: "Good", color: "#00c853", textColor: "#003d00" },
-  { min: 51, max: 100, label: "Satisfactory", color: "#ffc107", textColor: "#5d4000" },
-  { min: 101, max: 200, label: "Moderate", color: "#ff9800", textColor: "#4e2600" },
-  { min: 201, max: 300, label: "Poor", color: "#f44336", textColor: "#4a0000" },
-  { min: 301, max: 400, label: "Very Poor", color: "#9c27b0", textColor: "#2a0033" },
-  { min: 401, max: 500, label: "Severe", color: "#7e0023", textColor: "#3b0013" },
+  { min: 0, max: 50, label: "Good", color: severityColor(0), textColor: severityTextColor(0) },
+  { min: 51, max: 100, label: "Satisfactory", color: severityColor(1), textColor: severityTextColor(1) },
+  { min: 101, max: 200, label: "Moderate", color: severityColor(2), textColor: severityTextColor(2) },
+  { min: 201, max: 300, label: "Poor", color: severityColor(3), textColor: severityTextColor(3) },
+  { min: 301, max: 400, label: "Very Poor", color: severityColor(4), textColor: severityTextColor(4) },
+  { min: 401, max: 500, label: "Severe", color: severityColor(5), textColor: severityTextColor(5) },
 ] as const;
 
 export function getAqiCategory(aqi: number): AqiCategory {

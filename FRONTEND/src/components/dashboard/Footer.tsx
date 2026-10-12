@@ -14,7 +14,7 @@ export function Footer() {
         </div>
 
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
-          Made with <Heart className="h-3 w-3 text-destructive" /> for cleaner air
+          Made with <Heart className="h-3 w-3 text-accent" /> for cleaner air
         </p>
       </div>
 

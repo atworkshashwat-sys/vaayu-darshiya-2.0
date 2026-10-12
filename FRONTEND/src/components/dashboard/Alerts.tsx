@@ -146,15 +146,15 @@ function getSeverityStyles(severity: Alert["severity"]) {
       };
     case "medium":
       return {
-        border: "border-l-amber-500",
+        border: "border-l-sev-moderate",
         badge: "secondary" as const,
-        icon: "text-amber-500",
+        icon: "text-ink",
       };
     case "low":
       return {
-        border: "border-l-green-600",
+        border: "border-l-sev-good",
         badge: "outline" as const,
-        icon: "text-green-600",
+        icon: "text-ink",
       };
   }
 }
@@ -221,7 +221,7 @@ export function Alerts({ forecast }: AlertsProps) {
             <Card
               key={alert.id}
               data-origin={alert.origin}
-              className={`glass border-l-4 ${styles.border} transition-all hover:shadow-lg`}
+              className={`glass border-l-4 ${styles.border} transition-all`}
             >
               <CardHeader className="flex flex-row items-start gap-3 pb-2">
                 <alert.icon className={`mt-0.5 h-5 w-5 shrink-0 ${styles.icon}`} />

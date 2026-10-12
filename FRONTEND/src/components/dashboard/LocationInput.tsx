@@ -62,7 +62,7 @@ export function LocationInput({ city, onSearch }: LocationInputProps) {
   return (
     <section id="dashboard" className="relative z-20 mx-auto -mt-6 max-w-3xl px-4 md:px-8">
       <form onSubmit={handleSubmit} ref={wrapperRef} className="relative">
-        <div className="glass-strong flex items-center gap-2 rounded-2xl px-4 py-3 shadow-lg">
+        <div className="glass-strong flex items-center gap-2 rounded-2xl px-4 py-3">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
           <Input
             ref={inputRef}
@@ -96,7 +96,7 @@ export function LocationInput({ city, onSearch }: LocationInputProps) {
 
         {/* Suggestions dropdown */}
         {showSuggestions && filtered.length > 0 && (
-          <div className="glass absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl shadow-xl">
+          <div className="glass absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl">
             <p className="px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Popular Cities
             </p>
@@ -104,7 +104,7 @@ export function LocationInput({ city, onSearch }: LocationInputProps) {
               <button
                 key={c}
                 type="button"
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-accent/10"
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
                 onClick={() => selectCity(c)}
               >
                 <MapPin className="h-4 w-4 text-primary" />

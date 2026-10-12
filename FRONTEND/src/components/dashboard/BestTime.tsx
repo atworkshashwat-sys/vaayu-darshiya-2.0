@@ -37,30 +37,30 @@ function getSafetyStatus(no2: number, o3: number, hcho?: number | null): SafetyS
 
 const STATUS_STYLES: Record<SafetyStatus, { badge: string; border: string; tint: string }> = {
   Safe: {
-    badge: "bg-blue-500 text-white border-transparent",
-    border: "border-l-blue-500",
-    tint: "bg-blue-50",
+    badge: "bg-sev-good text-ink border-transparent",
+    border: "border-l-sev-good",
+    tint: "bg-sev-good/10",
   },
   Moderate: {
-    badge: "bg-amber-500 text-black border-transparent",
-    border: "border-l-amber-500",
-    tint: "bg-amber-50",
+    badge: "bg-sev-moderate text-ink border-transparent",
+    border: "border-l-sev-moderate",
+    tint: "bg-sev-moderate/10",
   },
   "Avoid Outdoor": {
-    badge: "bg-red-500 text-white border-transparent",
-    border: "border-l-red-500",
-    tint: "bg-red-50",
+    badge: "bg-sev-poor text-ink border-transparent",
+    border: "border-l-sev-poor",
+    tint: "bg-sev-poor/10",
   },
 };
 
 function getSafetyIconColor(status: SafetyStatus): string {
   switch (status) {
     case "Safe":
-      return "text-blue-500";
+      return "text-ink";
     case "Moderate":
-      return "text-amber-500";
+      return "text-ink";
     case "Avoid Outdoor":
-      return "text-red-500";
+      return "text-accent";
   }
 }
 
@@ -198,7 +198,7 @@ export function BestTime({ forecast }: BestTimeProps) {
     );
   } else if (live.stale) {
     statusLine = (
-      <span className="text-amber-600">
+      <span className="text-ink">
         Forecast last updated {formatAge(live.age_seconds)} ago — refresh failed.
       </span>
     );
@@ -215,8 +215,8 @@ export function BestTime({ forecast }: BestTimeProps) {
   return (
     <section className="mx-4 mt-8 md:mx-8">
       <div className="mb-4 flex items-center gap-2">
-        <div className="rounded-lg bg-green-600/10 p-2">
-          <Clock className="h-5 w-5 text-green-600" />
+        <div className="rounded-lg bg-sev-good/10 p-2">
+          <Clock className="h-5 w-5 text-ink" />
         </div>
         <div>
           <h2 className="font-display text-xl font-bold">Best Time to Go Outside</h2>
@@ -233,7 +233,7 @@ export function BestTime({ forecast }: BestTimeProps) {
       {/* Live advisory: the source's own forecast wording, clearly separate
           from the ML numbers below. Stays empty when nothing was fetched. */}
       {weather && (
-        <div className="mb-3 rounded-lg border border-green-600/20 bg-green-50/40 p-3 text-xs">
+        <div className="mb-3 rounded-lg border border-sev-good/30 bg-sev-good/10 p-3 text-xs">
           <p className="mb-1">
             <span className="font-semibold">Today&apos;s official forecast:</span> {weather.text}
           </p>
@@ -300,8 +300,8 @@ export function BestTime({ forecast }: BestTimeProps) {
           return (
             <Card
               key={slot.period}
-              className={`border-l-4 ${styles.border} ${styles.tint} transition-all hover:shadow-lg ${
-                slot.recommended ? "ring-2 ring-green-600/40" : ""
+              className={`border-l-4 ${styles.border} ${styles.tint} transition-all ${
+                slot.recommended ? "ring-2 ring-sev-good/40" : ""
               }`}
             >
               <CardHeader className="flex flex-row items-center gap-2 pb-2">
@@ -312,15 +312,15 @@ export function BestTime({ forecast }: BestTimeProps) {
                 <p className="text-xs text-secondary">{slot.hours}</p>
                 <div className="space-y-1">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-cyan-600">NO₂: {slot.no2}</span>
+                    <span className="text-sm font-bold text-ink">NO₂: {slot.no2}</span>
                     <span className="text-[10px] text-muted-foreground">ppb</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-amber-500">O₃: {slot.o3}</span>
+                    <span className="text-sm font-bold text-ink">O₃: {slot.o3}</span>
                     <span className="text-[10px] text-muted-foreground">ppb</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-violet-500">
+                    <span className="text-sm font-bold text-ink">
                       HCHO: {slot.hcho ?? "—"}
                     </span>
                     <span className="text-[10px] text-muted-foreground">µmol/m²</span>
@@ -344,10 +344,10 @@ export function BestTime({ forecast }: BestTimeProps) {
                       <span className="block text-secondary">Temp: {weather.temp_c}°C</span>
                     )}
                     {weather.fog && (
-                      <span className="block font-medium text-amber-700">Fog expected</span>
+                      <span className="block font-medium text-ink">Fog expected</span>
                     )}
                     {weather.rain && (
-                      <span className="block font-medium text-sky-700">Rain likely</span>
+                      <span className="block font-medium text-ink">Rain likely</span>
                     )}
                   </div>
                 )}
@@ -370,7 +370,7 @@ export function BestTime({ forecast }: BestTimeProps) {
                       ML forecast: {ctx?.ml_status} → {status}
                     </p>
                     {(ctx?.reasons ?? []).map((reason) => (
-                      <p key={reason} className="text-[10px] font-medium text-amber-700">
+                      <p key={reason} className="text-[10px] font-medium text-ink">
                         {reason}
                       </p>
                     ))}
@@ -378,7 +378,7 @@ export function BestTime({ forecast }: BestTimeProps) {
                 )}
 
                 {slot.recommended && (
-                  <p className="text-[10px] font-medium text-green-600">Recommended</p>
+                  <p className="text-[10px] font-medium text-ink">Recommended</p>
                 )}
               </CardContent>
             </Card>

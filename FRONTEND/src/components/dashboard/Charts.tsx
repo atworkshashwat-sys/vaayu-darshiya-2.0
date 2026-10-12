@@ -26,10 +26,13 @@ import {
   Cell,
 } from "recharts";
 import { TIMES, CityForecast, StationData, WeeklyTrend } from "./data";
+import { ink, inkMuted, accent, rule, severityColor } from "@/lib/palette";
 
-const NO2_COLOR = "#06B6D4";
-const O3_COLOR = "#F59E0B";
-const HCHO_COLOR = "#8B5CF6";
+// Series colours are neutral by default: ink, ink-muted and the single
+// accent — colour appears only for severity, the HCHO ramp and the accent.
+const NO2_COLOR = ink();
+const O3_COLOR = inkMuted();
+const HCHO_COLOR = accent();
 
 // Segmented control for the 24-hour forecast chart: show every series at once
 // or drill into one pollutant (each with its own unit).
@@ -90,25 +93,29 @@ const TOOLTIP_STYLE = {
     border: "1px solid var(--color-border)",
     borderRadius: 8,
     fontSize: 12,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    boxShadow: "none",
   },
   cursor: { stroke: "var(--color-muted-foreground)", strokeWidth: 1, strokeDasharray: "4 4" },
 };
 
+// Band index → shared severity scale step (good · moderate · poor ·
+// very-poor · severe); thresholds unchanged.
+const SEVERITY_STEP = [0, 2, 3, 4, 5];
+
 function getNo2Color(v: number): string {
-  if (v <= 30) return "#00E400";
-  if (v <= 53) return "#FFD300";
-  if (v <= 100) return "#FF9800";
-  if (v <= 200) return "#FF0000";
-  return "#9C27B0";
+  if (v <= 30) return severityColor(SEVERITY_STEP[0]);
+  if (v <= 53) return severityColor(SEVERITY_STEP[1]);
+  if (v <= 100) return severityColor(SEVERITY_STEP[2]);
+  if (v <= 200) return severityColor(SEVERITY_STEP[3]);
+  return severityColor(SEVERITY_STEP[4]);
 }
 
 function getO3Color(v: number): string {
-  if (v <= 40) return "#00E400";
-  if (v <= 70) return "#FFD300";
-  if (v <= 100) return "#FF9800";
-  if (v <= 150) return "#FF0000";
-  return "#9C27B0";
+  if (v <= 40) return severityColor(SEVERITY_STEP[0]);
+  if (v <= 70) return severityColor(SEVERITY_STEP[1]);
+  if (v <= 100) return severityColor(SEVERITY_STEP[2]);
+  if (v <= 150) return severityColor(SEVERITY_STEP[3]);
+  return severityColor(SEVERITY_STEP[4]);
 }
 
 export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: ChartsProps) {
@@ -225,12 +232,12 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
   const pollutantBreakdown = [
     { name: "NO₂", value: currentNo2, hcho: null, fill: NO2_COLOR, primary: true },
     { name: "O₃", value: currentO3, hcho: null, fill: O3_COLOR, primary: true },
-    { name: "PM2.5", value: Math.round(currentNo2 * 2.2), hcho: null, fill: "#94A3B8", primary: false },
-    { name: "PM10", value: Math.round(currentNo2 * 3.6), hcho: null, fill: "#CBD5E1", primary: false },
-    { name: "SO₂", value: Math.round(currentNo2 * 0.15), hcho: null, fill: "#A3E635", primary: false },
-    { name: "CO", value: Math.round(currentNo2 * 0.2), hcho: null, fill: "#F87171", primary: false },
+    { name: "PM2.5", value: Math.round(currentNo2 * 2.2), hcho: null, fill: inkMuted(), primary: false },
+    { name: "PM10", value: Math.round(currentNo2 * 3.6), hcho: null, fill: rule(), primary: false },
+    { name: "SO₂", value: Math.round(currentNo2 * 0.15), hcho: null, fill: inkMuted(), primary: false },
+    { name: "CO", value: Math.round(currentNo2 * 0.2), hcho: null, fill: rule(), primary: false },
     ...(currentHcho != null
-      ? [{ name: "HCHO", value: null, hcho: currentHcho, fill: HCHO_COLOR, primary: true }]
+      ? [{ name: "HCHO", value: null, hcho: currentHcho, fill: "var(--ink-muted)", primary: true }]
       : []),
   ];
 
@@ -270,16 +277,16 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
             <AreaChart data={hourlyData}>
               <defs>
                 <linearGradient id="no2AreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={NO2_COLOR} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={NO2_COLOR} stopOpacity={0} />
+                  <stop offset="5%" stopColor={NO2_COLOR} stopOpacity={0.18} />
+                  <stop offset="95%" stopColor={NO2_COLOR} stopOpacity={0.18} />
                 </linearGradient>
                 <linearGradient id="o3AreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={O3_COLOR} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={O3_COLOR} stopOpacity={0} />
+                  <stop offset="5%" stopColor={O3_COLOR} stopOpacity={0.18} />
+                  <stop offset="95%" stopColor={O3_COLOR} stopOpacity={0.18} />
                 </linearGradient>
                 <linearGradient id="hchoHourlyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0} />
+                  <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.18} />
+                  <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0.18} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -300,10 +307,10 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  tick={{ fontSize: 10, fill: HCHO_COLOR }}
+                  tick={{ fontSize: 10, fill: "var(--ink-muted)" }}
                   domain={[0, 100]}
                   tickCount={6}
-                  label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: HCHO_COLOR }}
+                  label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: "var(--ink-muted)" }}
                 />
               )}
               <Tooltip
@@ -315,7 +322,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                 ]}
               />
               <Legend
-                wrapperStyle={{ fontSize: 11 }}
+                wrapperStyle={{ fontSize: 11, color: "var(--ink-muted)" }}
                 formatter={(value: string) =>
                   value === "NO2" ? "NO₂ (ppb)" : value === "HCHO" ? "HCHO (µmol/m²)" : "O₃ (ppb)"
                 }
@@ -323,13 +330,13 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
               <ReferenceLine
                 x={TIMES[timeIdx]}
                 yAxisId={fcShowPpbAxis ? "left" : "right"}
-                stroke="#EF4444"
-                strokeWidth={2}
+                stroke={accent()}
+                strokeWidth={1.5}
                 strokeDasharray="4 4"
                 label={{
                   value: "Now",
                   position: "top",
-                  fill: "#EF4444",
+                  fill: accent(),
                   fontSize: 10,
                   fontWeight: 700,
                 }}
@@ -341,7 +348,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   dataKey="NO2"
                   stroke={NO2_COLOR}
                   fill="url(#no2AreaGrad)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   dot={false}
                   activeDot={{ r: 5, strokeWidth: 2 }}
                 />
@@ -353,7 +360,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   dataKey="O3"
                   stroke={O3_COLOR}
                   fill="url(#o3AreaGrad)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   dot={false}
                   activeDot={{ r: 5, strokeWidth: 2 }}
                 />
@@ -365,7 +372,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   dataKey="HCHO"
                   stroke={HCHO_COLOR}
                   fill="url(#hchoHourlyGrad)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   strokeDasharray="5 3"
                   dot={false}
                   activeDot={{ r: 5, strokeWidth: 2 }}
@@ -401,9 +408,9 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  tick={{ fontSize: 10, fill: HCHO_COLOR }}
+                  tick={{ fontSize: 10, fill: "var(--ink-muted)" }}
                   domain={[0, 100]}
-                  label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: HCHO_COLOR }}
+                  label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: "var(--ink-muted)" }}
                 />
               )}
               <Tooltip
@@ -454,7 +461,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   xAxisId="right"
                   orientation="top"
                   type="number"
-                  tick={{ fontSize: 10, fill: HCHO_COLOR }}
+                  tick={{ fontSize: 10, fill: "var(--ink-muted)" }}
                   domain={[0, 100]}
                   tickCount={6}
                 />
@@ -473,7 +480,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                 ]}
               />
               <Legend
-                wrapperStyle={{ fontSize: 11 }}
+                wrapperStyle={{ fontSize: 11, color: "var(--ink-muted)" }}
                 formatter={(value: string) =>
                   value === "no2" ? "NO₂ (ppb)" : value === "hcho" ? "HCHO (µmol/m²)" : "O₃ (ppb)"
                 }
@@ -502,16 +509,16 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
               <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="no2Grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={NO2_COLOR} stopOpacity={0.2} />
-                    <stop offset="95%" stopColor={NO2_COLOR} stopOpacity={0} />
+                    <stop offset="5%" stopColor={NO2_COLOR} stopOpacity={0.12} />
+                    <stop offset="95%" stopColor={NO2_COLOR} stopOpacity={0.12} />
                   </linearGradient>
                   <linearGradient id="o3Grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={O3_COLOR} stopOpacity={0.2} />
-                    <stop offset="95%" stopColor={O3_COLOR} stopOpacity={0} />
+                    <stop offset="5%" stopColor={O3_COLOR} stopOpacity={0.12} />
+                    <stop offset="95%" stopColor={O3_COLOR} stopOpacity={0.12} />
                   </linearGradient>
                   <linearGradient id="hchoGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.2} />
-                    <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0} />
+                    <stop offset="5%" stopColor={HCHO_COLOR} stopOpacity={0.12} />
+                    <stop offset="95%" stopColor={HCHO_COLOR} stopOpacity={0.12} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -534,10 +541,10 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    tick={{ fontSize: 10, fill: HCHO_COLOR }}
+                    tick={{ fontSize: 10, fill: "var(--ink-muted)" }}
                     domain={[0, 100]}
                     tickCount={6}
-                    label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: HCHO_COLOR }}
+                    label={{ value: "µmol/m²", angle: 90, position: "insideRight", fontSize: 10, fill: "var(--ink-muted)" }}
                   />
                 )}
                 <Tooltip
@@ -548,7 +555,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 12 }}
+                  wrapperStyle={{ fontSize: 12, color: "var(--ink-muted)" }}
                   formatter={(value: string) => (value === "NO2" ? "NO₂" : value === "HCHO" ? "HCHO (µmol/m²)" : "O₃")}
                 />
                 <Area
@@ -557,7 +564,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   dataKey="NO2"
                   stroke={NO2_COLOR}
                   fill="url(#no2Grad)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   dot={{ r: 4, strokeWidth: 2 }}
                   activeDot={{ r: 6, strokeWidth: 2 }}
                 />
@@ -567,7 +574,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   dataKey="O3"
                   stroke={O3_COLOR}
                   fill="url(#o3Grad)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   dot={{ r: 4, strokeWidth: 2 }}
                   activeDot={{ r: 6, strokeWidth: 2 }}
                 />
@@ -578,7 +585,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                     dataKey="HCHO"
                     stroke={HCHO_COLOR}
                     fill="url(#hchoGrad)"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     strokeDasharray="5 3"
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6, strokeWidth: 2 }}
@@ -643,15 +650,15 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                   <DropdownMenuLabel>Format</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="gap-2" onClick={() => handleFc24Download("csv")}>
-                    <FileSpreadsheet className="h-3.5 w-3.5 text-green-500" />
+                    <FileSpreadsheet className="h-3.5 w-3.5 text-ink-muted" />
                     CSV
                   </DropdownMenuItem>
                   <DropdownMenuItem className="gap-2" onClick={() => handleFc24Download("json")}>
-                    <FileJson className="h-3.5 w-3.5 text-blue-500" />
+                    <FileJson className="h-3.5 w-3.5 text-ink-muted" />
                     JSON
                   </DropdownMenuItem>
                   <DropdownMenuItem className="gap-2" onClick={() => handleFc24Download("pdf")}>
-                    <FileText className="h-3.5 w-3.5 text-red-500" />
+                    <FileText className="h-3.5 w-3.5 text-ink-muted" />
                     PDF
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -718,13 +725,13 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
               />
               <ReferenceLine
                 x={TIMES[timeIdx]}
-                stroke="#EF4444"
-                strokeWidth={2}
+                stroke={accent()}
+                strokeWidth={1.5}
                 strokeDasharray="4 4"
                 label={{
                   value: "Now",
                   position: "top",
-                  fill: "#EF4444",
+                  fill: accent(),
                   fontSize: 10,
                   fontWeight: 700,
                 }}
@@ -761,7 +768,7 @@ export function Charts({ city, timeIdx, forecast, apiStations, weeklyTrend }: Ch
                 dataKey={fc24Key}
                 stroke={fc24Meta.color}
                 fill={`url(#fc24AreaGrad-${fc24Key})`}
-                strokeWidth={2}
+                strokeWidth={1.5}
                 dot={false}
                 activeDot={{ r: 5, strokeWidth: 2 }}
               />

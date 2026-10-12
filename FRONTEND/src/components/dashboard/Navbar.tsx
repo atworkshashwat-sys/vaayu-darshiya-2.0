@@ -40,9 +40,9 @@ export function Navbar() {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${
                   isActive
-                    ? "bg-accent text-accent-foreground"
+                    ? "bg-accent text-paper-2"
                     : "text-muted-foreground"
                 }`}
               >
@@ -83,9 +83,9 @@ export function Navbar() {
                     key={link.to}
                     to={link.to}
                     onClick={() => setOpen(false)}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground ${
                       isActive
-                        ? "bg-accent text-accent-foreground"
+                        ? "bg-accent text-paper-2"
                         : "text-muted-foreground"
                     }`}
                   >

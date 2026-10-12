@@ -54,7 +54,7 @@ export function Timeline({ timeIdx, setTimeIdx, currentMinute }: TimelineProps) 
                 onClick={() => setTimeIdx(i)}
                 className={`rounded-md px-2 py-1 text-[10px] font-medium transition-all ${
                   i === timeIdx
-                    ? "bg-primary text-primary-foreground shadow"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-accent/20"
                 }`}
               >

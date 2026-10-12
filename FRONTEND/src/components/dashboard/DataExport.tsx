@@ -127,7 +127,7 @@ export function DataExport({ stations, weeklyTrend, forecast, timeIdx, selectedS
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted">
-              {format === "csv" ? <FileSpreadsheet className="h-3.5 w-3.5 text-green-500" /> : format === "json" ? <FileJson className="h-3.5 w-3.5 text-blue-500" /> : <FileText className="h-3.5 w-3.5 text-red-500" />}
+              {format === "csv" ? <FileSpreadsheet className="h-3.5 w-3.5 text-ink-muted" /> : format === "json" ? <FileJson className="h-3.5 w-3.5 text-ink-muted" /> : <FileText className="h-3.5 w-3.5 text-ink-muted" />}
               {format.toUpperCase()}
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             </button>
@@ -137,15 +137,15 @@ export function DataExport({ stations, weeklyTrend, forecast, timeIdx, selectedS
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={format} onValueChange={(v) => setFormat(v as FileFormat)}>
               <DropdownMenuRadioItem value="csv" className="flex items-center gap-2">
-                <FileSpreadsheet className="h-3.5 w-3.5 text-green-500" />
+                <FileSpreadsheet className="h-3.5 w-3.5 text-ink-muted" />
                 CSV
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="json" className="flex items-center gap-2">
-                <FileJson className="h-3.5 w-3.5 text-blue-500" />
+                <FileJson className="h-3.5 w-3.5 text-ink-muted" />
                 JSON
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="pdf" className="flex items-center gap-2">
-                <FileText className="h-3.5 w-3.5 text-red-500" />
+                <FileText className="h-3.5 w-3.5 text-ink-muted" />
                 PDF
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

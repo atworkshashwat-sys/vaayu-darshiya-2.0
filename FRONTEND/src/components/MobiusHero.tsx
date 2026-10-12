@@ -4,6 +4,13 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { accent, token, toRgb } from "@/lib/palette";
+
+// Warm token colours for the 3D scene (read from styles.css at runtime).
+const rgb01 = (name: string): [number, number, number] =>
+  toRgb(token(name)).map((c) => c / 255) as [number, number, number];
+const STRIP_FROM = rgb01("accent"); // --accent #A8432A
+const STRIP_TO = rgb01("hcho-2"); // --hcho-2 #E8C98A
 
 // --- Parametric position ---
 function mobiusPoint(u: number, v: number, R = 2.8, w = 0.75): THREE.Vector3 {
@@ -32,12 +39,13 @@ function buildMobiusGeometry(): THREE.BufferGeometry {
       positions.push(p.x, p.y, p.z);
       uvs.push(u, j / segV);
 
-      // Vertex color gradient
+      // Vertex colour gradient — accent → warm sand along the strip, with a
+      // cream highlight at the edge (all token colours).
       const t = u;
       const edge = 1 - Math.abs(v) * 2.2;
-      const r = 0.12 + t * 0.3 + edge * 0.08;
-      const g = 0.3 + t * 0.05 + edge * 0.25;
-      const b = 0.85 + t * 0.1 + edge * 0.05;
+      const r = STRIP_FROM[0] + (STRIP_TO[0] - STRIP_FROM[0]) * t + edge * 0.06;
+      const g = STRIP_FROM[1] + (STRIP_TO[1] - STRIP_FROM[1]) * t + edge * 0.1;
+      const b = STRIP_FROM[2] + (STRIP_TO[2] - STRIP_FROM[2]) * t + edge * 0.12;
       colors.push(r, g, b);
 
       const eps = 0.0004;
@@ -112,11 +120,11 @@ function MobiusStrip() {
           clearcoat={1}
           clearcoatRoughness={0.07}
           side={THREE.DoubleSide}
-          emissive="#4338CA"
+          emissive={accent()}
           emissiveIntensity={0.08}
           envMapIntensity={1.8}
           sheen={0.6}
-          sheenColor="#818CF8"
+          sheenColor={token("hcho-2")}
           sheenRoughness={0.2}
         />
       </mesh>
@@ -124,7 +132,7 @@ function MobiusStrip() {
       {/* Thin wireframe accent */}
       <mesh geometry={mobiusGeometry}>
         <meshBasicMaterial
-          color="#38BDF8"
+          color={accent()}
           wireframe
           transparent
           opacity={0.07}
@@ -159,8 +167,8 @@ function GoldenBall() {
       <mesh ref={ref}>
         <sphereGeometry args={[0.24, 32, 32]} />
         <meshPhysicalMaterial
-          color="#FFD700"
-          emissive="#FF8C00"
+          color={token("sev-moderate")}
+          emissive={token("sev-poor")}
           emissiveIntensity={1.8}
           metalness={1}
           roughness={0.06}
@@ -169,7 +177,7 @@ function GoldenBall() {
           envMapIntensity={2.5}
         />
       </mesh>
-      <pointLight ref={glow} color="#FFC94D" intensity={4} distance={5} decay={2} />
+      <pointLight ref={glow} color={token("sev-moderate")} intensity={4} distance={5} decay={2} />
     </>
   );
 }
@@ -189,8 +197,8 @@ function TrailBall() {
     <mesh ref={ref}>
       <sphereGeometry args={[0.14, 24, 24]} />
       <meshPhysicalMaterial
-        color="#38BDF8"
-        emissive="#0284C7"
+        color={token("hcho-3")}
+        emissive={accent()}
         emissiveIntensity={1.4}
         metalness={0.95}
         roughness={0.12}
@@ -215,8 +223,8 @@ function ThirdOrb() {
     <mesh ref={ref}>
       <sphereGeometry args={[0.09, 16, 16]} />
       <meshPhysicalMaterial
-        color="#C084FC"
-        emissive="#9333EA"
+        color={token("hcho-2")}
+        emissive={token("sev-moderate")}
         emissiveIntensity={1.6}
         metalness={0.9}
         roughness={0.18}
@@ -256,7 +264,7 @@ function Particles() {
     <points ref={ref} geometry={geometry}>
       <pointsMaterial
         size={0.065}
-        color="#A5B4FC"
+        color={token("hcho-2")}
         transparent
         opacity={0.5}
         sizeAttenuation
@@ -272,19 +280,19 @@ function Scene() {
   return (
     <>
       <ambientLight intensity={0.35} />
-      <directionalLight position={[6, 7, 5]} intensity={1.4} color="#ffffff" />
-      <directionalLight position={[-7, 3, -4]} intensity={0.55} color="#818CF8" />
-      <directionalLight position={[0, -5, -6]} intensity={0.35} color="#38BDF8" />
+      <directionalLight position={[6, 7, 5]} intensity={1.4} color={token("paper-2")} />
+      <directionalLight position={[-7, 3, -4]} intensity={0.55} color={token("hcho-3")} />
+      <directionalLight position={[0, -5, -6]} intensity={0.35} color={token("sev-moderate")} />
       <spotLight
         position={[0, 10, 0]}
         angle={0.35}
         penumbra={0.9}
         intensity={1.3}
-        color="#C4B5FD"
+        color={token("hcho-2")}
         distance={25}
       />
-      <pointLight position={[0, 0, 0]} intensity={0.5} color="#6366F1" distance={8} decay={2} />
-      <fog attach="fog" args={["#94A3B8", 18, 42]} />
+      <pointLight position={[0, 0, 0]} intensity={0.5} color={accent()} distance={8} decay={2} />
+      <fog attach="fog" args={[token("paper"), 18, 42]} />
       <MobiusStrip />
     </>
   );

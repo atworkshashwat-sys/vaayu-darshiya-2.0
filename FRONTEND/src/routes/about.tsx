@@ -48,12 +48,12 @@ const teamMembers = [
 
 function AboutPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-paper">
       <Navbar />
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden border-b border-[#E2E8F0] bg-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
+      <div className="relative overflow-hidden border-b border-rule bg-paper-2">
+        <div className="absolute inset-0 bg-primary/5" />
         <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
             <ArrowLeft className="h-4 w-4" />
@@ -78,7 +78,7 @@ function AboutPage() {
               Our Story
             </h2>
           </div>
-          <div className="space-y-5 text-secondary leading-[1.8] text-[15px]">
+          <div className="space-y-5 text-ink-muted leading-[1.8] text-[15px]">
             <p>
               Vaayu Darshiya began as a college bootcamp project built by three students who wanted
               to do something about a problem they lived with every day — Delhi's air quality.
@@ -105,9 +105,9 @@ function AboutPage() {
 
         {/* Divider */}
         <div className="flex items-center gap-4 mb-16">
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
+          <div className="h-px flex-1 bg-rule" />
           <div className="h-2 w-2 rounded-full bg-primary/40" />
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
+          <div className="h-px flex-1 bg-rule" />
         </div>
 
         {/* Meet the Team Section */}
@@ -122,11 +122,11 @@ function AboutPage() {
             {teamMembers.map((member) => (
               <Card
                 key={member.name}
-                className="group border-[#E2E8F0] bg-white transition-all hover:shadow-lg hover:-translate-y-1"
+                className="group bg-paper-2 transition-all hover:-translate-y-1"
               >
                 <CardContent className="p-7">
                   <div className="mb-5">
-                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                       <span className="text-xl font-bold text-primary">
                         {member.name.split(" ").map((n) => n[0]).join("")}
                       </span>
@@ -136,7 +136,7 @@ function AboutPage() {
                     </h3>
                     <p className="text-sm font-semibold text-primary mt-1">{member.role}</p>
                   </div>
-                  <p className="text-sm text-secondary leading-relaxed mb-5">{member.bio}</p>
+                  <p className="text-sm text-ink-muted leading-relaxed mb-5">{member.bio}</p>
                   <div className="mb-5">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Key Contributions</p>
                     <div className="flex flex-wrap gap-1.5">
@@ -147,12 +147,12 @@ function AboutPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-4 border-t border-[#F1F5F9]">
+                  <div className="flex gap-2 pt-4 border-t">
                     <Button
                       variant="outline"
                       size="sm"
                       asChild
-                      className="gap-1.5 h-8 border-[#E2E8F0] hover:bg-[#F1F5F9]"
+                      className="gap-1.5 h-8 hover:bg-muted"
                     >
                       <a
                         href={member.github}
@@ -167,7 +167,7 @@ function AboutPage() {
                       variant="outline"
                       size="sm"
                       asChild
-                      className="gap-1.5 h-8 border-[#E2E8F0] hover:bg-[#F1F5F9]"
+                      className="gap-1.5 h-8 hover:bg-muted"
                     >
                       <a
                         href={member.linkedin}
@@ -187,9 +187,9 @@ function AboutPage() {
 
         {/* Divider */}
         <div className="flex items-center gap-4 mb-16">
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
+          <div className="h-px flex-1 bg-rule" />
           <div className="h-2 w-2 rounded-full bg-primary/40" />
-          <div className="h-px flex-1 bg-[#E2E8F0]" />
+          <div className="h-px flex-1 bg-rule" />
         </div>
 
         {/* Feedback & Support */}
@@ -200,7 +200,7 @@ function AboutPage() {
               Feedback & Support
             </h2>
           </div>
-          <Card className="border-[#E2E8F0] bg-white">
+          <Card className="bg-paper-2">
             <CardContent className="p-8 text-center">
               <div className="mx-auto mb-5 h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
                 <MessageSquare className="h-6 w-6 text-primary" />
@@ -208,7 +208,7 @@ function AboutPage() {
               <h3 className="font-display text-xl font-bold text-foreground mb-2">
                 Found a bug or have a suggestion?
               </h3>
-              <p className="text-sm text-secondary leading-relaxed mb-6 max-w-md mx-auto">
+              <p className="text-sm text-ink-muted leading-relaxed mb-6 max-w-md mx-auto">
                 We'd love to hear from you. Whether it's a bug report, feature request, or general feedback — your input helps us improve VAAYU DARSHIYA for everyone.
               </p>
               <Button
@@ -234,7 +234,7 @@ function AboutPage() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-[#E2E8F0] bg-white">
+      <div className="border-t border-rule bg-paper-2">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-muted-foreground">
             © 2026 VAAYU DARSHIYA. Built for cleaner air.

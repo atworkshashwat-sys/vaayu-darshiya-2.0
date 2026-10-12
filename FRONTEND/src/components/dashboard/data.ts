@@ -137,7 +137,10 @@ export interface ModelBlock {
   name: ModelName;
   available: boolean;
   active: boolean;
+  /** Mean rolling RMSE over `rolling_common_targets` — comparable across models. */
   rolling_rmse: number | null;
+  /** Targets `rolling_rmse` was averaged over (the intersection all models share). */
+  rolling_common_targets?: ("NO2" | "O3" | "HCHO")[];
   rolling_by_target: Partial<Record<"NO2" | "O3" | "HCHO", number | null>>;
   reason: string;
   strongest_horizons: Partial<Record<"NO2" | "O3" | "HCHO", number[]>>;
@@ -305,7 +308,8 @@ const SITE_MAP: Record<string, number> = {
 // always gets the same label on every feature.
 export const HCHO_BAND_EDGES = [15, 30, 50, 70] as const;
 export const HCHO_BAND_LABELS = ["Good", "Moderate", "Elevated", "High", "Very High"] as const;
-export const HCHO_BAND_COLORS = ["#00E400", "#FFD300", "#FF9800", "#FF0000", "#9C27B0"] as const;
+// HCHO has no banded colour of its own any more: displays sample the shared
+// sequential ramp (see hchoHotspots.ts hchoBandSwatch / rampColor).
 export type HchoLevel = (typeof HCHO_BAND_LABELS)[number];
 
 /** Band index 0 (best) – 4 (worst) for an HCHO column value in µmol/m². */

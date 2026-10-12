@@ -104,6 +104,21 @@ Deleting `data/vaayu_extract_7sites.csv` forces a rebuild on next boot.
 
 The health endpoint `/` reports database status (row count, station count, date range).
 
+**Multi-model serving:** two further endpoints expose the ensemble, and
+`/api/forecast` + `/api/stations` serve whichever model is active rather than
+always XGBoost:
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/models` | Per-model metrics, rolling 7-day RMSE, and the active model + reason |
+| `POST /api/models/override` | Pin the serving model (`{"model": "LightGBM"}`) or clear it (`{"model": "auto"}`) |
+
+Each model that has prediction artefacts gets its own cached 24-hour arrays at
+boot (`MODEL_FORECASTS` in `backend/api.py`), resolved from its own anchors, so
+switching the model in the dashboard redraws every chart, metric card and map
+marker with that model's numbers — not XGBoost's with a different label. A model
+whose artefacts are absent falls back to XGBoost rather than serving zeros.
+
 ---
 
 ## How the Frontend Works

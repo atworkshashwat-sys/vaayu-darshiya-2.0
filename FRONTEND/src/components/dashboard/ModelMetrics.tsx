@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +19,7 @@ export function ModelMetrics() {
   const [data, setData] = useState<ModelMetricsData | null>(null);
   const [models, setModels] = useState<ModelsData | null>(null);
   const [metricTab, setMetricTab] = useState("overview");
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     fetchMetrics().then(setData);
@@ -26,7 +28,16 @@ export function ModelMetrics() {
 
   const handleOverride = async (model: ModelName | "auto") => {
     const res = await postModelOverride(model);
-    if (res.ok) fetchModels().then(setModels);
+    if (res.ok) {
+      fetchModels().then(setModels);
+      // The backend serves the ACTIVE model's arrays from /api/forecast and
+      // /api/stations, so dropping those caches is what repaints every chart,
+      // the metric cards and the map with the newly selected model.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["forecast"] }),
+        queryClient.invalidateQueries({ queryKey: ["stations"] }),
+      ]);
+    }
   };
 
   if (!data) {
@@ -70,42 +81,42 @@ export function ModelMetrics() {
       label: "NO2 R2 (t+1h)",
       value: m.t1h.NO2.r2.toFixed(4),
       icon: TrendingUp,
-      color: "text-emerald-400",
+      color: "text-ink",
       desc: `MAE ${m.t1h.NO2.mae} ppb  RMSE ${m.t1h.NO2.rmse} ppb`,
     },
     {
       label: "O3 R2 (t+1h)",
       value: m.t1h.O3.r2.toFixed(4),
       icon: TrendingUp,
-      color: "text-sky-400",
+      color: "text-ink-muted",
       desc: `MAE ${m.t1h.O3.mae} ppb  RMSE ${m.t1h.O3.rmse} ppb`,
     },
     {
       label: "NO2 R2 (t+6h)",
       value: m.t6h.NO2.r2.toFixed(4),
       icon: Target,
-      color: "text-amber-400",
+      color: "text-ink",
       desc: `MAE ${m.t6h.NO2.mae} ppb  RMSE ${m.t6h.NO2.rmse} ppb`,
     },
     {
       label: "O3 R2 (t+6h)",
       value: m.t6h.O3.r2.toFixed(4),
       icon: Target,
-      color: "text-amber-400",
+      color: "text-ink-muted",
       desc: `MAE ${m.t6h.O3.mae} ppb  RMSE ${m.t6h.O3.rmse} ppb`,
     },
     {
       label: "NO2 R2 (t+12h)",
       value: m.t12h.NO2.r2.toFixed(4),
       icon: Gauge,
-      color: "text-orange-400",
+      color: "text-ink",
       desc: `MAE ${m.t12h.NO2.mae} ppb  RMSE ${m.t12h.NO2.rmse} ppb`,
     },
     {
       label: "O3 R2 (t+12h)",
       value: m.t12h.O3.r2.toFixed(4),
       icon: Gauge,
-      color: "text-orange-400",
+      color: "text-ink-muted",
       desc: `MAE ${m.t12h.O3.mae} ppb  RMSE ${m.t12h.O3.rmse} ppb`,
     },
     ...(m.t1h.HCHO && m.t12h.HCHO
@@ -114,14 +125,14 @@ export function ModelMetrics() {
             label: "HCHO R2 (t+1h)",
             value: m.t1h.HCHO.r2.toFixed(4),
             icon: TrendingUp,
-            color: "text-violet-400",
+            color: "text-accent",
             desc: `MAE ${m.t1h.HCHO.mae} µmol/m²  RMSE ${m.t1h.HCHO.rmse} µmol/m²`,
           },
           {
             label: "HCHO R2 (t+12h)",
             value: m.t12h.HCHO.r2.toFixed(4),
             icon: Gauge,
-            color: "text-violet-400",
+            color: "text-accent",
             desc: `MAE ${m.t12h.HCHO.mae} µmol/m²  RMSE ${m.t12h.HCHO.rmse} µmol/m²`,
           },
         ]
@@ -144,6 +155,9 @@ export function ModelMetrics() {
             <span className="mt-1 block text-[10px] text-muted-foreground">
               {t.sites} Delhi sites  {t.features} features (NO2/O3) · {t.features_hcho ?? "100"} (HCHO)  {t.horizons} forecast horizons  Train {t.train_years}  Val {t.val_years}  Test {t.test_years}
             </span>
+            <span className="mt-1 block text-[10px] text-muted-foreground">
+              This tab reports XGBoost. RandomForest, LightGBM, LSTM and Ridge forecasts are compared — and switched on — under <em>Models</em>.
+            </span>
           </p>
         </div>
       </div>
@@ -162,7 +176,7 @@ export function ModelMetrics() {
           {/* Key Metric Cards */}
           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
             {keyMetrics.map((km) => (
-              <Card key={km.label} className="glass overflow-hidden transition-all hover:shadow-lg">
+              <Card key={km.label} className="glass overflow-hidden transition-all">
                 <CardHeader className="flex flex-row items-center justify-between pb-1">
                   <CardTitle className="text-xs font-medium text-muted-foreground">{km.label}</CardTitle>
                   <div className="rounded-lg bg-secondary/10 p-1.5">
@@ -193,15 +207,15 @@ export function ModelMetrics() {
                   <thead>
                     <tr className="border-b border-border">
                       <th className="px-2 py-1.5 text-left font-medium text-muted-foreground">Horizon</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-emerald-400">NO2 R2</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-emerald-400">NO2 MAE</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-emerald-400">NO2 RMSE</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-sky-400">O3 R2</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-sky-400">O3 MAE</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-sky-400">O3 RMSE</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-violet-400">HCHO R2</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-violet-400">HCHO MAE</th>
-                      <th className="px-2 py-1.5 text-right font-medium text-violet-400">HCHO RMSE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink">NO2 R2</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink">NO2 MAE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink">NO2 RMSE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink-muted">O3 R2</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink-muted">O3 MAE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-ink-muted">O3 RMSE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-accent">HCHO R2</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-accent">HCHO MAE</th>
+                      <th className="px-2 py-1.5 text-right font-medium text-accent">HCHO RMSE</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -249,7 +263,7 @@ export function ModelMetrics() {
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Cpu className="h-4 w-4 text-secondary" />
                     Active Model
-                    <Badge className="ml-auto bg-emerald-500/15 text-emerald-400">
+                    <Badge className="ml-auto bg-sev-good/15 text-ink">
                       {models.active_model}
                     </Badge>
                     <Badge variant="outline" className="text-[10px]">
@@ -300,7 +314,7 @@ export function ModelMetrics() {
               <Card className="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <CheckCircle2 className="h-4 w-4 text-ink" />
                     NO2 Model — Test Set Performance
                   </CardTitle>
                   <p className="text-xs text-secondary">t+1h horizon (best model)</p>
@@ -309,20 +323,20 @@ export function ModelMetrics() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">R2</p>
-                      <span className="text-2xl font-bold text-emerald-400">{vc.NO2.test.r2}</span>
+                      <span className="text-2xl font-bold text-ink">{vc.NO2.test.r2}</span>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">MAE (ppb)</p>
-                      <span className="text-2xl font-bold text-emerald-400">{vc.NO2.test.mae}</span>
+                      <span className="text-2xl font-bold text-ink">{vc.NO2.test.mae}</span>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">RMSE (ppb)</p>
-                      <span className="text-2xl font-bold text-emerald-400">{vc.NO2.test.rmse}</span>
+                      <span className="text-2xl font-bold text-ink">{vc.NO2.test.rmse}</span>
                     </div>
                   </div>
                   <div className="mt-4 rounded-lg bg-muted/30 p-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                      <CheckCircle2 className="h-3 w-3 text-ink" />
                       Validated on {t.val_years} data, tested on {t.test_years}
                     </div>
                   </div>
@@ -333,7 +347,7 @@ export function ModelMetrics() {
               <Card className="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <CheckCircle2 className="h-4 w-4 text-sky-400" />
+                    <CheckCircle2 className="h-4 w-4 text-ink-muted" />
                     O3 Model — Test Set Performance
                   </CardTitle>
                   <p className="text-xs text-secondary">t+1h horizon (best model)</p>
@@ -342,20 +356,20 @@ export function ModelMetrics() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">R2</p>
-                      <span className="text-2xl font-bold text-sky-400">{vc.O3.test.r2}</span>
+                      <span className="text-2xl font-bold text-ink-muted">{vc.O3.test.r2}</span>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">MAE (ppb)</p>
-                      <span className="text-2xl font-bold text-sky-400">{vc.O3.test.mae}</span>
+                      <span className="text-2xl font-bold text-ink-muted">{vc.O3.test.mae}</span>
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground mb-1">RMSE (ppb)</p>
-                      <span className="text-2xl font-bold text-sky-400">{vc.O3.test.rmse}</span>
+                      <span className="text-2xl font-bold text-ink-muted">{vc.O3.test.rmse}</span>
                     </div>
                   </div>
                   <div className="mt-4 rounded-lg bg-muted/30 p-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle2 className="h-3 w-3 text-sky-400" />
+                      <CheckCircle2 className="h-3 w-3 text-ink-muted" />
                       Validated on {t.val_years} data, tested on {t.test_years}
                     </div>
                   </div>
@@ -367,7 +381,7 @@ export function ModelMetrics() {
                 <Card className="glass">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <CheckCircle2 className="h-4 w-4 text-violet-400" />
+                      <CheckCircle2 className="h-4 w-4 text-accent" />
                       HCHO Model — Test Set Performance
                     </CardTitle>
                     <p className="text-xs text-secondary">t+1h horizon (µmol/m²)</p>
@@ -376,20 +390,20 @@ export function ModelMetrics() {
                     <div className="grid grid-cols-3 gap-4">
                       <div>
                         <p className="text-[10px] text-muted-foreground mb-1">R2</p>
-                        <span className="text-2xl font-bold text-violet-400">{vc.HCHO.test.r2}</span>
+                        <span className="text-2xl font-bold text-accent">{vc.HCHO.test.r2}</span>
                       </div>
                       <div>
                         <p className="text-[10px] text-muted-foreground mb-1">MAE (µmol/m²)</p>
-                        <span className="text-2xl font-bold text-violet-400">{vc.HCHO.test.mae}</span>
+                        <span className="text-2xl font-bold text-accent">{vc.HCHO.test.mae}</span>
                       </div>
                       <div>
                         <p className="text-[10px] text-muted-foreground mb-1">RMSE (µmol/m²)</p>
-                        <span className="text-2xl font-bold text-violet-400">{vc.HCHO.test.rmse}</span>
+                        <span className="text-2xl font-bold text-accent">{vc.HCHO.test.rmse}</span>
                       </div>
                     </div>
                     <div className="mt-4 rounded-lg bg-muted/30 p-3">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle2 className="h-3 w-3 text-violet-400" />
+                        <CheckCircle2 className="h-3 w-3 text-accent" />
                         Validated on {t.hcho_val_years ?? t.val_years} data, tested on {t.hcho_test_years ?? t.test_years}
                       </div>
                     </div>
@@ -437,13 +451,13 @@ export function ModelMetrics() {
                     <tbody>
                       {dbRows.map((row) => (
                         <tr key={row.id} className="border-b border-border/50 hover:bg-muted/30">
-                          <td className={`px-2 py-1.5 font-medium ${row.target === "NO2" ? "text-emerald-400" : row.target === "HCHO" ? "text-violet-400" : "text-sky-400"}`}>
+                          <td className={`px-2 py-1.5 font-medium ${row.target === "NO2" ? "text-ink" : row.target === "HCHO" ? "text-accent" : "text-ink-muted"}`}>
                             {row.target}
                           </td>
                           <td className="px-2 py-1.5 text-muted-foreground">{row.basis}</td>
                           <td
                             className={`px-2 py-1.5 text-right font-mono ${
-                              row.score.r2 == null ? "" : row.score.r2 < 0 ? "text-red-400" : "text-emerald-400"
+                              row.score.r2 == null ? "" : row.score.r2 < 0 ? "text-sev-very-poor" : "text-ink"
                             }`}
                           >
                             {row.score.r2 == null ? "—" : row.score.r2.toFixed(3)}
@@ -508,7 +522,7 @@ export function ModelMetrics() {
                 {fi.NO2.length > 0 ? (
                   <div className="space-y-4">
                     <div>
-                      <h4 className="mb-2 text-xs font-semibold text-emerald-400">NO2 Model</h4>
+                      <h4 className="mb-2 text-xs font-semibold text-ink">NO2 Model</h4>
                       <div className="space-y-2">
                         {fi.NO2.map((f, i) => (
                           <div key={f.feature} className="flex items-center gap-3">
@@ -517,19 +531,19 @@ export function ModelMetrics() {
                             <div className="flex-1">
                               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                 <div
-                                  className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+                                  className="h-full rounded-full bg-ink transition-all duration-700"
                                   style={{ width: `${f.importance}%` }}
                                 />
                               </div>
                             </div>
-                            <span className="w-12 text-right text-xs font-semibold text-emerald-400">{f.importance}%</span>
+                            <span className="w-12 text-right text-xs font-semibold text-ink">{f.importance}%</span>
                           </div>
                         ))}
                       </div>
                     </div>
                     {fi.O3.length > 0 && (
                       <div>
-                        <h4 className="mb-2 text-xs font-semibold text-sky-400">O3 Model</h4>
+                        <h4 className="mb-2 text-xs font-semibold text-ink-muted">O3 Model</h4>
                         <div className="space-y-2">
                           {fi.O3.map((f, i) => (
                             <div key={f.feature} className="flex items-center gap-3">
@@ -538,12 +552,12 @@ export function ModelMetrics() {
                               <div className="flex-1">
                                 <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                   <div
-                                    className="h-full rounded-full bg-sky-500 transition-all duration-700"
+                                    className="h-full rounded-full bg-ink-muted transition-all duration-700"
                                     style={{ width: `${f.importance}%` }}
                                   />
                                 </div>
                               </div>
-                              <span className="w-12 text-right text-xs font-semibold text-sky-400">{f.importance}%</span>
+                              <span className="w-12 text-right text-xs font-semibold text-ink-muted">{f.importance}%</span>
                             </div>
                           ))}
                         </div>
@@ -551,7 +565,7 @@ export function ModelMetrics() {
                     )}
                     {(fi.HCHO?.length ?? 0) > 0 && (
                       <div>
-                        <h4 className="mb-2 text-xs font-semibold text-violet-400">HCHO Model</h4>
+                        <h4 className="mb-2 text-xs font-semibold text-accent">HCHO Model</h4>
                         <div className="space-y-2">
                           {fi.HCHO?.map((f, i) => (
                             <div key={f.feature} className="flex items-center gap-3">
@@ -560,12 +574,12 @@ export function ModelMetrics() {
                               <div className="flex-1">
                                 <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                                   <div
-                                    className="h-full rounded-full bg-violet-500 transition-all duration-700"
+                                    className="h-full rounded-full bg-accent transition-all duration-700"
                                     style={{ width: `${f.importance}%` }}
                                   />
                                 </div>
                               </div>
-                              <span className="w-12 text-right text-xs font-semibold text-violet-400">{f.importance}%</span>
+                              <span className="w-12 text-right text-xs font-semibold text-accent">{f.importance}%</span>
                             </div>
                           ))}
                         </div>
@@ -583,7 +597,7 @@ export function ModelMetrics() {
               <Card className="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Zap className="h-4 w-4 text-amber-400" />
+                    <Zap className="h-4 w-4 text-accent" />
                     Hyperparameters
                   </CardTitle>
                   <p className="text-xs text-secondary">XGBoost EXP_09v2 configuration</p>
@@ -603,7 +617,7 @@ export function ModelMetrics() {
               <Card className="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Database className="h-4 w-4 text-purple-400" />
+                    <Database className="h-4 w-4 text-ink-muted" />
                     Training Configuration
                   </CardTitle>
                 </CardHeader>
@@ -673,9 +687,9 @@ export function ModelMetrics() {
 }
 
 const TARGET_COLORS: Record<string, string> = {
-  NO2: "text-emerald-400",
-  O3: "text-sky-400",
-  HCHO: "text-violet-400",
+  NO2: "text-ink",
+  O3: "text-ink-muted",
+  HCHO: "text-accent",
 };
 
 function ModelCard({ block }: { block: ModelBlock }) {
@@ -684,10 +698,10 @@ function ModelCard({ block }: { block: ModelBlock }) {
   );
 
   return (
-    <Card className={`glass relative overflow-hidden ${block.active ? "ring-1 ring-emerald-500/50" : ""}`}>
+    <Card className={`glass relative overflow-hidden ${block.active ? "ring-1 ring-sev-good/50" : ""}`}>
       {block.active && (
         <div className="absolute right-3 top-3">
-          <Badge className="bg-emerald-500/15 text-emerald-400">
+          <Badge className="bg-ink/15 text-ink">
             <Award className="mr-1 h-3 w-3" /> ACTIVE
           </Badge>
         </div>
@@ -699,7 +713,10 @@ function ModelCard({ block }: { block: ModelBlock }) {
         </CardTitle>
         <p className="text-xs text-secondary">
           {block.available
-            ? `Rolling ${7}-day RMSE: ${fmt(block.rolling_rmse, 2)}`
+            ? `Rolling ${7}-day RMSE: ${fmt(block.rolling_rmse, 2)}` +
+              (block.rolling_common_targets?.length
+                ? ` (mean over ${block.rolling_common_targets.join(" + ")})`
+                : "")
             : block.reason}
         </p>
       </CardHeader>

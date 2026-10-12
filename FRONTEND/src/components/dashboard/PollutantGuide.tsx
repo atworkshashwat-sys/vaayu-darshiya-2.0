@@ -110,7 +110,7 @@ function InfoSection({
         {cards.map((card, i) => (
           <Card
             key={card.title}
-            className={`glass transition-all hover:shadow-lg${
+            className={`glass border border-rule transition-all${
               // Odd card count: the HCHO card spans the row rather than
               // leaving a half-empty grid cell.
               i === cards.length - 1 && cards.length % 2 === 1 ? " md:col-span-2" : ""
