@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import MobiusHero from "@/components/MobiusHero";
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -21,10 +20,7 @@ export function Hero() {
   }, []);
 
   // Derived animation values from scroll progress
-  const opacity = 1 - scrollProgress * 1.2;
-  const scale = 1 - scrollProgress * 0.35;
   const translateY = scrollProgress * -60;
-  const blur = scrollProgress * 8;
 
   return (
     <section
@@ -37,10 +33,10 @@ export function Hero() {
         style={{ background: "var(--gradient-hero)" }}
       />
 
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-7xl flex-col items-center">
         {/* Text column — fades with scroll */}
         <div
-          className="max-w-2xl text-center transition-none md:text-left"
+          className="mx-auto max-w-2xl text-center transition-none"
           style={{
             opacity: Math.max(0, 1 - scrollProgress * 1.5),
             transform: `translateY(${translateY}px)`,
@@ -56,20 +52,6 @@ export function Hero() {
             Real-time air quality monitoring, AI-driven pollution forecasting, and personalised
             health advisories for every Indian city.
           </p>
-        </div>
-
-        {/* 3D hero animation — large, fades + scales on scroll */}
-        <div
-          className="flex-shrink-0 transition-none overflow-visible"
-          style={{
-            opacity: Math.max(0, opacity),
-            transform: `scale(${scale})`,
-            filter: `blur(${blur}px)`,
-          }}
-        >
-          <div className="h-[500px] w-[500px] md:h-[640px] md:w-[640px] lg:h-[720px] lg:w-[720px]">
-            <MobiusHero />
-          </div>
         </div>
       </div>
     </section>
