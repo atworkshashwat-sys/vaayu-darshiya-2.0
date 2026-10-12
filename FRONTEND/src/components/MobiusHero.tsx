@@ -4,13 +4,13 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { accent, token, toRgb } from "@/lib/palette";
+import { token, toRgb } from "@/lib/palette";
 
 // Warm token colours for the 3D scene (read from styles.css at runtime).
 const rgb01 = (name: string): [number, number, number] =>
   toRgb(token(name)).map((c) => c / 255) as [number, number, number];
-const STRIP_FROM = rgb01("accent"); // --accent #A8432A
-const STRIP_TO = rgb01("hcho-2"); // --hcho-2 #E8C98A
+const STRIP_FROM = rgb01("sev-moderate"); // --sev-moderate #E2B33C (soft gold)
+const STRIP_TO = rgb01("hcho-1"); // --hcho-1 #F3E9D2 (pale cream)
 
 // --- Parametric position ---
 function mobiusPoint(u: number, v: number, R = 2.8, w = 0.75): THREE.Vector3 {
@@ -39,7 +39,7 @@ function buildMobiusGeometry(): THREE.BufferGeometry {
       positions.push(p.x, p.y, p.z);
       uvs.push(u, j / segV);
 
-      // Vertex colour gradient — accent → warm sand along the strip, with a
+      // Vertex colour gradient — soft gold → pale cream along the strip, with a
       // cream highlight at the edge (all token colours).
       const t = u;
       const edge = 1 - Math.abs(v) * 2.2;
@@ -115,13 +115,13 @@ function MobiusStrip() {
       <mesh geometry={mobiusGeometry}>
         <meshPhysicalMaterial
           vertexColors
-          metalness={0.92}
-          roughness={0.14}
+          metalness={0.45}
+          roughness={0.32}
           clearcoat={1}
           clearcoatRoughness={0.07}
           side={THREE.DoubleSide}
-          emissive={accent()}
-          emissiveIntensity={0.08}
+          emissive={token("hcho-2")}
+          emissiveIntensity={0.12}
           envMapIntensity={1.8}
           sheen={0.6}
           sheenColor={token("hcho-2")}
@@ -132,7 +132,7 @@ function MobiusStrip() {
       {/* Thin wireframe accent */}
       <mesh geometry={mobiusGeometry}>
         <meshBasicMaterial
-          color={accent()}
+          color={token("sev-moderate")}
           wireframe
           transparent
           opacity={0.07}
@@ -168,8 +168,8 @@ function GoldenBall() {
         <sphereGeometry args={[0.24, 32, 32]} />
         <meshPhysicalMaterial
           color={token("sev-moderate")}
-          emissive={token("sev-poor")}
-          emissiveIntensity={1.8}
+          emissive={token("hcho-3")}
+          emissiveIntensity={1.4}
           metalness={1}
           roughness={0.06}
           clearcoat={1}
@@ -198,8 +198,8 @@ function TrailBall() {
       <sphereGeometry args={[0.14, 24, 24]} />
       <meshPhysicalMaterial
         color={token("hcho-3")}
-        emissive={accent()}
-        emissiveIntensity={1.4}
+        emissive={token("sev-moderate")}
+        emissiveIntensity={1.2}
         metalness={0.95}
         roughness={0.12}
         clearcoat={1}
@@ -291,7 +291,7 @@ function Scene() {
         color={token("hcho-2")}
         distance={25}
       />
-      <pointLight position={[0, 0, 0]} intensity={0.5} color={accent()} distance={8} decay={2} />
+      <pointLight position={[0, 0, 0]} intensity={0.5} color={token("hcho-2")} distance={8} decay={2} />
       <fog attach="fog" args={[token("paper"), 18, 42]} />
       <MobiusStrip />
     </>

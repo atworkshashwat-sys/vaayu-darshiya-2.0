@@ -281,6 +281,12 @@
 }
 
 /* --- Card description text utility --- */
-@utility text-secondary {
+/* Deliberately a plain, UNLAYERED rule — not `@utility`. Tailwind also
+   generates `.text-secondary { color: var(--color-secondary) }` from the
+   theme token (a near-white tint used for `bg-secondary`), and two layered
+   utilities with equal specificity resolve by source order, which made body
+   text render invisible. Unlayered rules always beat layered utilities, so
+   `text-secondary` is guaranteed to be ink-muted card body copy. */
+.text-secondary {
   color: var(--text-secondary);
 }

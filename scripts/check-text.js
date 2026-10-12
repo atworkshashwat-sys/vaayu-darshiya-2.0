@@ -32,7 +32,7 @@ async function main() {
   const aiTab = page.getByRole("tab", { name: "AI Insights" }).first();
   await aiTab.click();
   await sleep(3500);
-  await probe(page, "AI Insights paragraphs", '[class*="text-secondary"]');
+  await probe(page, "AI Insights paragraphs", '[class*="leading-relaxed"]');
   await probe(page, "AI Insights muted (control)", '[class*="text-muted-foreground"]');
   const aiSection = page.getByText("AI Insights", { exact: false }).first();
   await aiSection.scrollIntoViewIfNeeded();
@@ -56,4 +56,4 @@ async function main() {
   console.log("\nshots ->", OUT);
 }
 
-mai
+main().catch((e) => { console.error("FAIL", e); process.exit(1); });

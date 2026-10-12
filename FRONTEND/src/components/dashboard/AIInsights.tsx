@@ -219,7 +219,7 @@ export function AIInsights({ city, forecast }: AIInsightsProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-secondary">{insight.description}</p>
+              <p className="text-sm leading-relaxed text-foreground">{insight.description}</p>
             </CardContent>
           </Card>
         ))}
@@ -297,7 +297,7 @@ export function AIInsights({ city, forecast }: AIInsightsProps) {
                   <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                     Excerpt · {research.excerpt.site_name || research.excerpt.title || "source"}
                   </p>
-                  <p className="text-sm leading-relaxed text-secondary">
+                  <p className="text-sm leading-relaxed text-foreground">
                     “{research.excerpt.text}”
                   </p>
                   <a

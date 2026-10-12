@@ -241,7 +241,7 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
         <Card className="glass mb-6 border-l-4 border-l-sev-good">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{report.label}</p>
-            <p className="mt-1 text-sm leading-relaxed text-secondary">{report.value}</p>
+            <p className="mt-1 text-sm leading-relaxed text-foreground">{report.value}</p>
             <p className="mt-2 text-[10px] text-muted-foreground">
               {report.source} · as of {formatDate(report.as_of ?? report.fetched_at) ?? "unknown date"}
             </p>
@@ -252,7 +252,7 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
       {/* Narratives */}
       <Card className="glass mb-6 border-l-4 border-l-sev-very-poor">
         <CardContent className="p-5">
-          <p className="text-sm leading-relaxed text-secondary">
+          <p className="text-sm leading-relaxed text-foreground">
             <span className="font-semibold text-foreground">Delhi consistently ranks among the world's most polluted cities.</span>{" "}
             With an annual average PM2.5 concentration of <span className="text-sev-very-poor font-bold">99.7 µg/m³</span> — nearly
             20 times the WHO guideline of 5 µg/m³ — the city faces a severe public health crisis. Winter months
@@ -260,7 +260,7 @@ export function CaseStudy({ stations }: { stations?: StationData[] }) {
             combination of vehicular emissions, industrial discharge, construction dust, crop residue burning in
             neighbouring states, and unfavourable meteorological conditions creates a toxic blanket over the NCR.
           </p>
-          <p className="mt-3 text-sm leading-relaxed text-secondary">
+          <p className="mt-3 text-sm leading-relaxed text-foreground">
             This XGBoost model monitors <span className="font-semibold text-foreground">7 critical zones</span> across
             Delhi, tracking NO₂ and O₃ concentrations at 1-hour resolution with 24-hour forecasts. The model's
             test R² of <span className="font-semibold text-foreground">0.796 (NO₂)</span> and{" "}
